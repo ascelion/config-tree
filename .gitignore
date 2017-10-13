@@ -6,3 +6,4 @@ bin/
 .externalToolBuilders/
 .project
 .classpath
+*.log
