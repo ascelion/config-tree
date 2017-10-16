@@ -19,7 +19,6 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
 import com.google.common.primitives.Primitives;
-import org.apache.deltaspike.core.util.BeanUtils;
 
 @ApplicationScoped
 @Typed( ConfigProd.class )
@@ -31,27 +30,32 @@ class ConfigProd extends ConfigProdBase
 
 	@Produces
 	@Dependent
-	@ConfigValue( "unused" )
+	@ConfigValue( "" )
 	Object create( InjectionPoint ip )
 	{
 		String val = getProperty( ip );
 		Type t = ip.getType();
+		boolean p = false;
+
+		if( t instanceof Class ) {
+			final Class c = (Class) t;
+
+			if( c.isPrimitive() ) {
+				t = Primitives.wrap( c );
+				p = true;
+			}
+		}
 
 		if( val == null ) {
-			if( t instanceof Class ) {
-				final Class c = (Class) t;
-
-				if( c.isPrimitive() ) {
-					t = Primitives.wrap( c );
-					val = "0";
-				}
+			if( p ) {
+				val = "0";
 			}
 		}
 		if( val == null ) {
 			return null;
 		}
 
-		final ConfigValue ano = BeanUtils.extractAnnotation( ip.getAnnotated(), ConfigValue.class );
+		final ConfigValue ano = getAnnotation( ip );
 		final Set<Bean<?>> beans = this.bm.getBeans( ano.converter() );
 
 		if( beans.size() > 0 ) {

@@ -6,17 +6,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.BiFunction;
 
-class DefaultCVT<T> implements BiFunction<Class<T>, String, T>
+import javax.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
+class DefaultCVT implements BiFunction<Class<Object>, String, Object>
 {
 
 	@Override
-	public T apply( Class<T> t, String u )
+	public Object apply( Class<Object> t, String u )
 	{
 		try {
 			final Method m = t.getMethod( "valueOf", String.class );
 
 			try {
-				return (T) m.invoke( null, u );
+				return m.invoke( null, u );
 			}
 			catch( IllegalAccessException | InvocationTargetException e ) {
 				throw new RuntimeException( e );
@@ -26,7 +29,7 @@ class DefaultCVT<T> implements BiFunction<Class<T>, String, T>
 		}
 
 		try {
-			final Constructor<T> c = t.getConstructor( String.class );
+			final Constructor<?> c = t.getConstructor( String.class );
 
 			c.setAccessible( true );
 

@@ -9,18 +9,31 @@ apply plugin: 'java'
 
 group = 'ascelion.shared'
 
+ascelion {
+	java {
+		main {
+			dependsOn api
+		}
+	}
+}
+
 dependencies {
+	apiCompile 'javax.enterprise:cdi-api'
+
 	compile 'javax.enterprise:cdi-api'
 	compile 'javax.annotation:javax.annotation-api'
 
+	compile 'com.google.guava:guava'
+	compile 'commons-io:commons-io'
+	compile 'org.apache.commons:commons-lang3'
+	
 	compile 'org.slf4j:slf4j-api'
 	compile 'org.yaml:snakeyaml'
+	compile 'org.ini4j:ini4j'
+
 	compile 'org.apache.deltaspike.core:deltaspike-core-api'
-	compile 'com.google.guava:guava'
+//	runtime 'org.apache.deltaspike.core:deltaspike-core-impl'
 
-	runtime 'org.apache.deltaspike.core:deltaspike-core-impl'
-
-	testCompile 'javax.enterprise:cdi-api'
 	testCompile 'junit:junit'
 
 	testCompile 'ascelion.shared:cdi-unit-ext'
@@ -28,6 +41,7 @@ dependencies {
 	
 	testCompile 'org.slf4j:jul-to-slf4j'
 	testCompile 'org.slf4j:jcl-over-slf4j'
+	testCompile 'org.slf4j:log4j-over-slf4j'
 	testCompile 'ch.qos.logback:logback-classic'
 
 	testRuntime 'javax.el:javax.el-api'

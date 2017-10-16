@@ -2,6 +2,8 @@
 package ascelion.shared.cdi.conf;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -14,9 +16,12 @@ import javax.inject.Inject;
 
 import ascelion.tests.cdi.CdiUnit;
 
-import static org.junit.Assert.assertNotNull;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
-import org.apache.deltaspike.core.api.provider.BeanManagerProvider;
 import org.jglue.cdiunit.AdditionalClasses;
 import org.jglue.cdiunit.AdditionalClasspaths;
 import org.junit.Test;
@@ -24,18 +29,23 @@ import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
 @AdditionalClasses( {
-	ConfigExtension.class,
-	ConfigValueTest.Bean1.class,
-	ConfigValueTest.Bean2.class,
-	ConfigValueTest.Bean3.class,
 	ConfigValueTest.BigDecimalProd.class,
 } )
 @AdditionalClasspaths( {
-	BeanManagerProvider.class,
+	ConfigExtension.class,
 } )
 public class ConfigValueTest
 {
 
+	@ConfigSource( "file4.yml" )
+	@Retention( RUNTIME )
+	@Target( TYPE )
+	@interface Config
+	{
+	}
+
+	@ConfigSource( "file1.properties" )
+	@ConfigSource( "file2.properties" )
 	static class BigDecimalProd extends ConfigProdBase
 	{
 
@@ -50,6 +60,7 @@ public class ConfigValueTest
 		}
 	}
 
+	@Config
 	static class Bean1
 	{
 
@@ -77,6 +88,7 @@ public class ConfigValueTest
 		}
 	}
 
+	@ConfigSource( "file3.ini" )
 	static class Bean2
 	{
 
@@ -128,20 +140,20 @@ public class ConfigValueTest
 	@Test
 	public void run()
 	{
-		assertNotNull( this.bean1 );
-		assertEqual( 20, this.bean1.value1 );
-		assertEqual( 0, this.bean1.value2 );
+		assertThat( this.bean1, is( notNullValue() ) );
+		assertThat( this.bean1.value1, is( 20 ) );
+		assertThat( this.bean1.value2, is( 314 ) );
+		assertThat( this.bean1.value3, is( "value3" ) );
+		assertThat( this.bean1.value4, is( "value4" ) );
+		assertThat( this.bean1.value5, is( "value5" ) );
 
-		assertNotNull( this.bean2 );
-		assertNotNull( this.bean3 );
+		assertThat( this.bean2, is( notNullValue() ) );
 
-		assertNotNull( this.bean3.amount );
+		assertThat( this.bean3, is( notNullValue() ) );
+		assertThat( this.bean3.amount, is( new BigDecimal( 30 ) ) );
 
-		assertNotNull( "logFile1", this.logFile1 );
-		assertNotNull( "logFile2", this.logFile2 );
+		assertThat( "logFile1", this.logFile1, is( notNullValue() ) );
+		assertThat( "logFile2", this.logFile2, is( notNullValue() ) );
 	}
 
-	private void assertEqual( int i, Integer value1 )
-	{
-	}
 }

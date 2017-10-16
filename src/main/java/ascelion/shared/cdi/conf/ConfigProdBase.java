@@ -2,18 +2,28 @@
 package ascelion.shared.cdi.conf;
 
 import javax.enterprise.inject.spi.InjectionPoint;
-
-import org.apache.deltaspike.core.api.config.ConfigResolver;
-import org.apache.deltaspike.core.util.BeanUtils;
+import javax.inject.Inject;
 
 public abstract class ConfigProdBase
 {
 
+	@Inject
+	private ConfigCollect cc;
+
+	protected final ConfigValue getAnnotation( InjectionPoint ip )
+	{
+		return ip.getAnnotated().getAnnotation( ConfigValue.class );
+	}
+
 	protected String getProperty( InjectionPoint ip )
 	{
-		final ConfigValue ano = BeanUtils.extractAnnotation( ip.getAnnotated(), ConfigValue.class );
+		final ConfigValue ano = getAnnotation( ip );
 		final String[] vec = ano.value().split( ":" );
-		final String val = ConfigResolver.getPropertyValue( vec[0], vec.length > 1 ? vec[1] : null );
+		String val = (String) this.cc.cm().getValue( vec[0] );
+
+		if( val == null && vec.length > 1 ) {
+			val = vec[1];
+		}
 
 		return val != null ? val.trim() : null;
 	}

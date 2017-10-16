@@ -25,11 +25,13 @@ dependencyManagement {
 
 		dependency 'com.google.guava:guava:20.0'
 		dependency 'org.yaml:snakeyaml:1.18'
+		dependency 'org.ini4j:ini4j:0.5.4'
 
 		dependencySet( group: 'org.slf4j', version: versions.slf4j ) {
 			entry 'slf4j-api'
 			entry 'jul-to-slf4j'
 			entry 'jcl-over-slf4j'
+			entry 'log4j-over-slf4j'
 		}
 
 		dependencySet( group: 'ch.qos.logback', version: versions.logback ) {
