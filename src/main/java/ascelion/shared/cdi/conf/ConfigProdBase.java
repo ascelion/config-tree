@@ -15,17 +15,22 @@ public abstract class ConfigProdBase
 		return ip.getAnnotated().getAnnotation( ConfigValue.class );
 	}
 
-	protected String getProperty( InjectionPoint ip )
+	protected <T> T getProperty( InjectionPoint ip )
 	{
 		final ConfigValue ano = getAnnotation( ip );
 		final String[] vec = ano.value().split( ":" );
-		String val = (String) this.cc.cm().getValue( vec[0] );
+		Object val = this.cc.store().getValue( vec[0] );
 
 		if( val == null && vec.length > 1 ) {
 			val = vec[1];
 		}
+		if( val instanceof String ) {
+			final Expander exp = new Expander( ( (String) val ).trim(), x -> (String) this.cc.store().getValue( x ) );
 
-		return val != null ? val.trim() : null;
+			val = exp.expand();
+		}
+
+		return (T) val;
 	}
 
 }

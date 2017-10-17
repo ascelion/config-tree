@@ -9,13 +9,13 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-public class ConfigMapTest
+public class ConfigStoreTest
 {
 
 	@Test
 	public void set()
 	{
-		final ConfigMap cm = new ConfigMap();
+		final ConfigStore cm = new ConfigStore();
 
 		cm.setValue( "a.b.c.d", "abcd" );
 

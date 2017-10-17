@@ -1,0 +1,13 @@
+
+<element default="0">
+	<prop1>value1</prop1>
+	<prop2>value2</prop2>
+	<map1>
+		<prop1>value1</prop1>
+		<prop2>value2</prop2>
+	</map1>
+	<map2 prop1="value1" prop2="value2"/>
+	<map3 prop1="value1">
+		<prop2>value2</prop2>
+	</map3>
+</element>

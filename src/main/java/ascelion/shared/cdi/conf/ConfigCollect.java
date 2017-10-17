@@ -32,11 +32,11 @@ class ConfigCollect
 	@Inject
 	private ConfigExtension ext;
 
-	private final ConfigMap cm = new ConfigMap();
+	private final ConfigStore store = new ConfigStore();
 
-	ConfigMap cm()
+	ConfigStore store()
 	{
-		return this.cm;
+		return this.store;
 	}
 
 	@PostConstruct
@@ -55,15 +55,17 @@ class ConfigCollect
 				final URL u = e.nextElement();
 
 				try {
-					this.cm.add( rd.readConfiguration( u ) );
+					this.store.add( rd.readConfiguration( u ) );
 				}
 				catch( final IOException x ) {
 					throw new RuntimeException( u.toExternalForm(), x );
 				}
 			}
+
+			rdb.destroy( rd, cc );
 		} );
 
-		System.getProperties().forEach( ( k, v ) -> this.cm.setValue( (String) k, (String) v ) );
+		System.getProperties().forEach( ( k, v ) -> this.store.setValue( (String) k, (String) v ) );
 	}
 
 	private Bean<ConfigReader> getReader( String t )
@@ -72,7 +74,7 @@ class ConfigCollect
 			.filter( b -> b.getBeanClass().isAnnotationPresent( ConfigSource.Type.class ) )
 			.filter( b -> matches( b.getBeanClass().getAnnotation( ConfigSource.Type.class ), t ) )
 			.findFirst()
-			.orElseThrow( () -> new UnsatisfiedResolutionException() );
+			.orElseThrow( () -> new UnsatisfiedResolutionException( "Cannot find reader for type " + t ) );
 	}
 
 	private boolean matches( ConfigSource.Type t1, String t )

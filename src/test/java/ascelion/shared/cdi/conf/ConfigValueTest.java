@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.context.Dependent;
@@ -45,7 +46,7 @@ public class ConfigValueTest
 	}
 
 	@ConfigSource( "file1.properties" )
-	@ConfigSource( "file2.properties" )
+	@ConfigSource( "file2.conf" )
 	static class BigDecimalProd extends ConfigProdBase
 	{
 
@@ -81,7 +82,7 @@ public class ConfigValueTest
 			this.value3 = value3;
 		}
 
-		void setValues( @ConfigValue( "value4" ) String value4, @ConfigValue( "value5" ) String value5 )
+		void setValues( @ConfigValue( "section3.value4" ) String value4, @ConfigValue( "value5" ) String value5 )
 		{
 			this.value4 = value4;
 			this.value5 = value5;
@@ -134,8 +135,8 @@ public class ConfigValueTest
 	@ConfigValue( "log.categories:2,3,4,5" )
 	private Set<Integer> logCategories2;
 
-//	@ConfigValue( value = "log.mappings", unwrap = "log" )
-//	private Map<String, Object> logMappings;
+	@ConfigValue( value = "log.mappings", unwrap = "log" )
+	private Map<String, Object> logMappings;
 
 	@Test
 	public void run()

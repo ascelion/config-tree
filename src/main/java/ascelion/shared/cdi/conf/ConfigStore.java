@@ -5,18 +5,23 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 
-class ConfigMap
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+
+import org.jboss.weld.exceptions.IllegalArgumentException;
+
+public class ConfigStore
 {
 
 	private final Supplier<Map<String, Object>> prov;
 	private final Map<String, Object> root;
 
-	ConfigMap()
+	public ConfigStore()
 	{
 		this( TreeMap::new );
 	}
 
-	ConfigMap( Supplier<Map<String, Object>> prov )
+	public ConfigStore( Supplier<Map<String, Object>> prov )
 	{
 		this.prov = prov;
 		this.root = prov.get();
@@ -27,24 +32,19 @@ class ConfigMap
 		return this.root;
 	}
 
-	public void put( Map<String, Object> root )
-	{
-		this.root.putAll( root );
-	}
-
 	public void add( Map<String, Object> root )
 	{
 		merge( this.root, root );
 	}
 
-	Object getValue( String key )
+	public Object getValue( String key )
 	{
 		final String[] keys = key.split( "\\." );
 
 		return getValue( this.root, keys, 0 );
 	}
 
-	void setValue( String key, String val )
+	public void setValue( String key, String val )
 	{
 		final String[] keys = key.split( "\\." );
 
@@ -54,13 +54,26 @@ class ConfigMap
 	private void merge( Map<String, Object> m1, Map<String, Object> m2 )
 	{
 		m2.forEach( ( k, v ) -> {
-			final Object t = m1.get( k );
+			Object t = m1.get( k );
 
-			if( v instanceof Map && t instanceof Map ) {
+			if( v instanceof Map ) {
+				if( t == null ) {
+					t = this.prov.get();
+
+					m1.put( k, t );
+				}
+				else if( !( t instanceof Map ) ) {
+					throw new IllegalStateException( "property mismatch" );
+				}
+
 				merge( (Map) t, (Map) v );
 			}
-			else {
-				m1.put( k, v );
+			else if( v != null ) {
+				if( t instanceof Map ) {
+					throw new IllegalStateException( "property mismatch" );
+				}
+
+				m1.put( k, v.toString() );
 			}
 		} );
 	}
@@ -86,14 +99,21 @@ class ConfigMap
 
 	private void setValue( Map<String, Object> map, String[] keys, int depth, Object value )
 	{
+		final Object val = map.get( keys[depth] );
+
 		if( depth == keys.length - 1 ) {
+			if( val instanceof Map ) {
+				throw new IllegalArgumentException( format( "There is alread a map at path %s", asList( keys ) ) );
+			}
+
 			map.put( keys[depth], value );
 		}
 		else {
-			final Object val = map.get( keys[depth] );
-
 			if( val instanceof Map ) {
 				map = (Map) val;
+			}
+			else if( val != null ) {
+				throw new IllegalArgumentException( format( "There is alread a value at path %s", asList( keys ).subList( 0, depth + 1 ) ) );
 			}
 			else {
 				final Map<String, Object> cld = this.prov.get();

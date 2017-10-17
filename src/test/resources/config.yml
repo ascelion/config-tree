@@ -1,0 +1,13 @@
+default: 0
+map1:
+  prop1: value1
+  prop2: value2
+map2:
+  prop1: value1
+  prop2: value2
+map3:
+  prop1: value1
+  prop2: value2
+prop1: value1
+prop2: value2
+
