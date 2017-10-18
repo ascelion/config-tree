@@ -33,6 +33,7 @@ dependencies {
 	compile 'org.slf4j:slf4j-api'
 	compile 'org.yaml:snakeyaml'
 	compile 'org.ini4j:ini4j'
+	compile 'com.google.code.gson:gson'
 
 	compile 'org.apache.deltaspike.core:deltaspike-core-api'
 //	runtime 'org.apache.deltaspike.core:deltaspike-core-impl'

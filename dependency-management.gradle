@@ -26,6 +26,8 @@ dependencyManagement {
 		dependency 'com.google.guava:guava:20.0'
 		dependency 'org.yaml:snakeyaml:1.18'
 		dependency 'org.ini4j:ini4j:0.5.4'
+		dependency 'com.google.code.gson:gson:2.8.2'
+	
 		dependency 'junit:junit:4.12'
 		
 		dependencySet( group: 'org.slf4j', version: versions.slf4j ) {

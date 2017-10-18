@@ -4,6 +4,7 @@ package ascelion.shared.cdi.conf;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -52,21 +53,19 @@ public class ConfigExtension implements Extension
 		final ConfigSource a1 = t.getAnnotation( ConfigSource.class );
 		final ConfigSource.List a2 = t.getAnnotation( ConfigSource.List.class );
 
-		L.debug( "Type: {}", t.getBaseType() );
-
 		if( a1 != null ) {
-			this.sources.add( a1 );
+			addSources( t, a1 );
 		}
 		if( a2 != null ) {
-			this.sources.addAll( asList( a2.value() ) );
+			addSources( t, a2.value() );
 		}
 
 		t.getAnnotations().stream()
 			.filter( x -> x.annotationType().isAnnotationPresent( ConfigSource.List.class ) )
-			.forEach( x -> this.sources.addAll( asList( x.annotationType().getAnnotation( ConfigSource.List.class ).value() ) ) );
+			.forEach( x -> addSources( t, x.annotationType().getAnnotation( ConfigSource.List.class ).value() ) );
 		t.getAnnotations().stream()
 			.filter( x -> x.annotationType().isAnnotationPresent( ConfigSource.class ) )
-			.forEach( x -> this.sources.add( x.annotationType().getAnnotation( ConfigSource.class ) ) );
+			.forEach( x -> addSources( t, x.annotationType().getAnnotation( ConfigSource.class ) ) );
 	}
 
 	<X> void collectConfigValue( BeanManager bm, @Observes @WithAnnotations( ConfigValue.class ) ProcessAnnotatedType<X> event )
@@ -154,8 +153,18 @@ public class ConfigExtension implements Extension
 //		event.addAnnotatedType( bm.createAnnotatedType( cls ), cls.getName() );
 //	}
 
+	private void addSources( AnnotatedType<?> t, ConfigSource... sources )
+	{
+		final List<ConfigSource> all = asList( sources );
+
+		L.info( "Source: {}", t.getBaseType() );
+		L.debug( "\t{}", all );
+
+		this.sources.addAll( all );
+	}
+
 	private <A extends AnnotatedMember<? super X>, X> void logMembers( String prefix, Collection<A> members )
 	{
-		members.stream().filter( e -> e.isAnnotationPresent( Inject.class ) ).forEach( e -> L.debug( "{}: {}/{}", prefix, e, e.getBaseType() ) );
+		members.stream().filter( e -> e.isAnnotationPresent( Inject.class ) ).forEach( e -> L.debug( "\t{}: {}/{}", prefix, e, e.getBaseType() ) );
 	}
 }

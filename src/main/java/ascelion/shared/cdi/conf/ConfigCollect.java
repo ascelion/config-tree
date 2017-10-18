@@ -49,15 +49,27 @@ class ConfigCollect
 			final Bean<ConfigReader> rdb = getReader( t );
 			final CreationalContext<ConfigReader> cc = this.bm.createCreationalContext( rdb );
 			final ConfigReader rd = (ConfigReader) this.bm.getReference( rdb, ConfigReader.class, cc );
+			boolean found = false;
 
 			for( final Enumeration<URL> e = getURL( f ); e.hasMoreElements(); ) {
 				final URL u = e.nextElement();
+
+				found = true;
 
 				try {
 					this.store.add( rd.readConfiguration( u ) );
 				}
 				catch( final IOException x ) {
 					throw new RuntimeException( u.toExternalForm(), x );
+				}
+			}
+
+			if( !found ) {
+				try {
+					this.store.add( rd.readConfiguration( f ) );
+				}
+				catch( final IOException e ) {
+					throw new RuntimeException( f, e );
 				}
 			}
 
@@ -86,7 +98,7 @@ class ConfigCollect
 
 	private String getType( final ConfigSource s )
 	{
-		String t = s.type().value();
+		String t = s.type();
 
 		if( isBlank( t ) ) {
 			t = FilenameUtils.getExtension( s.value() );

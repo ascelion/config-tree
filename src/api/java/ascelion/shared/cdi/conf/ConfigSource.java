@@ -43,5 +43,5 @@ public @interface ConfigSource
 
 	int priority() default 0;
 
-	Type type() default @Type( "" );
+	String type() default "";
 }
