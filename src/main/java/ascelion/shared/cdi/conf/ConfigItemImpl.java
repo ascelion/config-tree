@@ -9,10 +9,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.lang.String.format;
+import static ascelion.shared.cdi.conf.ConfigItem.fullPath;
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableMap;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 final class ConfigItemImpl implements ConfigItem
 {
@@ -105,7 +104,7 @@ final class ConfigItemImpl implements ConfigItem
 	}
 
 	@Override
-	public <T> Map<String, T> asMap( Function<String, T> fun )
+	public <T> Map<String, T> asMap( String path, Function<String, T> fun )
 	{
 		switch( this.kind ) {
 			case ITEM:
@@ -114,7 +113,7 @@ final class ConfigItemImpl implements ConfigItem
 			case TREE:
 				final Map<String, T> m = new TreeMap<>();
 
-				fillTree( this.tree, "", m, fun );
+				fillTree( this.tree, path, m, fun );
 
 				return unmodifiableMap( m );
 
@@ -126,7 +125,7 @@ final class ConfigItemImpl implements ConfigItem
 	private <T> void fillTree( Map<String, ConfigItemImpl> tree, String prefix, Map<String, T> map, Function<String, T> fun )
 	{
 		tree.forEach( ( k, v ) -> {
-			k = isNotBlank( prefix ) ? format( "%s.%s", prefix, k ) : k;
+			k = fullPath( prefix, k );
 
 			switch( v.getKind() ) {
 				case ITEM:

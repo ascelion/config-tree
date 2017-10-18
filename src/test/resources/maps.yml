@@ -1,0 +1,14 @@
+db:
+  eclipselink:
+    logging:
+      level: FINEST
+    target-database: org.eclipse.persistence.nosql.adapters.mongo.MongoPlatform
+    nosql:
+      connection-spec: org.eclipse.persistence.nosql.adapters.mongo.MongoConnectionSpec
+      property:
+        user: ${db.user}
+        password: ${db.pass}
+        mongo:
+          db: mugs
+          host: ${db.host}
+          port: ${db.port}

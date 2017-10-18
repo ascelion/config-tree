@@ -4,6 +4,8 @@ package ascelion.shared.cdi.conf;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static ascelion.shared.cdi.conf.ConfigItem.fullPath;
+
 public class ConfigStore
 {
 
@@ -22,6 +24,33 @@ public class ConfigStore
 		finally {
 			this.root.set( "" );
 		}
+	}
+
+	public String pathOf( ConfigItem ci )
+	{
+		return pathOf( "", this.root, ci );
+	}
+
+	private String pathOf( String path, ConfigItem base, ConfigItem item )
+	{
+		if( base == item ) {
+			return path;
+		}
+		switch( base.getKind() ) {
+			case ITEM:
+				return null;
+
+			case TREE:
+				for( final ConfigItem i : base.getTree().values() ) {
+					final String x = pathOf( fullPath( path, i.getName() ), i, item );
+
+					if( x != null ) {
+						return x;
+					}
+				}
+		}
+
+		return null;
 	}
 
 	public void add( Map<String, ?> map )

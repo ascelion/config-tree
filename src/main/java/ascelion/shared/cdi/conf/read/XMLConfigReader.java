@@ -15,7 +15,7 @@ import ascelion.shared.cdi.conf.ConfigReader;
 import ascelion.shared.cdi.conf.ConfigSource;
 import ascelion.shared.cdi.conf.ConfigStore;
 
-import static java.lang.String.format;
+import static ascelion.shared.cdi.conf.ConfigItem.fullPath;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 import org.xml.sax.Attributes;
@@ -39,15 +39,15 @@ class XMLConfigReader extends ConfigStore implements ConfigReader
 			this.prefix = null;
 		}
 
-		Context( Context parent, String prefix )
+		Context( Context parent, String name )
 		{
 			this.parent = parent;
-			this.prefix = parent.prefix != null ? format( "%s.%s", parent.prefix, prefix ) : prefix;
+			this.prefix = fullPath( parent.prefix, name );
 		}
 
 		void set( String name, String value )
 		{
-			setValue( this.prefix != null ? format( "%s.%s", this.prefix, name ) : name, value );
+			setValue( fullPath( this.prefix, name ), value );
 		}
 
 		void set( String value )

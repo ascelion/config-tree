@@ -135,7 +135,7 @@ public class ConfigValueTest
 	@ConfigValue( "log.categories:2,3,4,5" )
 	private Set<Integer> logCategories2;
 
-	@ConfigValue( value = "log.mappings", unwrap = "log" )
+	@ConfigValue( value = "log.mappings", unwrap = 1 )
 	private Map<String, Integer[]> logMappings;
 
 	@Test

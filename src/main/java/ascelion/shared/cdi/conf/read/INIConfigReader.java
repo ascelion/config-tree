@@ -13,8 +13,7 @@ import ascelion.shared.cdi.conf.ConfigReader;
 import ascelion.shared.cdi.conf.ConfigSource;
 import ascelion.shared.cdi.conf.ConfigStore;
 
-import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static ascelion.shared.cdi.conf.ConfigItem.fullPath;
 
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
@@ -38,14 +37,14 @@ class INIConfigReader extends ConfigStore implements ConfigReader
 
 	private void add( String prefix, String name, Section section )
 	{
-		final String pfx = isBlank( prefix ) ? name : format( "%s.%s", prefix, name );
+		final String pfx = fullPath( prefix, name );
 
 		section.forEach( ( k, v ) -> {
 			if( ".".equals( pfx ) ) {
 				setValue( k, v );
 			}
 			else {
-				setValue( format( "%s.%s", pfx, k ), v );
+				setValue( fullPath( pfx, k ), v );
 			}
 		} );
 

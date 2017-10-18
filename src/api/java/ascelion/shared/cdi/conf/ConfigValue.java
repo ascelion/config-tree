@@ -27,10 +27,10 @@ public @interface ConfigValue
 	{
 
 		private final String value;
-		private final String unwrap;
+		private final int unwrap;
 		private final Class<? extends BiFunction> converter;
 
-		public Literal( String value, String unwrap, Class<? extends BiFunction> converter )
+		public Literal( String value, int unwrap, Class<? extends BiFunction> converter )
 		{
 			this.value = value;
 			this.unwrap = unwrap;
@@ -49,7 +49,7 @@ public @interface ConfigValue
 		}
 
 		@Override
-		public String unwrap()
+		public int unwrap()
 		{
 			return this.unwrap;
 		}
@@ -65,7 +65,7 @@ public @interface ConfigValue
 	String value();
 
 	@Nonbinding
-	String unwrap() default "";
+	int unwrap() default 0;
 
 	@Nonbinding
 	Class<? extends BiFunction> converter() default BiFunction.class;

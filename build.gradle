@@ -23,13 +23,12 @@ ascelion {
 
 dependencies {
 	apiCompile 'javax.enterprise:cdi-api'
+	apiCompile 'org.apache.commons:commons-lang3'
 
-	compile 'javax.enterprise:cdi-api'
-	compile 'javax.annotation:javax.annotation-api'
+	compile configurations.apiCompile
 
 	compile 'com.google.guava:guava'
 	compile 'commons-io:commons-io'
-	compile 'org.apache.commons:commons-lang3'
 	
 	compile 'org.slf4j:slf4j-api'
 	compile 'org.yaml:snakeyaml'

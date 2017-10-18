@@ -43,28 +43,19 @@ class ConfigProd extends ConfigProdBase
 	@ConfigValue( "" )
 	Object create( InjectionPoint ip )
 	{
-		final Type t = ip.getType();
-		final ConfigItem i = getConfig( ip );
-		final ConfigValue a = getAnnotation( ip );
-
 		L.trace( "Annotated: {}", ip.getAnnotated() );
 
-		final Object val = convert( a.converter(), t, i );
+		final ConfigValue a = getAnnotation( ip );
 
-		return val;
-	}
-
-	private Object convert( final Class<? extends BiFunction> c, Type t, ConfigItem i )
-	{
-		final Set<Bean<?>> beans = this.bm.getBeans( c );
+		final Set<Bean<?>> beans = this.bm.getBeans( a.converter() );
 
 		if( beans.size() > 0 ) {
 			final Bean<BiFunction> bean = (Bean<BiFunction>) this.bm.resolve( beans );
 			final CreationalContext<BiFunction> cc = this.bm.createCreationalContext( bean );
-			final BiFunction cv = (BiFunction) this.bm.getReference( bean, c, cc );
+			final BiFunction cv = (BiFunction) this.bm.getReference( bean, a.converter(), cc );
 
 			try {
-				return convert( cv, t, i );
+				return convert( ip, cv );
 			}
 			finally {
 				bean.destroy( cv, cc );
@@ -72,7 +63,7 @@ class ConfigProd extends ConfigProdBase
 		}
 		else {
 			try {
-				return convert( c.newInstance(), t, i );
+				return convert( ip, a.converter().newInstance() );
 			}
 			catch( InstantiationException | IllegalAccessException e ) {
 				throw new RuntimeException( e );
@@ -80,8 +71,11 @@ class ConfigProd extends ConfigProdBase
 		}
 	}
 
-	private <T> T convert( BiFunction<Class<?>, String, T> f, Type t, ConfigItem i )
+	private <T> T convert( InjectionPoint ip, BiFunction<Class<?>, String, T> f )
 	{
+		final Type t = ip.getType();
+		final ConfigItem i = getConfig( ip );
+		final ConfigValue a = getAnnotation( ip );
 		final String s = i != null ? i.getItem() : null;
 
 		if( t instanceof Class ) {
@@ -116,7 +110,20 @@ class ConfigProd extends ConfigProdBase
 					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
 				}
 
-				return (T) i.asMap( x -> convertTo( f, o1, x ) );
+				int u = a.unwrap();
+				String b = this.cc.store().pathOf( i );
+
+				while( u-- > 0 ) {
+					final int x = b.indexOf( '.' );
+
+					if( x < 0 ) {
+						break;
+					}
+
+					b = b.substring( x + 1 );
+				}
+
+				return (T) i.asMap( b, x -> convertTo( f, o1, x ) );
 			}
 
 			throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );

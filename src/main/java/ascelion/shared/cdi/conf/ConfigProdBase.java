@@ -10,7 +10,7 @@ public abstract class ConfigProdBase
 {
 
 	@Inject
-	private ConfigCollect cc;
+	protected ConfigCollect cc;
 
 	protected final ConfigValue getAnnotation( InjectionPoint ip )
 	{
