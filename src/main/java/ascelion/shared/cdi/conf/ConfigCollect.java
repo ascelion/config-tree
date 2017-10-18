@@ -42,7 +42,6 @@ class ConfigCollect
 	@PostConstruct
 	private void postConstruct()
 	{
-
 		this.ext.sources().forEach( s -> {
 			final String f = s.value();
 			final String t = getType( s );
@@ -65,7 +64,9 @@ class ConfigCollect
 			rdb.destroy( rd, cc );
 		} );
 
-		System.getProperties().forEach( ( k, v ) -> this.store.setValue( (String) k, (String) v ) );
+		System.getProperties().forEach( ( k, v ) -> {
+			this.store.setValue( (String) k, (String) v );
+		} );
 	}
 
 	private Bean<ConfigReader> getReader( String t )

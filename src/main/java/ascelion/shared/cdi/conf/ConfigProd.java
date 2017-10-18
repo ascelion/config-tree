@@ -1,11 +1,12 @@
 
 package ascelion.shared.cdi.conf;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -13,12 +14,16 @@ import java.util.stream.Stream;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
+
+import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.common.primitives.Primitives;
 
@@ -32,51 +37,29 @@ class ConfigProd extends ConfigProdBase
 
 	@Produces
 	@Dependent
+	@Default
 	@ConfigValue( "" )
 	Object create( InjectionPoint ip )
 	{
-		Object val = getProperty( ip );
-		Type t = ip.getType();
-		boolean p = false;
-
-		if( t instanceof Class && ( (Class<?>) t ).isPrimitive() ) {
-			t = Primitives.wrap( (Class<?>) t );
-			p = true;
-		}
-		if( val == null && p ) {
-			val = "0";
-		}
-		if( val == null ) {
-			return null;
-		}
-
-		final ConfigValue ano = getAnnotation( ip );
-
-		val = convert( ano.converter(), t, val );
-
-		if( val instanceof Map && ano.unwrap().length() > 0 ) {
-			final Map<String, Object> o = (Map<String, Object>) val;
-			final Map<String, Object> m = new TreeMap<>();
-
-			o.forEach( ( k, v ) -> m.put( k.substring( ano.unwrap().length() + 1 ), v ) );
-
-			val = m;
-		}
+		final Type t = ip.getType();
+		final ConfigItem i = getConfig( ip );
+		final ConfigValue a = getAnnotation( ip );
+		final Object val = convert( a.converter(), t, i );
 
 		return val;
 	}
 
-	private Object convert( final Class<? extends BiFunction> cls, Type t, Object val )
+	private Object convert( final Class<? extends BiFunction> c, Type t, ConfigItem i )
 	{
-		final Set<Bean<?>> beans = this.bm.getBeans( cls );
+		final Set<Bean<?>> beans = this.bm.getBeans( c );
 
 		if( beans.size() > 0 ) {
 			final Bean<BiFunction> bean = (Bean<BiFunction>) this.bm.resolve( beans );
 			final CreationalContext<BiFunction> cc = this.bm.createCreationalContext( bean );
-			final BiFunction cv = (BiFunction) this.bm.getReference( bean, cls, cc );
+			final BiFunction cv = (BiFunction) this.bm.getReference( bean, c, cc );
 
 			try {
-				return convert( cv, t, val );
+				return convert( cv, t, i );
 			}
 			finally {
 				bean.destroy( cv, cc );
@@ -84,7 +67,7 @@ class ConfigProd extends ConfigProdBase
 		}
 		else {
 			try {
-				return convert( cls.newInstance(), t, val );
+				return convert( c.newInstance(), t, i );
 			}
 			catch( InstantiationException | IllegalAccessException e ) {
 				throw new RuntimeException( e );
@@ -92,27 +75,70 @@ class ConfigProd extends ConfigProdBase
 		}
 	}
 
-	private <T> T convert( BiFunction<Class<?>, String, T> cv, Type type, Object val )
+	private <T> T convert( BiFunction<Class<?>, String, T> f, Type t, ConfigItem i )
 	{
-		if( type instanceof Class ) {
-			return cv.apply( (Class<?>) type, (String) val );
+		final String s = i != null ? i.getItem() : null;
+
+		if( t instanceof Class ) {
+			return convertTo( f, t, s );
 		}
 		else {
-			final ParameterizedType p = (ParameterizedType) type;
-			final Class<?> c = (Class<?>) p.getActualTypeArguments()[0];
+			final ParameterizedType p = (ParameterizedType) t;
+			final Class<?> o0 = (Class<?>) p.getActualTypeArguments()[0];
 
+			if( Collection.class.isAssignableFrom( (Class) p.getRawType() ) ) {
+				if( p.getRawType() == Set.class ) {
+					return (T) Stream.of( expandValues( s ) ).map( x -> f.apply( o0, x ) ).collect( Collectors.toSet() );
+				}
+				else {
+					return (T) Stream.of( expandValues( s ) ).map( x -> f.apply( o0, x ) ).collect( Collectors.toList() );
+				}
+			}
 			if( p.getRawType() == Map.class ) {
-				return (T) val;
+				if( o0 != String.class ) {
+					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
+				}
+
+				final Type t1 = p.getActualTypeArguments()[1];
+
+				if( !( t1 instanceof Class ) ) {
+					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
+				}
+
+				final Class<?> o1 = (Class<?>) t1;
+
+				return (T) i.asMap( x -> convertTo( f, o1, x ) );
 			}
 
-			final String[] v = ( (String) val ).split( "\\s*[,;]\\s*" );
+			throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
+		}
+	}
 
-			if( p.getRawType() == Set.class ) {
-				return (T) Stream.of( v ).map( x -> cv.apply( c, x ) ).collect( Collectors.toSet() );
+	private <T> T convertTo( BiFunction<Class<?>, String, T> f, Type t, String v )
+	{
+		Class<?> c = (Class<?>) t;
+
+		if( c.isArray() ) {
+			final Class<?> o = c.getComponentType();
+
+			return (T) Stream.of( expandValues( v ) )
+				.map( x -> f.apply( o, x ) )
+				.collect( Collectors.toList() )
+				.toArray( (Object[]) Array.newInstance( o, 0 ) );
+		}
+		else {
+			if( c.isPrimitive() ) {
+				c = Primitives.wrap( c );
+
+				if( isBlank( v ) ) {
+					v = "0";
+				}
 			}
-			else {
-				return (T) Stream.of( v ).map( x -> cv.apply( c, x ) ).collect( Collectors.toList() );
+			if( isBlank( v ) ) {
+				return null;
 			}
+
+			return f.apply( c, expandValue( v ) );
 		}
 	}
 

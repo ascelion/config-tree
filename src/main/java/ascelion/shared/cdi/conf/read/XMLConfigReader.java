@@ -1,5 +1,5 @@
 
-package ascelion.shared.cdi.conf;
+package ascelion.shared.cdi.conf.read;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +9,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import ascelion.shared.cdi.conf.ConfigItem;
+import ascelion.shared.cdi.conf.ConfigReader;
+import ascelion.shared.cdi.conf.ConfigSource;
+import ascelion.shared.cdi.conf.ConfigStore;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
@@ -90,7 +95,7 @@ class XMLConfigReader extends ConfigStore implements ConfigReader
 	}
 
 	@Override
-	public Map<String, Object> readConfiguration( InputStream source ) throws IOException
+	public Map<String, ? extends ConfigItem> readConfiguration( InputStream source ) throws IOException
 	{
 		try {
 			final SAXParserFactory f = SAXParserFactory.newInstance();

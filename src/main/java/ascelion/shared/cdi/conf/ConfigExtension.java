@@ -15,14 +15,17 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.inject.spi.ProcessBean;
+import javax.enterprise.inject.spi.ProcessInjectionPoint;
 import javax.enterprise.inject.spi.ProcessProducer;
 import javax.enterprise.inject.spi.WithAnnotations;
 import javax.inject.Inject;
 
 import static java.util.Arrays.asList;
 
+import com.google.common.primitives.Primitives;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +43,7 @@ public class ConfigExtension implements Extension
 	} );
 
 	private final Set<Type> types = new HashSet<>();
+	private final Set<Type> producedTypes = new HashSet<>();
 
 	private Bean<ConfigProd> producer;
 
@@ -70,8 +74,6 @@ public class ConfigExtension implements Extension
 	{
 		final ConfigType<X> type = new ConfigType<>( event.getAnnotatedType() );
 
-		this.types.addAll( type.types() );
-
 		if( type.modified() ) {
 			L.info( "Found: {}", type.getBaseType().getTypeName() );
 
@@ -90,30 +92,60 @@ public class ConfigExtension implements Extension
 		addAnnotatedType( bm, event, ConfigProd.class );
 	}
 
+	<T, X> void processInjectionPoint( @Observes ProcessInjectionPoint<T, X> event )
+	{
+		final InjectionPoint p = event.getInjectionPoint();
+
+		if( p.getAnnotated().isAnnotationPresent( ConfigValue.class ) ) {
+			L.info( "Config type: {} from {}", p.getType(), p );
+
+			this.types.add( wrap( p.getType() ) );
+		}
+	}
+
 	void defaultProducer( @Observes ProcessBean<ConfigProd> event )
 	{
+		L.info( "Default producer: {}", event.getBean() );
+
 		this.producer = event.getBean();
 	}
 
 	<T, X> void processProducer( @Observes ProcessProducer<T, X> event )
 	{
-		if( event.getAnnotatedMember().getAnnotation( ConfigValue.class ) != null ) {
-			this.types.remove( event.getAnnotatedMember().getBaseType() );
+		final AnnotatedMember<T> m = event.getAnnotatedMember();
+
+		if( m.isAnnotationPresent( ConfigValue.class ) && ( m.getBaseType() != Object.class ) ) {
+			final Type t = wrap( m.getBaseType() );
+
+			L.info( "Remove type: {} from {}", t, m );
+
+			this.producedTypes.add( t );
 		}
 	}
 
 	void afterBeanDiscovery( BeanManager bm, @Observes AfterBeanDiscovery event )
 	{
-		if( this.types.size() > 0 ) {
-			L.info( "Producer: {}", this.types );
+		this.types.removeAll( this.producedTypes );
 
-			event.addBean( new ConfigBean<>( this.producer, this.types ) );
+		if( this.types.size() > 0 ) {
+			L.info( "Add producer for types {}", this.types );
+
+			event.addBean( new ConfigProdBean<>( this.producer, this.types ) );
 		}
 	}
 
 	Set<ConfigSource> sources()
 	{
 		return this.sources;
+	}
+
+	Type wrap( Type t )
+	{
+		if( t instanceof Class && ( (Class<?>) t ).isPrimitive() ) {
+			t = Primitives.wrap( (Class<?>) t );
+		}
+
+		return t;
 	}
 
 	private void addAnnotatedType( BeanManager bm, AfterTypeDiscovery event, Class<?> cls )
@@ -123,6 +155,6 @@ public class ConfigExtension implements Extension
 
 	private <A extends AnnotatedMember<? super X>, X> void logMembers( String prefix, Collection<A> members )
 	{
-		members.stream().filter( e -> e.isAnnotationPresent( Inject.class ) ).forEach( e -> L.debug( "{}: {}", prefix, e ) );
+		members.stream().filter( e -> e.isAnnotationPresent( Inject.class ) ).forEach( e -> L.debug( "{}: {}/{}", prefix, e, e.getBaseType() ) );
 	}
 }

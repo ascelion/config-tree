@@ -9,12 +9,12 @@ import java.util.Map;
 public interface ConfigReader
 {
 
-	default Map<String, Object> readConfiguration( URL source ) throws IOException
+	default Map<String, ? extends ConfigItem> readConfiguration( URL source ) throws IOException
 	{
 		try( InputStream is = source.openStream() ) {
 			return readConfiguration( is );
 		}
 	}
 
-	Map<String, Object> readConfiguration( InputStream source ) throws IOException;
+	Map<String, ? extends ConfigItem> readConfiguration( InputStream source ) throws IOException;
 }

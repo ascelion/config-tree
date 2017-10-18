@@ -4,24 +4,30 @@ package ascelion.shared.cdi.conf;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.PassivationCapable;
 
 @Typed
-final class ConfigBean<T> implements Bean<T>, PassivationCapable
+final class ConfigProdBean<T> implements Bean<T>, PassivationCapable
 {
 
-	final Bean<T> delegate;
-	final Set<Type> types;
+	private final Bean<T> delegate;
+	private final Set<Type> types;
+	private final Set<Annotation> qualifiers;
 
-	ConfigBean( Bean<T> producer, Set<Type> types )
+	ConfigProdBean( Bean<T> producer, Set<Type> types )
 	{
 		this.delegate = producer;
 		this.types = types;
+		this.qualifiers = this.delegate.getQualifiers().stream()
+			.filter( a -> a.annotationType() != Default.class )
+			.collect( Collectors.toSet() );
 	}
 
 	@Override
@@ -33,7 +39,7 @@ final class ConfigBean<T> implements Bean<T>, PassivationCapable
 	@Override
 	public Set<Annotation> getQualifiers()
 	{
-		return this.delegate.getQualifiers();
+		return this.qualifiers;
 	}
 
 	@Override

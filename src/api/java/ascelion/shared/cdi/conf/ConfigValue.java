@@ -10,15 +10,14 @@ import javax.enterprise.util.AnnotationLiteral;
 import javax.enterprise.util.Nonbinding;
 import javax.inject.Qualifier;
 
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
-import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Retention( RUNTIME )
-@Target( { PARAMETER, FIELD, METHOD, CONSTRUCTOR, ANNOTATION_TYPE } )
+@Target( { METHOD, FIELD, PARAMETER, TYPE } )
 @Qualifier
 @Documented
 public @interface ConfigValue

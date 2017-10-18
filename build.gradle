@@ -6,11 +6,15 @@ buildscript {
 
 apply plugin: 'ascelion'
 apply plugin: 'java'
+apply from: 'composite.gradle'
 
 group = 'ascelion.shared'
 
 ascelion {
 	java {
+		api {
+			artifactId = "${project.name}-api"
+		}
 		main {
 			dependsOn api
 		}
@@ -46,4 +50,13 @@ dependencies {
 
 	testRuntime 'javax.el:javax.el-api'
 	testRuntime 'org.jboss.weld.se:weld-se-core'
+}
+
+task( cleanLog, type: Delete ) {
+	delete '**/*.log'
+	outputs.upToDateWhen { false }
+}
+
+test {
+	dependsOn cleanLog
 }

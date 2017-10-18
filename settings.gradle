@@ -1,2 +1,8 @@
 
 rootProject.name = 'cdi-conf'
+
+//includeBuild( '../cdi-unit-ext' ) {
+//	dependencySubstitution {
+//		substitute module( 'ascelion.shared:cdi-unit-ext' ) with project(':ext')
+//	}
+//}

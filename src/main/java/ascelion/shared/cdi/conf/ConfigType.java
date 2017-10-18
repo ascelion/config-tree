@@ -1,10 +1,7 @@
 
 package ascelion.shared.cdi.conf;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.BiFunction;
 
 import javax.enterprise.inject.Produces;
@@ -15,13 +12,9 @@ import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.inject.Inject;
 
-import com.google.common.primitives.Primitives;
-
 @Typed
 final class ConfigType<X> extends AnnotatedTypeW<X>
 {
-
-	private final Set<Type> types = new HashSet<>();
 
 	private boolean modified;
 
@@ -40,7 +33,6 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 			.filter( e -> !e.isAnnotationPresent( Produces.class ) )
 			.filter( e -> e.isAnnotationPresent( ConfigValue.class ) )
 			.forEach( e -> {
-				collectType( e );
 				addConv( e );
 				addInject( e );
 			} );
@@ -53,7 +45,6 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 			.filter( e -> e.getParameters().stream().anyMatch( p -> p.isAnnotationPresent( ConfigValue.class ) ) )
 			.forEach( e -> {
 				e.getParameters().forEach( p -> {
-					collectType( p );
 					addConv( p );
 				} );
 				addInject( e );
@@ -81,24 +72,8 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 		}
 	}
 
-	private void collectType( Annotated m )
-	{
-		Type t = m.getBaseType();
-
-		if( t instanceof Class ) {
-			t = Primitives.wrap( (Class<?>) t );
-		}
-
-		this.types.add( t );
-	}
-
 	boolean modified()
 	{
 		return this.modified;
-	}
-
-	Collection<? extends Type> types()
-	{
-		return this.types;
 	}
 }

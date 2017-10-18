@@ -5,6 +5,7 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.util.Nonbinding;
 import javax.inject.Qualifier;
 
@@ -20,6 +21,7 @@ public @interface ConfigSource
 	@Retention( RUNTIME )
 	@Target( TYPE )
 	@Qualifier
+	@ApplicationScoped
 	@interface Type
 	{
 

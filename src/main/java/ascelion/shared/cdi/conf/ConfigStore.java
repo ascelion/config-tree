@@ -3,127 +3,75 @@ package ascelion.shared.cdi.conf;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.function.Supplier;
-
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-
-import org.jboss.weld.exceptions.IllegalArgumentException;
 
 public class ConfigStore
 {
 
-	private final Supplier<Map<String, Object>> prov;
-	private final Map<String, Object> root;
+	private final ConfigItemImpl root = new ConfigItemImpl( "" );
 
 	public ConfigStore()
 	{
-		this( TreeMap::new );
+		this.root.set( new TreeMap<>() );
 	}
 
-	public ConfigStore( Supplier<Map<String, Object>> prov )
+	public Map<String, ? extends ConfigItem> get()
 	{
-		this.prov = prov;
-		this.root = prov.get();
+		return this.root.getTree();
 	}
 
-	public Map<String, Object> get()
+	public void add( Map<String, ?> map )
 	{
-		return this.root;
+		this.root.add( ConfigItemImpl.remap( map ) );
 	}
 
-	public void add( Map<String, Object> root )
+	public void setValue( String key, Object val )
 	{
-		merge( this.root, root );
+		final String[] keys = key.split( "\\." );
+
+		setValue( this.root, keys, 0, ConfigItemImpl.toItem( "", val ) );
 	}
 
-	public Object getValue( String key )
+	public ConfigItem getValue( String key )
 	{
 		final String[] keys = key.split( "\\." );
 
 		return getValue( this.root, keys, 0 );
 	}
 
-	public void setValue( String key, String val )
-	{
-		final String[] keys = key.split( "\\." );
+//	void put( Map<String, ? extends ConfigItem> map )
+//	{
+//		this.root.set( map );
+//	}
 
-		setValue( this.root, keys, 0, val );
+	static private void setValue( ConfigItemImpl root, String[] keys, int depth, ConfigItemImpl ci )
+	{
+		final ConfigItemImpl val = root.tree().computeIfAbsent( keys[depth], ConfigItemImpl::new );
+
+		if( depth == keys.length - 1 ) {
+			val.set( ci );
+		}
+		else {
+			setValue( val, keys, depth + 1, ci );
+		}
 	}
 
-	private void merge( Map<String, Object> m1, Map<String, Object> m2 )
+	static private ConfigItemImpl getValue( ConfigItemImpl root, String[] keys, int depth )
 	{
-		m2.forEach( ( k, v ) -> {
-			Object t = m1.get( k );
+		final Map<String, ConfigItemImpl> map = root.getTree();
 
-			if( v instanceof Map ) {
-				if( t == null ) {
-					t = this.prov.get();
+		if( map == null ) {
+			return null;
+		}
 
-					m1.put( k, t );
-				}
-				else if( !( t instanceof Map ) ) {
-					throw new IllegalStateException( "property mismatch" );
-				}
-
-				merge( (Map) t, (Map) v );
-			}
-			else if( v != null ) {
-				if( t instanceof Map ) {
-					throw new IllegalStateException( "property mismatch" );
-				}
-
-				m1.put( k, v.toString() );
-			}
-		} );
-	}
-
-	private Object getValue( Map<String, Object> map, String[] keys, int depth )
-	{
-		final Object val = map.get( keys[depth] );
+		final ConfigItemImpl val = map.get( keys[depth] );
 
 		if( val == null ) {
 			return null;
 		}
-
 		if( depth == keys.length - 1 ) {
 			return val;
 		}
-		if( val instanceof Map ) {
-			return getValue( (Map<String, Object>) val, keys, depth + 1 );
-		}
-		else {
-			return null;
-		}
-	}
 
-	private void setValue( Map<String, Object> map, String[] keys, int depth, Object value )
-	{
-		final Object val = map.get( keys[depth] );
-
-		if( depth == keys.length - 1 ) {
-			if( val instanceof Map ) {
-				throw new IllegalArgumentException( format( "There is alread a map at path %s", asList( keys ) ) );
-			}
-
-			map.put( keys[depth], value );
-		}
-		else {
-			if( val instanceof Map ) {
-				map = (Map) val;
-			}
-			else if( val != null ) {
-				throw new IllegalArgumentException( format( "There is alread a value at path %s", asList( keys ).subList( 0, depth + 1 ) ) );
-			}
-			else {
-				final Map<String, Object> cld = this.prov.get();
-
-				map.put( keys[depth], cld );
-
-				map = cld;
-			}
-
-			setValue( map, keys, depth + 1, value );
-		}
+		return getValue( val, keys, depth + 1 );
 	}
 }

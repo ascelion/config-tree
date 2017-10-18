@@ -8,12 +8,8 @@ import java.util.function.UnaryOperator;
 
 import static java.lang.String.format;
 
-import org.jboss.weld.exceptions.IllegalArgumentException;
-
 final class Expander
 {
-
-	static private final Expander NULL = new Expander( null, x -> x );
 
 	static class Item
 	{
@@ -73,7 +69,7 @@ final class Expander
 	{
 		this.parent = parent;
 		this.prop = prop;
-		this.value = prop.apply( value );
+		this.value = value;
 
 		if( this.value != null ) {
 			int s = 0;
@@ -114,13 +110,14 @@ final class Expander
 		int o = 0;
 
 		for( final Item i : this.items ) {
-			final Expander x = new Expander( this, i.v, this.prop );
+			final String s = this.prop.apply( i.v );
+			final Expander x = new Expander( this, s, this.prop );
 			final String n = x.expand();
 
 			if( n != null ) {
 				b.replace( o + i.s, o + i.e, n );
 
-				o = n.length() - i.e + i.s;
+				o += n.length() - ( i.e - i.s );
 			}
 		}
 

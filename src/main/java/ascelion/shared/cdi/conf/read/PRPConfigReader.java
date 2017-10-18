@@ -1,5 +1,5 @@
 
-package ascelion.shared.cdi.conf;
+package ascelion.shared.cdi.conf.read;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,13 +8,18 @@ import java.util.Properties;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import ascelion.shared.cdi.conf.ConfigItem;
+import ascelion.shared.cdi.conf.ConfigReader;
+import ascelion.shared.cdi.conf.ConfigSource;
+import ascelion.shared.cdi.conf.ConfigStore;
+
 @ConfigSource.Type( value = "properties", types = "conf" )
 @ApplicationScoped
 class PRPConfigReader extends ConfigStore implements ConfigReader
 {
 
 	@Override
-	public Map<String, Object> readConfiguration( InputStream is ) throws IOException
+	public Map<String, ? extends ConfigItem> readConfiguration( InputStream is ) throws IOException
 	{
 		final Properties prop = new Properties();
 
