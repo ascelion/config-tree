@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.Bean;
@@ -26,24 +25,30 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.common.primitives.Primitives;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Typed( ConfigProd.class )
 class ConfigProd extends ConfigProdBase
 {
 
+	static private final Logger L = LoggerFactory.getLogger( ConfigProd.class );
+
 	@Inject
 	private BeanManager bm;
 
 	@Produces
 	@Dependent
-	@Default
 	@ConfigValue( "" )
 	Object create( InjectionPoint ip )
 	{
 		final Type t = ip.getType();
 		final ConfigItem i = getConfig( ip );
 		final ConfigValue a = getAnnotation( ip );
+
+		L.trace( "Annotated: {}", ip.getAnnotated() );
+
 		final Object val = convert( a.converter(), t, i );
 
 		return val;
@@ -106,6 +111,10 @@ class ConfigProd extends ConfigProdBase
 				}
 
 				final Class<?> o1 = (Class<?>) t1;
+
+				if( o1 == Object.class ) {
+					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
+				}
 
 				return (T) i.asMap( x -> convertTo( f, o1, x ) );
 			}

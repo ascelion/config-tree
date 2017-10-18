@@ -16,18 +16,16 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
 
 import org.jglue.cdiunit.AdditionalClasses;
-import org.jglue.cdiunit.AdditionalClasspaths;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
 @AdditionalClasses( {
-	GenericTest.IntBean.class,
-	GenericTest.StringBean.class,
+	GenericTest.IBean.class,
+	GenericTest.LBean.class,
+	GenericTest.SBean.class,
 } )
-@AdditionalClasspaths( {
-	ConfigExtension.class,
-} )
+@UseConfigExtension
 public class GenericTest
 {
 
@@ -41,7 +39,7 @@ public class GenericTest
 	static class BaseBean<T>
 	{
 
-		final T value0;
+		T value0;
 
 		BaseBean( T value0 )
 		{
@@ -68,32 +66,50 @@ public class GenericTest
 		T[] valuev;
 	}
 
-	static class IntBean extends BaseBean<Integer>
-	{
-
-		IntBean( @ConfigValue( "prop0:-1" ) Integer value0 )
-		{
-			super( value0 );
-		}
-	}
-
-	static class StringBean extends BaseBean<String>
+	static class IBean extends BaseBean<Integer>
 	{
 
 		@ConfigValue( "prop1" )
-		int intValue1;
+		long xValue1;
 
-		StringBean( @ConfigValue( "prop0:-2" ) String value0 )
+		IBean( @ConfigValue( "prop0:-2" ) int value0 )
+		{
+			super( value0 );
+		}
+	}
+
+	static class LBean extends BaseBean<Long>
+	{
+
+		@ConfigValue( "prop1" )
+		String xValue1;
+
+		LBean( @ConfigValue( "prop0:-4" ) long value0 )
+		{
+			super( value0 );
+		}
+	}
+
+	static class SBean extends BaseBean<String>
+	{
+
+		@ConfigValue( "prop1" )
+		int xValue1;
+
+		SBean( @ConfigValue( "prop0:-6" ) String value0 )
 		{
 			super( value0 );
 		}
 	}
 
 	@Inject
-	private IntBean iBean;
+	private IBean iBean;
 
 	@Inject
-	private StringBean sBean;
+	private LBean lBean;
+
+	@Inject
+	private SBean sBean;
 
 	@ConfigValue( "props" )
 	private Integer[] nValues;
@@ -111,19 +127,27 @@ public class GenericTest
 	public void run()
 	{
 		assertThat( this.iBean, is( notNullValue() ) );
-		assertThat( this.sBean, is( notNullValue() ) );
-
-		assertThat( this.iBean.value0, is( -1 ) );
+		assertThat( this.iBean.value0, is( -2 ) );
 		assertThat( this.iBean.value1, is( 10 ) );
 		assertThat( this.iBean.value2, is( 20 ) );
 		assertThat( this.iBean.valuev, is( array( equalTo( 10 ), equalTo( 20 ), equalTo( 30 ) ) ) );
+		assertThat( this.iBean.xValue1, is( 10L ) );
 
-		assertThat( this.sBean.value0, is( "-2" ) );
-		assertThat( this.sBean.intValue1, is( 10 ) );
+		assertThat( this.lBean, is( notNullValue() ) );
+		assertThat( this.lBean.value0, is( -4L ) );
+		assertThat( this.lBean.value1, is( 10L ) );
+		assertThat( this.lBean.value2, is( 20L ) );
+		assertThat( this.lBean.valuev, is( array( equalTo( 10L ), equalTo( 20L ), equalTo( 30L ) ) ) );
+		assertThat( this.lBean.xValue1, is( "10" ) );
+
+		assertThat( this.sBean, is( notNullValue() ) );
+//		assertThat( this.sBean.value0, is( "-6" ) );
+		assertThat( this.sBean.xValue1, is( 10 ) );
 		assertThat( this.sBean.value1, is( "10" ) );
 		assertThat( this.sBean.value1, is( "10" ) );
 		assertThat( this.sBean.value2, is( "20" ) );
 		assertThat( this.sBean.valuev, is( array( equalTo( "10" ), equalTo( "20" ), equalTo( "30" ) ) ) );
+		assertThat( this.sBean.xValue1, is( 10 ) );
 
 		assertThat( this.mnValues, hasEntry( "props", new Integer[] { 10, 20, 30 } ) );
 		assertThat( this.msValues, hasEntry( "props", new String[] { "10", "20", "30" } ) );

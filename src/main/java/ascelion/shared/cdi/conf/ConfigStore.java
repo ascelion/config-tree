@@ -16,7 +16,12 @@ public class ConfigStore
 
 	public Map<String, ? extends ConfigItem> get()
 	{
-		return this.root.getTree();
+		try {
+			return this.root.getTree();
+		}
+		finally {
+			this.root.set( "" );
+		}
 	}
 
 	public void add( Map<String, ?> map )

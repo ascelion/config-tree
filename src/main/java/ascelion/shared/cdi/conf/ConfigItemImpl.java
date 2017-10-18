@@ -1,11 +1,13 @@
 
 package ascelion.shared.cdi.conf;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
@@ -37,6 +39,20 @@ final class ConfigItemImpl implements ConfigItem
 			return ci.set( (ConfigItem) value );
 		}
 		if( value != null ) {
+			if( value instanceof Collection ) {
+				final Collection<?> c = (Collection<?>) value;
+
+				return ci.set( c.stream().map( Object::toString ).collect( Collectors.joining( "," ) ) );
+			}
+			if( value instanceof Map ) {
+				return ci.set( remap( (Map<String, ?>) value ) );
+			}
+			if( value instanceof Object[] ) {
+				final Object[] v = (Object[]) value;
+
+				return ci.set( Stream.of( v ).map( Object::toString ).collect( Collectors.joining( "," ) ) );
+			}
+
 			return ci.set( value.toString() );
 		}
 

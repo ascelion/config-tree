@@ -40,7 +40,7 @@ public abstract class ConfigProdBase
 		ConfigItem ci = this.cc.store().getValue( vec[0] );
 
 		if( ci == null && vec.length > 1 ) {
-			ci = vec[1] != null ? new ConfigItemImpl( vec[1] ) : null;
+			ci = vec[1] != null ? new ConfigItemImpl( "" ).set( vec[1] ) : null;
 		}
 		if( ci == null ) {
 			return null;

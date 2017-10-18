@@ -9,7 +9,6 @@ import java.util.TreeSet;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AfterTypeDiscovery;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
@@ -87,10 +86,10 @@ public class ConfigExtension implements Extension
 		}
 	}
 
-	void afterTypeDiscovery( BeanManager bm, @Observes AfterTypeDiscovery event )
-	{
-		addAnnotatedType( bm, event, ConfigProd.class );
-	}
+//	void afterTypeDiscovery( BeanManager bm, @Observes AfterTypeDiscovery event )
+//	{
+//		addAnnotatedType( bm, event, ConfigProd.class );
+//	}
 
 	<T, X> void processInjectionPoint( @Observes ProcessInjectionPoint<T, X> event )
 	{
@@ -105,9 +104,11 @@ public class ConfigExtension implements Extension
 
 	void defaultProducer( @Observes ProcessBean<ConfigProd> event )
 	{
-		L.info( "Default producer: {}", event.getBean() );
+		if( event.getAnnotated() instanceof AnnotatedMember ) {
+			L.info( "Default producer: {}", event.getBean() );
 
-		this.producer = event.getBean();
+			this.producer = event.getBean();
+		}
 	}
 
 	<T, X> void processProducer( @Observes ProcessProducer<T, X> event )
@@ -148,10 +149,10 @@ public class ConfigExtension implements Extension
 		return t;
 	}
 
-	private void addAnnotatedType( BeanManager bm, AfterTypeDiscovery event, Class<?> cls )
-	{
-		event.addAnnotatedType( bm.createAnnotatedType( cls ), cls.getName() );
-	}
+//	private void addAnnotatedType( BeanManager bm, AfterTypeDiscovery event, Class<?> cls )
+//	{
+//		event.addAnnotatedType( bm.createAnnotatedType( cls ), cls.getName() );
+//	}
 
 	private <A extends AnnotatedMember<? super X>, X> void logMembers( String prefix, Collection<A> members )
 	{
