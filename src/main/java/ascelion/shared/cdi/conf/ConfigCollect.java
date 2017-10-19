@@ -5,12 +5,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.UnsatisfiedResolutionException;
+import javax.enterprise.inject.Vetoed;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -20,11 +22,71 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.enumeration;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 class ConfigCollect
 {
+
+	@Vetoed
+	static class ConfigItemTA extends TypeAdapter<ConfigItem>
+	{
+
+		private final Gson gson;
+
+		public ConfigItemTA( Gson gson )
+		{
+			this.gson = gson;
+		}
+
+		@Override
+		public void write( JsonWriter out, ConfigItem value ) throws IOException
+		{
+			switch( value.getKind() ) {
+				case ITEM:
+					out.value( value.getItem() );
+				break;
+
+				case TREE:
+					this.gson.toJson( value.getTree(), Map.class, out );
+				break;
+
+				default:
+			}
+		}
+
+		@Override
+		public ConfigItem read( JsonReader in ) throws IOException
+		{
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	@Vetoed
+	static class ConfigItemTAF implements TypeAdapterFactory
+	{
+
+		@Override
+		public <T> TypeAdapter<T> create( Gson gson, TypeToken<T> type )
+		{
+			if( ConfigItem.class.isAssignableFrom( type.getRawType() ) ) {
+				return (TypeAdapter<T>) new ConfigItemTA( gson );
+			}
+
+			return null;
+		}
+	}
+
+	static private final Logger L = LoggerFactory.getLogger( ConfigCollect.class );
 
 	@Inject
 	private BeanManager bm;
@@ -46,31 +108,20 @@ class ConfigCollect
 			final String f = s.value();
 			final String t = getType( s );
 
+			L.trace( "Source: type: {}, value: {}", t, f );
+
 			final Bean<ConfigReader> rdb = getReader( t );
 			final CreationalContext<ConfigReader> cc = this.bm.createCreationalContext( rdb );
 			final ConfigReader rd = (ConfigReader) this.bm.getReference( rdb, ConfigReader.class, cc );
-			boolean found = false;
 
-			for( final Enumeration<URL> e = getURL( f ); e.hasMoreElements(); ) {
-				final URL u = e.nextElement();
-
-				found = true;
-
-				try {
-					this.store.add( rd.readConfiguration( u ) );
-				}
-				catch( final IOException x ) {
-					throw new RuntimeException( u.toExternalForm(), x );
-				}
+			try {
+				this.store.add( rd.readConfiguration( f ) );
 			}
-
-			if( !found ) {
-				try {
-					this.store.add( rd.readConfiguration( f ) );
-				}
-				catch( final IOException e ) {
-					throw new RuntimeException( f, e );
-				}
+			catch( final IOException e ) {
+				throw new RuntimeException( f, e );
+			}
+			catch( final UnsupportedOperationException x1 ) {
+				readFromURL( f, rd );
 			}
 
 			rdb.destroy( rd, cc );
@@ -79,6 +130,30 @@ class ConfigCollect
 		System.getProperties().forEach( ( k, v ) -> {
 			this.store.setValue( (String) k, (String) v );
 		} );
+
+		if( L.isTraceEnabled() ) {
+			final String s = new GsonBuilder()
+				.setPrettyPrinting()
+				.registerTypeAdapterFactory( new ConfigItemTAF() )
+				.create()
+				.toJson( this.store.get() );
+
+			L.trace( "Config: {}", s );
+		}
+	}
+
+	private void readFromURL( final String f, final ConfigReader rd )
+	{
+		for( final Enumeration<URL> e = getURL( f ); e.hasMoreElements(); ) {
+			final URL u = e.nextElement();
+
+			try {
+				this.store.add( rd.readConfiguration( u ) );
+			}
+			catch( final IOException x ) {
+				throw new RuntimeException( u.toExternalForm(), x );
+			}
+		}
 	}
 
 	private Bean<ConfigReader> getReader( String t )

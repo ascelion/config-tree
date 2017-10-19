@@ -21,6 +21,8 @@ class PRPConfigReader extends ConfigStore implements ConfigReader
 	@Override
 	public Map<String, ? extends ConfigItem> readConfiguration( InputStream is ) throws IOException
 	{
+		reset();
+
 		final Properties prop = new Properties();
 
 		prop.load( is );

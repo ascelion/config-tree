@@ -82,7 +82,7 @@ public class ConfigValueTest
 			this.value3 = value3;
 		}
 
-		void setValues( @ConfigValue( "section3.value4" ) String value4, @ConfigValue( "value5" ) String value5 )
+		void setValues( @ConfigValue( "value4" ) String value4, @ConfigValue( "value5" ) String value5 )
 		{
 			this.value4 = value4;
 			this.value5 = value5;
@@ -144,16 +144,16 @@ public class ConfigValueTest
 		assertThat( this.bean1, is( notNullValue() ) );
 		assertThat( this.bean1.value1, is( 20 ) );
 		assertThat( this.bean1.value2, is( 314 ) );
-//		assertThat( this.bean1.value3, is( "value3" ) );
-//		assertThat( this.bean1.value4, is( "value4" ) );
-//		assertThat( this.bean1.value5, is( "value5" ) );
+		assertThat( this.bean1.value3, is( "value3" ) );
+		assertThat( this.bean1.value4, is( "value4" ) );
+		assertThat( this.bean1.value5, is( "value5" ) );
 
 		assertThat( this.bean2, is( notNullValue() ) );
 
 		assertThat( this.bean3, is( notNullValue() ) );
 		assertThat( this.bean3.amount, is( new BigDecimal( 30 ) ) );
 
-//		assertThat( "logFile1", this.logFile1, is( notNullValue() ) );
+		assertThat( "logFile1", this.logFile1, is( notNullValue() ) );
 		assertThat( "logFile2", this.logFile2, is( notNullValue() ) );
 	}
 

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -12,6 +13,7 @@ import java.util.stream.Stream;
 import static ascelion.shared.cdi.conf.ConfigItem.fullPath;
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.stream.Collectors.toMap;
 
 final class ConfigItemImpl implements ConfigItem
 {
@@ -20,7 +22,14 @@ final class ConfigItemImpl implements ConfigItem
 	{
 		return map.entrySet().stream()
 			.filter( e -> e.getValue() != null )
-			.collect( Collectors.toMap( e -> e.getKey(), e -> toItem( e.getKey(), e.getValue() ) ) );
+			.collect( toMap( e -> e.getKey(), e -> toItem( e.getKey(), e.getValue() ), throwingMerger(), TreeMap::new ) );
+	}
+
+	static <T> BinaryOperator<T> throwingMerger()
+	{
+		return ( u, v ) -> {
+			throw new IllegalStateException( String.format( "Duplicate key %s", u ) );
+		};
 	}
 
 	static ConfigItemImpl toItem( String name, Object value )

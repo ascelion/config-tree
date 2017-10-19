@@ -18,17 +18,36 @@ public class ConfigStore
 
 	public Map<String, ? extends ConfigItem> get()
 	{
-		try {
-			return this.root.getTree();
-		}
-		finally {
-			this.root.set( "" );
-		}
+		return this.root.getTree();
 	}
 
 	public String pathOf( ConfigItem ci )
 	{
 		return pathOf( "", this.root, ci );
+	}
+
+	public void add( Map<String, ?> map )
+	{
+		this.root.add( ConfigItemImpl.remap( map ) );
+	}
+
+	public void setValue( String key, Object val )
+	{
+		final String[] keys = key.split( "\\." );
+
+		setValue( this.root, keys, 0, ConfigItemImpl.toItem( "", val ) );
+	}
+
+	public ConfigItem getValue( String key )
+	{
+		final String[] keys = key.split( "\\." );
+
+		return getValue( this.root, keys, 0 );
+	}
+
+	protected void reset()
+	{
+		this.root.set( "" );
 	}
 
 	private String pathOf( String path, ConfigItem base, ConfigItem item )
@@ -52,30 +71,6 @@ public class ConfigStore
 
 		return null;
 	}
-
-	public void add( Map<String, ?> map )
-	{
-		this.root.add( ConfigItemImpl.remap( map ) );
-	}
-
-	public void setValue( String key, Object val )
-	{
-		final String[] keys = key.split( "\\." );
-
-		setValue( this.root, keys, 0, ConfigItemImpl.toItem( "", val ) );
-	}
-
-	public ConfigItem getValue( String key )
-	{
-		final String[] keys = key.split( "\\." );
-
-		return getValue( this.root, keys, 0 );
-	}
-
-//	void put( Map<String, ? extends ConfigItem> map )
-//	{
-//		this.root.set( map );
-//	}
 
 	static private void setValue( ConfigItemImpl root, String[] keys, int depth, ConfigItemImpl ci )
 	{

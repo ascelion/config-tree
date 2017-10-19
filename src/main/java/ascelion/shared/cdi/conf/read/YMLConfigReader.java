@@ -22,6 +22,8 @@ class YMLConfigReader extends ConfigStore implements ConfigReader
 	@Override
 	public Map<String, ? extends ConfigItem> readConfiguration( InputStream is ) throws IOException
 	{
+		reset();
+
 		final Yaml yaml = new Yaml();
 
 		yaml.loadAll( is ).forEach( o -> {

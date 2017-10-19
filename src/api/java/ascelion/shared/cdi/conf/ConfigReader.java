@@ -6,14 +6,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
-import static java.util.Collections.emptyMap;
-
 public interface ConfigReader
 {
 
 	default Map<String, ?> readConfiguration( String source ) throws IOException
 	{
-		return emptyMap();
+		throw new UnsupportedOperationException( source );
 	}
 
 	default Map<String, ?> readConfiguration( URL source ) throws IOException
@@ -25,6 +23,6 @@ public interface ConfigReader
 
 	default Map<String, ?> readConfiguration( InputStream source ) throws IOException
 	{
-		throw new UnsupportedOperationException( "" );
+		throw new UnsupportedOperationException( "not implemented" );
 	}
 }

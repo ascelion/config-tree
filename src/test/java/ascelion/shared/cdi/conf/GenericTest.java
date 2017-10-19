@@ -141,7 +141,7 @@ public class GenericTest
 		assertThat( this.lBean.xValue1, is( "10" ) );
 
 		assertThat( this.sBean, is( notNullValue() ) );
-//		assertThat( this.sBean.value0, is( "-6" ) );
+		assertThat( this.sBean.value0, is( "-6" ) );
 		assertThat( this.sBean.xValue1, is( 10 ) );
 		assertThat( this.sBean.value1, is( "10" ) );
 		assertThat( this.sBean.value1, is( "10" ) );

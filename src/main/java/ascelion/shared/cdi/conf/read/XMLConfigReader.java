@@ -97,6 +97,8 @@ class XMLConfigReader extends ConfigStore implements ConfigReader
 	@Override
 	public Map<String, ? extends ConfigItem> readConfiguration( InputStream source ) throws IOException
 	{
+		reset();
+
 		try {
 			final SAXParserFactory f = SAXParserFactory.newInstance();
 			final SAXParser p = f.newSAXParser();

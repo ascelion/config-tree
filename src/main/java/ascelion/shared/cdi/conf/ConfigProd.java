@@ -110,6 +110,10 @@ class ConfigProd extends ConfigProdBase
 					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
 				}
 
+				if( i == null ) {
+					return null;
+				}
+
 				int u = a.unwrap();
 				String b = this.cc.store().pathOf( i );
 

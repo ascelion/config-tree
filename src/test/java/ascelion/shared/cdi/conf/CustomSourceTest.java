@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 	CustomSourceTest.CustomReader.class
 } )
 @UseConfigExtension
-@ConfigSource( type = "custom", value = "{ 'prop1': 'value', 'prop2': '314' }" )
+@ConfigSource( type = "custom", value = "{ 'custom.prop1': 'value', 'custom.prop2': '314' }", priority = Integer.MAX_VALUE )
 public class CustomSourceTest
 {
 
@@ -36,15 +36,11 @@ public class CustomSourceTest
 		}
 	}
 
-	@ConfigValue( "prop1" )
+	@ConfigValue( "custom.prop1" )
 	private String sValue;
 
-	@ConfigValue( "prop2" )
+	@ConfigValue( "custom.prop2" )
 	private int iValue;
-
-	public CustomSourceTest()
-	{
-	}
 
 	@Test
 	public void run()

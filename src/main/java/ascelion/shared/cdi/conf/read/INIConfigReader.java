@@ -26,6 +26,8 @@ class INIConfigReader extends ConfigStore implements ConfigReader
 	@Override
 	public Map<String, ? extends ConfigItem> readConfiguration( InputStream is ) throws IOException
 	{
+		reset();
+
 		final Ini ini = new Ini( is );
 
 		ini.forEach( ( k0, v0 ) -> {
