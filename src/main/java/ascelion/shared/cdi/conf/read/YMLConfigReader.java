@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 
 import ascelion.shared.cdi.conf.ConfigItem;
+import ascelion.shared.cdi.conf.ConfigNode;
 import ascelion.shared.cdi.conf.ConfigReader;
 import ascelion.shared.cdi.conf.ConfigSource;
 import ascelion.shared.cdi.conf.ConfigStore;
@@ -35,4 +36,16 @@ class YMLConfigReader extends ConfigStore implements ConfigReader
 		return get();
 	}
 
+	@Override
+	public void readConfiguration( ConfigNode root, InputStream source ) throws IOException
+	{
+		final Yaml yaml = new Yaml();
+
+		yaml.loadAll( source )
+			.forEach( o -> {
+				if( o instanceof Map ) {
+					root.set( o );
+				}
+			} );
+	}
 }

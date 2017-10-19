@@ -13,7 +13,7 @@
 	</appender>
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>ALL</level>
+			<level>INFO</level>
 		</filter>
 		<withJansi>true</withJansi>
 		<encoder>

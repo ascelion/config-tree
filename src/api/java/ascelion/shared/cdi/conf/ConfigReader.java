@@ -25,4 +25,21 @@ public interface ConfigReader
 	{
 		throw new UnsupportedOperationException( "not implemented" );
 	}
+
+	default void readConfiguration( ConfigNode root, String source ) throws IOException
+	{
+		throw new UnsupportedOperationException( source );
+	}
+
+	default void readConfiguration( ConfigNode root, URL source ) throws IOException
+	{
+		try( InputStream is = source.openStream() ) {
+			readConfiguration( root, is );
+		}
+	}
+
+	default void readConfiguration( ConfigNode root, InputStream source ) throws IOException
+	{
+		throw new UnsupportedOperationException( "not implemented" );
+	}
 }

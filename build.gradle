@@ -6,7 +6,6 @@ buildscript {
 
 apply plugin: 'ascelion'
 apply plugin: 'java'
-apply from: 'composite.gradle'
 
 group = 'ascelion.shared'
 

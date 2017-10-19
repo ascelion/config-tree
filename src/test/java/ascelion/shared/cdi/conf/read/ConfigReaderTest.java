@@ -4,88 +4,64 @@ package ascelion.shared.cdi.conf.read;
 import java.io.IOException;
 import java.io.InputStream;
 
-import ascelion.shared.cdi.conf.ConfigStore;
-import ascelion.shared.cdi.conf.read.INIConfigReader;
-import ascelion.shared.cdi.conf.read.PRPConfigReader;
-import ascelion.shared.cdi.conf.read.XMLConfigReader;
-import ascelion.shared.cdi.conf.read.YMLConfigReader;
+import ascelion.shared.cdi.conf.ConfigNode;
+import ascelion.shared.cdi.conf.ConfigReader;
+import ascelion.shared.cdi.conf.ConfigSource;
+import ascelion.shared.cdi.conf.ConfigSource.Type;
 
+import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+@RunWith( Parameterized.class )
 public class ConfigReaderTest
 {
 
-	@Test
-	public void ini() throws IOException
+	@Parameterized.Parameters( name = "{0}" )
+	static public Object data()
 	{
-		try( final InputStream is = getClass().getResourceAsStream( "/config.ini" ) ) {
-			assertThat( is, is( notNullValue() ) );
-
-			final INIConfigReader rd = new INIConfigReader();
-
-			rd.readConfiguration( is );
-
-			verify( rd );
-		}
+		return new Object[] {
+			new Object[] { INIConfigReader.class },
+			new Object[] { PRPConfigReader.class },
+			new Object[] { XMLConfigReader.class, },
+			new Object[] { YMLConfigReader.class },
+		};
 	}
 
-	@Test
-	public void properties() throws IOException
-	{
-		try( final InputStream is = getClass().getResourceAsStream( "/config.properties" ) ) {
-			assertThat( is, is( notNullValue() ) );
-
-			final PRPConfigReader rd = new PRPConfigReader();
-
-			rd.readConfiguration( is );
-
-			verify( rd );
-		}
-	}
+	@Parameterized.Parameter( 0 )
+	public Class<? extends ConfigReader> cls;
 
 	@Test
-	public void xml() throws IOException
+	public void run() throws InstantiationException, IllegalAccessException, IOException
 	{
-		try( final InputStream is = getClass().getResourceAsStream( "/config.xml" ) ) {
-			assertThat( is, is( notNullValue() ) );
+		final Type a = this.cls.getAnnotation( ConfigSource.Type.class );
 
-			final XMLConfigReader rd = new XMLConfigReader();
+		assertThat( a, is( notNullValue() ) );
 
-			rd.readConfiguration( is );
+		final String res = format( "/config.%s", a.value().toLowerCase() );
+		final InputStream source = getClass().getResourceAsStream( res );
 
-			verify( rd );
-		}
-	}
+		assertThat( source, is( notNullValue() ) );
 
-	@Test
-	public void yml() throws IOException
-	{
-		try( final InputStream is = getClass().getResourceAsStream( "/config.yml" ) ) {
-			assertThat( is, is( notNullValue() ) );
+		final ConfigReader rd = this.cls.newInstance();
+		final ConfigNode cn = new ConfigNode();
 
-			final YMLConfigReader rd = new YMLConfigReader();
+		rd.readConfiguration( cn, source );
 
-			rd.readConfiguration( is );
-
-			verify( rd );
-		}
-	}
-
-	private void verify( final ConfigStore sto )
-	{
-//		assertThat( sto.getValue( "default" ), is( "0" ) );
-//		assertThat( sto.getValue( "prop1" ), is( "value1" ) );
-//		assertThat( sto.getValue( "prop2" ), is( "value2" ) );
-//		assertThat( sto.getValue( "map1.prop1" ), is( "value1" ) );
-//		assertThat( sto.getValue( "map1.prop2" ), is( "value2" ) );
-//		assertThat( sto.getValue( "map2.prop1" ), is( "value1" ) );
-//		assertThat( sto.getValue( "map2.prop2" ), is( "value2" ) );
-//		assertThat( sto.getValue( "map3.prop1" ), is( "value1" ) );
-//		assertThat( sto.getValue( "map3.prop2" ), is( "value2" ) );
+		assertThat( cn.getItem( "default" ), is( "0" ) );
+		assertThat( cn.getItem( "prop1" ), is( "value1" ) );
+		assertThat( cn.getItem( "prop2" ), is( "value2" ) );
+		assertThat( cn.getItem( "map1.prop1" ), is( "value1" ) );
+		assertThat( cn.getItem( "map1.prop2" ), is( "value2" ) );
+		assertThat( cn.getItem( "map2.prop1" ), is( "value1" ) );
+		assertThat( cn.getItem( "map2.prop2" ), is( "value2" ) );
+		assertThat( cn.getItem( "map3.prop1" ), is( "value1" ) );
+		assertThat( cn.getItem( "map3.prop2" ), is( "value2" ) );
 	}
 
 }

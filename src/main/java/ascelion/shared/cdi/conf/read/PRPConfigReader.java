@@ -9,6 +9,7 @@ import java.util.Properties;
 import javax.enterprise.context.ApplicationScoped;
 
 import ascelion.shared.cdi.conf.ConfigItem;
+import ascelion.shared.cdi.conf.ConfigNode;
 import ascelion.shared.cdi.conf.ConfigReader;
 import ascelion.shared.cdi.conf.ConfigSource;
 import ascelion.shared.cdi.conf.ConfigStore;
@@ -31,4 +32,12 @@ class PRPConfigReader extends ConfigStore implements ConfigReader
 		return get();
 	}
 
+	@Override
+	public void readConfiguration( ConfigNode root, InputStream is ) throws IOException
+	{
+		final Properties prop = new Properties();
+
+		prop.load( is );
+		prop.forEach( ( k, v ) -> root.set( (String) k, v ) );
+	}
 }
