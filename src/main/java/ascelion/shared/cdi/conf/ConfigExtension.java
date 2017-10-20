@@ -2,11 +2,11 @@
 package ascelion.shared.cdi.conf;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
@@ -34,13 +34,7 @@ public class ConfigExtension implements Extension
 
 	static private final Logger L = LoggerFactory.getLogger( ConfigExtension.class );
 
-	private final Set<ConfigSource> sources = new TreeSet<>( ( o1, o2 ) -> {
-		if( o1.priority() != o2.priority() ) {
-			return Integer.compare( o1.priority(), o2.priority() );
-		}
-
-		return o1.value().compareTo( o2.value() );
-	} );
+	private final Collection<ConfigSource> sources = new ArrayList<>();
 
 	private final Set<Type> types = new HashSet<>();
 	private final Set<Type> producedTypes = new HashSet<>();
@@ -84,11 +78,6 @@ public class ConfigExtension implements Extension
 			event.setAnnotatedType( type );
 		}
 	}
-
-//	void afterTypeDiscovery( BeanManager bm, @Observes AfterTypeDiscovery event )
-//	{
-//		addAnnotatedType( bm, event, ConfigProd.class );
-//	}
 
 	<T, X> void processInjectionPoint( @Observes ProcessInjectionPoint<T, X> event )
 	{
@@ -134,7 +123,7 @@ public class ConfigExtension implements Extension
 		}
 	}
 
-	Set<ConfigSource> sources()
+	Collection<ConfigSource> sources()
 	{
 		return this.sources;
 	}
@@ -147,11 +136,6 @@ public class ConfigExtension implements Extension
 
 		return t;
 	}
-
-//	private void addAnnotatedType( BeanManager bm, AfterTypeDiscovery event, Class<?> cls )
-//	{
-//		event.addAnnotatedType( bm.createAnnotatedType( cls ), cls.getName() );
-//	}
 
 	private void addSources( AnnotatedType<?> t, ConfigSource... sources )
 	{

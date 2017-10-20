@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 
 import ascelion.shared.cdi.conf.ConfigNode;
 import ascelion.shared.cdi.conf.ConfigReader;
@@ -17,7 +17,7 @@ import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 
 @ConfigSource.Type( value = "INI" )
-@ApplicationScoped
+@Dependent
 class INIConfigReader implements ConfigReader
 {
 
