@@ -74,9 +74,9 @@ class ConfigProd extends ConfigProdBase
 	private <T> T convert( InjectionPoint ip, BiFunction<Class<?>, String, T> f )
 	{
 		final Type t = ip.getType();
-		final ConfigItem i = getConfig( ip );
+		final ConfigNode n = getConfig( ip );
 		final ConfigValue a = getAnnotation( ip );
-		final String s = i != null ? i.getItem() : null;
+		final String s = n != null ? n.getItem() : null;
 
 		if( t instanceof Class ) {
 			return convertTo( f, t, s );
@@ -110,12 +110,12 @@ class ConfigProd extends ConfigProdBase
 					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
 				}
 
-				if( i == null ) {
+				if( n == null ) {
 					return null;
 				}
 
 				int u = a.unwrap();
-				String b = this.cc.store().pathOf( i );
+				String b = this.cc.getRoot().getPath();
 
 				while( u-- > 0 ) {
 					final int x = b.indexOf( '.' );
@@ -127,7 +127,7 @@ class ConfigProd extends ConfigProdBase
 					b = b.substring( x + 1 );
 				}
 
-				return (T) i.asMap( b, x -> convertTo( f, o1, x ) );
+				return (T) n.asMap( b, x -> convertTo( f, o1, x ) );
 			}
 
 			throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );

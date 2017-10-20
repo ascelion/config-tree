@@ -4,7 +4,6 @@ package ascelion.shared.cdi.conf.read;
 import java.io.IOException;
 import java.util.Map;
 
-import ascelion.shared.cdi.conf.ConfigItem;
 import ascelion.shared.cdi.conf.ConfigNode;
 import ascelion.shared.cdi.conf.ConfigReader;
 import ascelion.shared.cdi.conf.ConfigSource;
@@ -37,14 +36,6 @@ public class CustomSourceTest
 		public void readConfiguration( ConfigNode root, String source ) throws IOException
 		{
 			root.set( new Gson().fromJson( source, Map.class ) );
-		}
-
-		@Override
-		public Map<String, ? extends ConfigItem> readConfiguration( String source ) throws IOException
-		{
-			final Gson gson = new Gson();
-
-			return gson.fromJson( source, Map.class );
 		}
 	}
 

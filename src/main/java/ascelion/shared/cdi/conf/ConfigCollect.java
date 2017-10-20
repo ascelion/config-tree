@@ -22,11 +22,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.enumeration;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.apache.commons.io.FilenameUtils;
@@ -38,51 +35,37 @@ class ConfigCollect
 {
 
 	@Vetoed
-	static class ConfigItemTA extends TypeAdapter<ConfigItem>
+	static class ConfigNodeTA extends TypeAdapter<ConfigNode>
 	{
 
-		private final Gson gson;
-
-		public ConfigItemTA( Gson gson )
-		{
-			this.gson = gson;
-		}
-
 		@Override
-		public void write( JsonWriter out, ConfigItem value ) throws IOException
+		public void write( JsonWriter out, ConfigNode value ) throws IOException
 		{
-			switch( value.getKind() ) {
-				case ITEM:
-					out.value( value.getItem() );
-				break;
+			final String item = value.getItem();
+			final Map<String, ConfigNode> tree = value.getTree();
 
-				case TREE:
-					this.gson.toJson( value.getTree(), Map.class, out );
-				break;
+			if( tree != null ) {
+				out.beginObject();
 
-				default:
+				if( item != null ) {
+					out.name( "@" ).value( item );
+				}
+				for( final Map.Entry<String, ConfigNode> e : tree.entrySet() ) {
+					out.name( e.getKey() );
+					write( out, e.getValue() );
+				}
+
+				out.endObject();
+			}
+			else {
+				out.value( item );
 			}
 		}
 
 		@Override
-		public ConfigItem read( JsonReader in ) throws IOException
+		public ConfigNode read( JsonReader in ) throws IOException
 		{
 			throw new UnsupportedOperationException();
-		}
-	}
-
-	@Vetoed
-	static class ConfigItemTAF implements TypeAdapterFactory
-	{
-
-		@Override
-		public <T> TypeAdapter<T> create( Gson gson, TypeToken<T> type )
-		{
-			if( ConfigItem.class.isAssignableFrom( type.getRawType() ) ) {
-				return (TypeAdapter<T>) new ConfigItemTA( gson );
-			}
-
-			return null;
 		}
 	}
 
@@ -94,11 +77,11 @@ class ConfigCollect
 	@Inject
 	private ConfigExtension ext;
 
-	private final ConfigStore store = new ConfigStore();
+	private final ConfigNode root = new ConfigNode();
 
-	ConfigStore store()
+	public ConfigNode getRoot()
 	{
-		return this.store;
+		return this.root;
 	}
 
 	@PostConstruct
@@ -115,7 +98,7 @@ class ConfigCollect
 			final ConfigReader rd = (ConfigReader) this.bm.getReference( rdb, ConfigReader.class, cc );
 
 			try {
-				this.store.add( rd.readConfiguration( f ) );
+				rd.readConfiguration( this.root, f );
 			}
 			catch( final IOException e ) {
 				throw new RuntimeException( f, e );
@@ -128,15 +111,15 @@ class ConfigCollect
 		} );
 
 		System.getProperties().forEach( ( k, v ) -> {
-			this.store.setValue( (String) k, (String) v );
+			this.root.set( (String) k, (String) v );
 		} );
 
 		if( L.isTraceEnabled() ) {
 			final String s = new GsonBuilder()
 				.setPrettyPrinting()
-				.registerTypeAdapterFactory( new ConfigItemTAF() )
+				.registerTypeAdapter( ConfigNode.class, new ConfigNodeTA() )
 				.create()
-				.toJson( this.store.get() );
+				.toJson( this.root );
 
 			L.trace( "Config: {}", s );
 		}
@@ -148,7 +131,7 @@ class ConfigCollect
 			final URL u = e.nextElement();
 
 			try {
-				this.store.add( rd.readConfiguration( u ) );
+				rd.readConfiguration( this.root, u );
 			}
 			catch( final IOException x ) {
 				throw new RuntimeException( u.toExternalForm(), x );

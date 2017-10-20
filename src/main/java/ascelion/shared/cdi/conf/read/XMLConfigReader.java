@@ -3,7 +3,6 @@ package ascelion.shared.cdi.conf.read;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.function.BiConsumer;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -11,13 +10,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import ascelion.shared.cdi.conf.ConfigItem;
 import ascelion.shared.cdi.conf.ConfigNode;
 import ascelion.shared.cdi.conf.ConfigReader;
 import ascelion.shared.cdi.conf.ConfigSource;
-import ascelion.shared.cdi.conf.ConfigStore;
 
-import static ascelion.shared.cdi.conf.ConfigItem.fullPath;
+import static ascelion.shared.cdi.conf.ConfigNode.path;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 import org.xml.sax.Attributes;
@@ -26,7 +23,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 @ConfigSource.Type( value = "XML" )
 @ApplicationScoped
-class XMLConfigReader extends ConfigStore implements ConfigReader
+class XMLConfigReader implements ConfigReader
 {
 
 	class Context
@@ -48,12 +45,12 @@ class XMLConfigReader extends ConfigStore implements ConfigReader
 		{
 			this.action = action;
 			this.parent = parent;
-			this.prefix = fullPath( parent.prefix, name );
+			this.prefix = path( parent.prefix, name );
 		}
 
 		void set( String name, String value )
 		{
-			this.action.accept( fullPath( this.prefix, name ), value );
+			this.action.accept( path( this.prefix, name ), value );
 		}
 
 		void set( String value )
@@ -104,24 +101,6 @@ class XMLConfigReader extends ConfigStore implements ConfigReader
 		Handler( BiConsumer<String, Object> action )
 		{
 			this.action = action;
-		}
-	}
-
-	@Override
-	public Map<String, ? extends ConfigItem> readConfiguration( InputStream source ) throws IOException
-	{
-		reset();
-
-		try {
-			final SAXParserFactory f = SAXParserFactory.newInstance();
-			final SAXParser p = f.newSAXParser();
-
-			p.parse( source, new Handler( ( k, v ) -> setValue( k, v ) ) );
-
-			return get();
-		}
-		catch( final ParserConfigurationException | SAXException x ) {
-			throw new IOException( x );
 		}
 	}
 

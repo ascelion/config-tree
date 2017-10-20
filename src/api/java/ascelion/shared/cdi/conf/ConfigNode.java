@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -13,17 +14,24 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import org.apache.commons.lang3.StringUtils;
+
 public final class ConfigNode
 {
 
-	static String[] keys( String path )
+	static public String[] keys( String path )
 	{
 		return path != null ? path.split( "\\." ) : new String[0];
 	}
 
-	static String path( int s, int e, String[] keys )
+	static public String path( int s, int e, String[] keys )
 	{
 		return asList( keys ).subList( s, e ).stream().collect( Collectors.joining( "." ) );
+	}
+
+	static public String path( String... names )
+	{
+		return Stream.of( names ).filter( StringUtils::isNotBlank ).collect( Collectors.joining( "." ) );
 	}
 
 	private ConfigNode parent;
@@ -70,7 +78,7 @@ public final class ConfigNode
 
 	public String getPath()
 	{
-		return ConfigItem.fullPath( this.parent != null ? this.parent.getPath() : null, this.name );
+		return path( this.parent != null ? this.parent.getPath() : null, this.name );
 	}
 
 	public String getItem()
@@ -80,7 +88,7 @@ public final class ConfigNode
 
 	public Map<String, ConfigNode> getTree()
 	{
-		return this.tree != null ? unmodifiableMap( this.tree ) : null;
+		return this.tree != null && this.tree.size() > 0 ? unmodifiableMap( this.tree ) : null;
 	}
 
 	public String getItem( String path )
@@ -211,5 +219,26 @@ public final class ConfigNode
 	{
 		return Stream.of( this.item, this.tree ).filter( Objects::nonNull )
 			.map( Object::toString ).collect( Collectors.joining( ",", "{", "}" ) );
+	}
+
+	public <T> Map<String, T> asMap( String path, Function<String, T> fun )
+	{
+		final TreeMap<String, T> m = new TreeMap<>();
+
+		fillMap( m, fun );
+
+		return m;
+	}
+
+	private <T> void fillMap( TreeMap<String, T> m, Function<String, T> f )
+	{
+		if( this.tree == null || this.tree.isEmpty() ) {
+			if( this.item != null ) {
+				m.put( getPath(), f.apply( this.item ) );
+			}
+		}
+		else {
+			this.tree.forEach( ( k, v ) -> v.fillMap( m, f ) );
+		}
 	}
 }
