@@ -5,15 +5,17 @@ import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
-import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.Bean;
@@ -38,6 +40,11 @@ class ConfigProd extends ConfigProdBase
 	@Inject
 	private BeanManager bm;
 
+	@Inject
+	private ConfigExtension ext;
+
+	private final Map<Class<? extends BiFunction>, InstanceInfo<? extends BiFunction>> converters = new IdentityHashMap<>();
+
 	@Produces
 	@Dependent
 	@ConfigValue( "" )
@@ -46,28 +53,12 @@ class ConfigProd extends ConfigProdBase
 		L.trace( "Value: {}", ip.getAnnotated() );
 
 		final ConfigValue a = getValueAnnotation( ip );
-		final Set<Bean<?>> beans = this.bm.getBeans( a.converter() );
+		final InstanceInfo<? extends BiFunction> c = this.converters.computeIfAbsent( a.converter(), x -> {
+			// shouldn't happen
+			throw new IllegalStateException( format( "Cannot find converter of type %s", x.getName() ) );
+		} );
 
-		if( beans.size() > 0 ) {
-			final Bean<BiFunction> bean = (Bean<BiFunction>) this.bm.resolve( beans );
-			final CreationalContext<BiFunction> cc = this.bm.createCreationalContext( bean );
-			final BiFunction cv = (BiFunction) this.bm.getReference( bean, a.converter(), cc );
-
-			try {
-				return convert( ip, cv );
-			}
-			finally {
-				bean.destroy( cv, cc );
-			}
-		}
-		else {
-			try {
-				return convert( ip, a.converter().newInstance() );
-			}
-			catch( InstantiationException | IllegalAccessException e ) {
-				throw new RuntimeException( e );
-			}
-		}
+		return convert( ip, c.instance );
 	}
 
 	private <T> T convert( InjectionPoint ip, BiFunction<Class<?>, String, T> f )
@@ -159,6 +150,36 @@ class ConfigProd extends ConfigProdBase
 
 			return f.apply( c, expandValue( v ) );
 		}
+	}
+
+	@PostConstruct
+	private void postConstruct()
+	{
+		this.ext.converters().forEach( c -> {
+			final Set<Bean<?>> beans = this.bm.getBeans( c );
+			final InstanceInfo<BiFunction> info;
+
+			if( beans.size() > 0 ) {
+				info = new InstanceInfo<>( this.bm, (Bean<BiFunction>) this.bm.resolve( beans ) );
+			}
+			else {
+				try {
+					info = new InstanceInfo<>( c.newInstance() );
+				}
+				catch( InstantiationException | IllegalAccessException e ) {
+					throw new IllegalStateException( e );
+				}
+			}
+
+			this.converters.put( c, info );
+		} );
+	}
+
+	@PreDestroy
+	private void preDestroy()
+	{
+		this.converters.values().forEach( InstanceInfo::destroy );
+		this.converters.clear();
 	}
 
 }

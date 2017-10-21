@@ -23,7 +23,7 @@ final class InstanceInfo<T>
 	{
 		this.bean = bean;
 		this.context = bm.createCreationalContext( this.bean );
-		this.instance = (T) bm.getReference( bean, ConfigReader.class, this.context );
+		this.instance = (T) bm.getReference( bean, bean.getBeanClass(), this.context );
 		this.qualifiers = bean.getQualifiers();
 	}
 
