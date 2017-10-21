@@ -2,6 +2,8 @@
 package ascelion.shared.cdi.conf;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import javax.enterprise.inject.Produces;
@@ -12,11 +14,16 @@ import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.inject.Inject;
 
+import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 @Typed
 final class ConfigType<X> extends AnnotatedTypeW<X>
 {
 
 	private boolean modified;
+
+	private final Set<Class<? extends BiFunction>> converters = new LinkedHashSet<>();
 
 	ConfigType( AnnotatedType<X> delegate )
 	{
@@ -33,7 +40,7 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 			.filter( e -> !e.isAnnotationPresent( Produces.class ) )
 			.filter( e -> e.isAnnotationPresent( ConfigValue.class ) )
 			.forEach( e -> {
-				addConv( e );
+				updateAnnotation( e, e.getJavaMember().getName() );
 				addInject( e );
 			} );
 	}
@@ -45,7 +52,7 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 			.filter( e -> e.getParameters().stream().anyMatch( p -> p.isAnnotationPresent( ConfigValue.class ) ) )
 			.forEach( e -> {
 				e.getParameters().forEach( p -> {
-					addConv( p );
+					updateAnnotation( p, null );
 				} );
 				addInject( e );
 			} );
@@ -60,20 +67,46 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 		}
 	}
 
-	private void addConv( Annotated p )
+	private void updateAnnotation( Annotated p, String name )
 	{
 		final ConfigValue a = p.getAnnotation( ConfigValue.class );
 
-		if( a != null && a.converter() == BiFunction.class ) {
-			p.getAnnotations().remove( a );
-			p.getAnnotations().add( new ConfigValue.Literal( a, DefaultCVT.class ) );
+		if( a != null ) {
+			boolean transform = false;
+			String n = a.value();
+			Class<? extends BiFunction> c = a.converter();
 
-			this.modified = true;
+			if( n.isEmpty() ) {
+				if( isBlank( name ) ) {
+					throw new IllegalArgumentException( format( "Need to specify configuration name for %s", p ) );
+				}
+
+				n = name;
+				transform = true;
+			}
+			if( c == BiFunction.class ) {
+				c = DefaultCVT.class;
+
+				transform = true;
+			}
+			if( transform ) {
+				p.getAnnotations().remove( a );
+				p.getAnnotations().add( new ConfigValueLiteral( n, c, a.unwrap() ) );
+
+				this.modified = true;
+			}
+
+			this.converters.add( c );
 		}
 	}
 
 	boolean modified()
 	{
 		return this.modified;
+	}
+
+	Set<Class<? extends BiFunction>> converters()
+	{
+		return this.converters;
 	}
 }

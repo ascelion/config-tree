@@ -5,29 +5,27 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.UnsatisfiedResolutionException;
 import javax.enterprise.inject.Vetoed;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 
-import ascelion.shared.cdi.conf.ConfigSource.Type;
-
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.Collections.enumeration;
+import static java.util.Collections.list;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.gson.GsonBuilder;
@@ -35,6 +33,8 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,44 +42,47 @@ import org.slf4j.LoggerFactory;
 class ConfigCollect
 {
 
-	static class ReaderInfo
-	{
-
-		final Bean<ConfigReader> bean;
-		final CreationalContext<ConfigReader> context;
-		final Type type;
-
-		ReaderInfo( Bean<ConfigReader> bean, CreationalContext<ConfigReader> context, ConfigSource.Type type )
-		{
-			this.bean = bean;
-			this.context = context;
-			this.type = type;
-		}
-	}
-
-	static class ConfigInfo implements Comparable<ConfigInfo>
+	static class DelayedSource implements Delayed
 	{
 
 		final ConfigSource source;
-		long timeout;
+		private final long next;
 
-		public ConfigInfo( ConfigSource source, long timeout )
+		DelayedSource( ConfigSource source, long await )
 		{
 			this.source = source;
-			this.timeout = timeout;
+			this.next = System.nanoTime() + await;
 		}
 
 		@Override
-		public int compareTo( ConfigInfo that )
+		public int compareTo( Delayed o )
 		{
-			if( this.timeout != that.timeout ) {
-				return Long.compare( this.timeout, that.timeout );
-			}
-			if( this.source.priority() != that.source.priority() ) {
-				return Integer.compare( this.source.priority(), that.source.priority() );
+			final DelayedSource that = (DelayedSource) o;
+			int c;
+
+			if( ( c = Long.compare( this.next, that.next ) ) != 0 ) {
+				return c;
 			}
 
-			return this.source.value().compareTo( that.source.value() );
+			if( ( c = Integer.compare( this.source.priority(), that.source.priority() ) ) != 0 ) {
+				return c;
+			}
+
+			if( ( c = this.source.value().compareTo( that.source.value() ) ) != 0 ) {
+				return c;
+			}
+
+			if( ( c = this.source.type().compareTo( that.source.type() ) ) != 0 ) {
+				return c;
+			}
+
+			return 0;
+		}
+
+		@Override
+		public long getDelay( TimeUnit unit )
+		{
+			return unit.convert( this.next - System.nanoTime(), NANOSECONDS );
 		}
 	}
 
@@ -128,9 +131,9 @@ class ConfigCollect
 
 	private final ConfigNode root = new ConfigNode();
 
-	private final Map<ConfigReader, ReaderInfo> readers = new IdentityHashMap<>();
+	private final Map<ConfigReader, InstanceInfo<ConfigReader>> readers = new IdentityHashMap<>();
 
-	private final Set<ConfigInfo> sources = new TreeSet<>();
+	private final DelayQueue<DelayedSource> sources = new DelayQueue<>();
 
 	public ConfigNode getRoot()
 	{
@@ -141,15 +144,14 @@ class ConfigCollect
 
 	private synchronized void readConfigurations()
 	{
-		final List<ConfigInfo> toRead = new ArrayList<>( this.sources );
+		final Collection<Pair<ConfigSource, ConfigSource.Reload>> used = new ArrayList<>();
+		DelayedSource item;
 
-		this.sources.clear();
+		while( ( item = this.sources.poll() ) != null ) {
+			final ConfigSource.Reload reload = readConfiguration( item.source );
 
-		toRead.forEach( i -> {
-			if( i.timeout < System.currentTimeMillis() ) {
-				readConfiguration( i.source );
-			}
-		} );
+			used.add( new ImmutablePair<>( item.source, reload ) );
+		}
 
 		if( L.isTraceEnabled() ) {
 			final String s = new GsonBuilder()
@@ -160,30 +162,48 @@ class ConfigCollect
 
 			L.trace( "Config: {}", s );
 		}
+
+		used.forEach( i -> {
+			if( !addNext( i.getLeft(), i.getLeft().reload() ) ) {
+				addNext( i.getLeft(), i.getRight() );
+			}
+		} );
 	}
 
-	private void readConfiguration( ConfigSource source )
+	private ConfigSource.Reload readConfiguration( ConfigSource source )
 	{
 		final String t = getType( source );
 		final String f = source.value();
 		final ConfigReader rd = getReader( t );
 
 		try {
+			L.trace( "Reading: type {} from '{}'", t, f );
+
 			rd.readConfiguration( this.root, f );
 		}
 		catch( final IOException e ) {
 			throw new RuntimeException( f, e );
 		}
 		catch( final UnsupportedOperationException x1 ) {
-			readFromURL( f, rd );
+			readFromURL( f, t, rd );
 		}
 
-		if( source.reload().value() >= 0 ) {
-			final long next = System.currentTimeMillis() + source.reload().unit().toMillis( source.reload().value() );
+		return this.readers.get( rd ).qualifier( ConfigSource.Type.class ).reload();
+	}
 
-			this.sources.add( new ConfigInfo( source, next ) );
+	private boolean addNext( ConfigSource source, ConfigSource.Reload reload )
+	{
+		if( reload.value() >= 0 ) {
+			final long next = reload.unit().toNanos( reload.value() );
+
+			L.trace( "Reload: type {} from '{}' within {} seconds", source.type(), source.value(), NANOSECONDS.toSeconds( next ) );
+
+			this.sources.add( new DelayedSource( source, next ) );
+
+			return true;
 		}
 
+		return false;
 	}
 
 	@PostConstruct
@@ -193,23 +213,16 @@ class ConfigCollect
 			.stream().map( b -> (Bean<ConfigReader>) b )
 			.filter( b -> b.getBeanClass().isAnnotationPresent( ConfigSource.Type.class ) )
 			.forEach( b -> {
-				final CreationalContext<ConfigReader> cc = this.bm.createCreationalContext( b );
-				final ConfigReader rd = (ConfigReader) this.bm.getReference( b, ConfigReader.class, cc );
-				final ReaderInfo info = new ReaderInfo( b, cc, b.getBeanClass().getAnnotation( ConfigSource.Type.class ) );
+				final InstanceInfo<ConfigReader> info = new InstanceInfo<>( this.bm, b );
 
-				this.readers.put( rd, info );
+				this.readers.put( info.instance, info );
 			} );
 
 		this.ext.sources().forEach( s -> {
-			this.sources.add( new ConfigInfo( s, 0L ) );
+			this.sources.add( new DelayedSource( s, 0 ) );
 		} );
 
 		readConfigurations();
-
-		System.getProperties().forEach( ( k, v ) -> {
-			this.root.set( (String) k, (String) v );
-		} );
-
 	}
 
 	@PreDestroy
@@ -220,26 +233,34 @@ class ConfigCollect
 		} );
 
 		this.readers.clear();
+		this.sources.clear();
 	}
 
-	private void readFromURL( final String f, final ConfigReader rd )
+	private void readFromURL( final String f, String t, final ConfigReader rd )
 	{
-		for( final Enumeration<URL> e = getURL( f ); e.hasMoreElements(); ) {
-			final URL u = e.nextElement();
+		final List<URL> all = getAll( f );
 
-			try {
-				rd.readConfiguration( this.root, u );
-			}
-			catch( final IOException x ) {
-				throw new RuntimeException( u.toExternalForm(), x );
-			}
+		if( all.isEmpty() ) {
+			L.warn( "Cannot find configuration source {}", f );
+		}
+		else {
+			all.forEach( u -> {
+				try {
+					L.trace( "Reading: type {} from '{}'", t, u );
+
+					rd.readConfiguration( this.root, u );
+				}
+				catch( final IOException x ) {
+					throw new RuntimeException( u.toExternalForm(), x );
+				}
+			} );
 		}
 	}
 
 	private ConfigReader getReader( String t )
 	{
 		return this.readers.entrySet().stream()
-			.filter( e -> matches( e.getValue().type, t ) )
+			.filter( e -> matches( e.getValue().qualifier( ConfigSource.Type.class ), t ) )
 			.map( Map.Entry::getKey )
 			.findFirst()
 			.orElseThrow( () -> new UnsatisfiedResolutionException( "Cannot find reader for type " + t ) );
@@ -266,16 +287,19 @@ class ConfigCollect
 		return t;
 	}
 
-	private Enumeration<URL> getURL( String source )
+	private List<URL> getAll( String source )
 	{
+		final List<URL> all = new ArrayList<>();
 		final File file = new File( source );
 
 		try {
+			all.addAll( list( Thread.currentThread().getContextClassLoader().getResources( source ) ) );
+
 			if( file.exists() ) {
-				return enumeration( asList( file.toURI().toURL() ) );
+				all.add( file.toURI().toURL() );
 			}
 
-			return Thread.currentThread().getContextClassLoader().getResources( source );
+			return all;
 		}
 		catch( final IOException e ) {
 			throw new RuntimeException( source, e );

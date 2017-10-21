@@ -2,11 +2,12 @@
 package ascelion.shared.cdi.conf;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
@@ -34,11 +35,10 @@ public class ConfigExtension implements Extension
 
 	static private final Logger L = LoggerFactory.getLogger( ConfigExtension.class );
 
-	private final Collection<ConfigSource> sources = new ArrayList<>();
-
+	private final Set<ConfigSource> sources = new LinkedHashSet<>();
+	private final Set<Class<? extends BiFunction>> converters = new LinkedHashSet<>();
 	private final Set<Type> types = new HashSet<>();
 	private final Set<Type> producedTypes = new HashSet<>();
-
 	private Bean<ConfigProd> producer;
 
 	<X> void collectConfigSourceList( @Observes ProcessAnnotatedType<X> event )
@@ -76,6 +76,8 @@ public class ConfigExtension implements Extension
 			}
 
 			event.setAnnotatedType( type );
+
+			this.converters.addAll( type.converters() );
 		}
 	}
 
@@ -126,6 +128,11 @@ public class ConfigExtension implements Extension
 	Collection<ConfigSource> sources()
 	{
 		return this.sources;
+	}
+
+	Set<Class<? extends BiFunction>> converters()
+	{
+		return this.converters;
 	}
 
 	Type wrap( Type t )

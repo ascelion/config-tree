@@ -24,7 +24,7 @@ public @interface ConfigSource
 	@interface Reload
 	{
 
-		int value() default -1;
+		long value() default -1;
 
 		TimeUnit unit() default TimeUnit.SECONDS;
 	}

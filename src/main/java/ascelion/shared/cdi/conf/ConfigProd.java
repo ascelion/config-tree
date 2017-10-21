@@ -43,7 +43,7 @@ class ConfigProd extends ConfigProdBase
 	@ConfigValue( "" )
 	Object create( InjectionPoint ip )
 	{
-		L.trace( "Annotated: {}", ip.getAnnotated() );
+		L.trace( "Value: {}", ip.getAnnotated() );
 
 		final ConfigValue a = getAnnotation( ip );
 
