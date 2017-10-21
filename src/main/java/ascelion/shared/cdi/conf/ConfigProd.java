@@ -45,8 +45,7 @@ class ConfigProd extends ConfigProdBase
 	{
 		L.trace( "Value: {}", ip.getAnnotated() );
 
-		final ConfigValue a = getAnnotation( ip );
-
+		final ConfigValue a = getValueAnnotation( ip );
 		final Set<Bean<?>> beans = this.bm.getBeans( a.converter() );
 
 		if( beans.size() > 0 ) {
@@ -74,8 +73,8 @@ class ConfigProd extends ConfigProdBase
 	private <T> T convert( InjectionPoint ip, BiFunction<Class<?>, String, T> f )
 	{
 		final Type t = ip.getType();
-		final ConfigNode n = getConfig( ip );
-		final ConfigValue a = getAnnotation( ip );
+		final ConfigNode n = getConfigNode( ip );
+		final ConfigValue a = getValueAnnotation( ip );
 		final String s = n != null ? n.getItem() : null;
 
 		if( t instanceof Class ) {

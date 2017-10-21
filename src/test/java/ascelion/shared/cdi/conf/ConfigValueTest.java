@@ -55,7 +55,7 @@ public class ConfigValueTest
 		@ConfigValue( "" )
 		BigDecimal create( InjectionPoint ip )
 		{
-			final String val = getConfigValue( ip );
+			final String val = getConfigItem( ip );
 
 			return val != null ? new BigDecimal( val ) : null;
 		}

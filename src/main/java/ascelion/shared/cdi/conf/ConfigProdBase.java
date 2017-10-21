@@ -5,26 +5,23 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public abstract class ConfigProdBase
 {
 
 	@Inject
-	protected ConfigCollect cc;
+	ConfigCollect cc;
 
-	protected final ConfigValue getAnnotation( InjectionPoint ip )
+	protected final ConfigNode getConfigNode( InjectionPoint ip )
 	{
-		return ip.getAnnotated().getAnnotation( ConfigValue.class );
-	}
-
-	protected ConfigNode getConfig( InjectionPoint ip )
-	{
-		final ConfigValue ano = getAnnotation( ip );
+		final ConfigValue ano = getValueAnnotation( ip );
 		final String[] vec = ano.value().split( ":" );
-		ConfigNode cn = this.cc.getRoot().getNode( vec[0] );
+		final String path = ConfigNode.path( getPrefix( ip ), vec[0] );
+		ConfigNode cn = this.cc.getRoot().getNode( path );
 
 		if( cn == null && vec.length > 1 ) {
-			cn = vec[1] != null ? new ConfigNode( vec[0] ).set( vec[1] ) : null;
+			cn = vec[1] != null ? new ConfigNode( path ).set( vec[1] ) : null;
 		}
 		if( cn == null ) {
 			return null;
@@ -33,11 +30,12 @@ public abstract class ConfigProdBase
 		return cn;
 	}
 
-	protected String getConfigValue( InjectionPoint ip )
+	protected final String getConfigItem( InjectionPoint ip )
 	{
-		final ConfigValue ano = getAnnotation( ip );
+		final ConfigValue ano = getValueAnnotation( ip );
 		final String[] vec = ano.value().split( ":" );
-		String cn = this.cc.getRoot().getItem( vec[0] );
+		final String path = ConfigNode.path( getPrefix( ip ), vec[0] );
+		String cn = this.cc.getRoot().getItem( path );
 
 		if( cn == null && vec.length > 1 ) {
 			cn = vec[1];
@@ -46,14 +44,14 @@ public abstract class ConfigProdBase
 		return expandValue( cn );
 	}
 
-	protected String expandValue( String value )
+	protected final String expandValue( String value )
 	{
 		return new Expander( value, x -> {
 			return this.cc.getRoot().getItem( x );
 		} ).expand();
 	}
 
-	protected String[] expandValues( String value )
+	protected final String[] expandValues( String value )
 	{
 		value = new Expander( value, x -> {
 			return this.cc.getRoot().getItem( x );
@@ -61,4 +59,17 @@ public abstract class ConfigProdBase
 
 		return isNotBlank( value ) ? value.split( "\\s*[;,]\\s*" ) : new String[0];
 	}
+
+	final ConfigValue getValueAnnotation( InjectionPoint ip )
+	{
+		return ip.getAnnotated().getAnnotation( ConfigValue.class );
+	}
+
+	private String getPrefix( InjectionPoint ip )
+	{
+		final ConfigPrefix a = ip.getBean().getBeanClass().getAnnotation( ConfigPrefix.class );
+
+		return a != null ? trimToNull( a.value() ) : null;
+	}
+
 }
