@@ -104,20 +104,7 @@ class ConfigProd extends ConfigProdBase
 					return null;
 				}
 
-				int u = a.unwrap();
-				String b = this.cc.getRoot().getPath();
-
-				while( u-- > 0 ) {
-					final int x = b.indexOf( '.' );
-
-					if( x < 0 ) {
-						break;
-					}
-
-					b = b.substring( x + 1 );
-				}
-
-				return (T) n.asMap( b, x -> convertTo( f, o1, x ) );
+				return (T) n.asMap( a.unwrap(), x -> convertTo( f, o1, x ) );
 			}
 
 			throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );

@@ -20,7 +20,9 @@ import ascelion.tests.cdi.CdiUnit;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
 
 import org.jglue.cdiunit.AdditionalClasses;
@@ -155,6 +157,8 @@ public class ConfigValueTest
 
 		assertThat( "logFile1", this.logFile1, is( notNullValue() ) );
 		assertThat( "logFile2", this.logFile2, is( notNullValue() ) );
+
+		this.logMappings.keySet().forEach( k -> assertThat( k, k, not( startsWith( "log." ) ) ) );
 	}
 
 }

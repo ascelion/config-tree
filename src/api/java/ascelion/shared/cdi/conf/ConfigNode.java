@@ -205,7 +205,28 @@ public final class ConfigNode
 		}
 	}
 
-	Map<String, ConfigNode> tree()
+	@Override
+	public String toString()
+	{
+		return Stream.of( this.item, this.tree ).filter( Objects::nonNull )
+			.map( Object::toString ).collect( Collectors.joining( ",", "{", "}" ) );
+	}
+
+	public <T> Map<String, T> asMap( Function<String, T> fun )
+	{
+		return asMap( 0, fun );
+	}
+
+	public <T> Map<String, T> asMap( int unwrap, Function<String, T> fun )
+	{
+		final TreeMap<String, T> m = new TreeMap<>();
+
+		fillMap( unwrap, m, fun );
+
+		return m;
+	}
+
+	private Map<String, ConfigNode> tree()
 	{
 		if( this.tree == null ) {
 			this.tree = new TreeMap<>();
@@ -214,31 +235,28 @@ public final class ConfigNode
 		return this.tree;
 	}
 
-	@Override
-	public String toString()
-	{
-		return Stream.of( this.item, this.tree ).filter( Objects::nonNull )
-			.map( Object::toString ).collect( Collectors.joining( ",", "{", "}" ) );
-	}
-
-	public <T> Map<String, T> asMap( String path, Function<String, T> fun )
-	{
-		final TreeMap<String, T> m = new TreeMap<>();
-
-		fillMap( m, fun );
-
-		return m;
-	}
-
-	private <T> void fillMap( TreeMap<String, T> m, Function<String, T> f )
+	private <T> void fillMap( int unwrap, TreeMap<String, T> m, Function<String, T> f )
 	{
 		if( this.tree == null || this.tree.isEmpty() ) {
 			if( this.item != null ) {
-				m.put( getPath(), f.apply( this.item ) );
+				String p = getPath();
+				int u = unwrap;
+
+				while( u-- > 0 ) {
+					final int x = p.indexOf( '.' );
+
+					if( x < 0 ) {
+						throw new IllegalStateException( format( "Cannot unwrap %s from %s", p, getPath() ) );
+					}
+
+					p = p.substring( x + 1 );
+				}
+
+				m.put( p, f.apply( this.item ) );
 			}
 		}
 		else {
-			this.tree.forEach( ( k, v ) -> v.fillMap( m, f ) );
+			this.tree.forEach( ( k, v ) -> v.fillMap( unwrap, m, f ) );
 		}
 	}
 }
