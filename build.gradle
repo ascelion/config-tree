@@ -35,7 +35,6 @@ dependencies {
 	compile 'com.google.code.gson:gson'
 
 	compile 'org.apache.deltaspike.core:deltaspike-core-api'
-//	runtime 'org.apache.deltaspike.core:deltaspike-core-impl'
 
 	testCompile 'junit:junit'
 
@@ -47,6 +46,9 @@ dependencies {
 	testCompile 'org.slf4j:log4j-over-slf4j'
 	testCompile 'ch.qos.logback:logback-classic'
 
+	testCompile 'org.apache.deltaspike.cdictrl:deltaspike-cdictrl-api'
+	testRuntime 'org.apache.deltaspike.cdictrl:deltaspike-cdictrl-weld'
+	
 	testRuntime 'javax.el:javax.el-api'
 	testRuntime 'org.jboss.weld.se:weld-se-core'
 }

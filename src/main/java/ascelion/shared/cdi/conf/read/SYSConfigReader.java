@@ -18,8 +18,12 @@ public class SYSConfigReader implements ConfigReader
 	@Override
 	public void readConfiguration( ConfigNode root, String source ) throws IOException
 	{
-		System.getProperties().forEach( ( k, v ) -> {
-			root.set( (String) k, (String) v );
+		root.asMap( x -> x ).keySet().forEach( k -> {
+			final String v = System.getProperty( k );
+
+			if( v != null ) {
+				root.set( k, v );
+			}
 		} );
 	}
 }

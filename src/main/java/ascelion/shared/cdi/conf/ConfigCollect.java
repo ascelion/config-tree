@@ -17,6 +17,8 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.UnsatisfiedResolutionException;
 import javax.enterprise.inject.Vetoed;
 import javax.enterprise.inject.spi.Bean;
@@ -135,6 +137,8 @@ class ConfigCollect
 
 	private final DelayQueue<DelayedSource> sources = new DelayQueue<>();
 
+	@Produces
+	@Dependent
 	public ConfigNode getRoot()
 	{
 		readConfigurations();
