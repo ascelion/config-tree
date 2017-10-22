@@ -1,13 +1,17 @@
 
 package ascelion.shared.cdi.conf;
 
-public class Config implements ConfigMXBean
+import javax.enterprise.inject.Instance;
+
+public class Config implements ConfigMBean
 {
 
+	private final Instance<ConfigNode> rootInstance;
 	private final ConfigNode node;
 
-	Config( ConfigNode node )
+	Config( Instance<ConfigNode> rootInstance, ConfigNode node )
 	{
+		this.rootInstance = rootInstance;
 		this.node = node;
 	}
 
@@ -33,6 +37,18 @@ public class Config implements ConfigMXBean
 	public void setValue( String value )
 	{
 		this.node.set( value );
+	}
+
+	@Override
+	public String getExpandedValue()
+	{
+		final ConfigNode root = this.rootInstance.get();
+		try {
+			return new Expander( this.node.getItem(), x -> root.getItem( x ) ).expand();
+		}
+		finally {
+			this.rootInstance.destroy( root );
+		}
 	}
 
 }

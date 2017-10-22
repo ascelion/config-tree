@@ -1,9 +1,11 @@
 
 package ascelion.shared.cdi.conf;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 import ascelion.tests.cdi.CdiUnit;
@@ -24,20 +26,33 @@ import org.junit.runner.RunWith;
 	GenericTest.IBean.class,
 	GenericTest.LBean.class,
 	GenericTest.SBean.class,
+	GenericTest.CustomSource.class,
 } )
 @UseConfigExtension
 public class GenericTest
 {
 
-	static {
-		System.setProperty( "prop1", "10" );
-		System.setProperty( "prop2", "20" );
-		System.setProperty( "prop3", "30" );
-		System.setProperty( "props", "${prop1}, ${prop2}, ${prop3}" );
+	@Dependent
+	@ConfigSource.Type( "custom" )
+	@ConfigSource( type = "custom" )
+	static class CustomSource implements ConfigReader
+	{
+
+		@Override
+		public void readConfiguration( ConfigNode root, String source ) throws IOException
+		{
+			root.set( "prop1", "10" );
+			root.set( "prop2", "20" );
+			root.set( "prop3", "30" );
+			root.set( "props", "${prop1}, ${prop2}, ${prop3}" );
+		}
 	}
 
 	static class BaseBean<T>
 	{
+
+		@ConfigValue( ":-314" )
+		T prop0;
 
 		T value0;
 
@@ -127,6 +142,7 @@ public class GenericTest
 	public void run()
 	{
 		assertThat( this.iBean, is( notNullValue() ) );
+		assertThat( this.iBean.prop0, is( -314 ) );
 		assertThat( this.iBean.value0, is( -2 ) );
 		assertThat( this.iBean.value1, is( 10 ) );
 		assertThat( this.iBean.value2, is( 20 ) );
@@ -134,6 +150,7 @@ public class GenericTest
 		assertThat( this.iBean.xValue1, is( 10L ) );
 
 		assertThat( this.lBean, is( notNullValue() ) );
+		assertThat( this.lBean.prop0, is( -314L ) );
 		assertThat( this.lBean.value0, is( -4L ) );
 		assertThat( this.lBean.value1, is( 10L ) );
 		assertThat( this.lBean.value2, is( 20L ) );
@@ -141,6 +158,7 @@ public class GenericTest
 		assertThat( this.lBean.xValue1, is( "10" ) );
 
 		assertThat( this.sBean, is( notNullValue() ) );
+		assertThat( this.sBean.prop0, is( "-314" ) );
 		assertThat( this.sBean.value0, is( "-6" ) );
 		assertThat( this.sBean.xValue1, is( 10 ) );
 		assertThat( this.sBean.value1, is( "10" ) );

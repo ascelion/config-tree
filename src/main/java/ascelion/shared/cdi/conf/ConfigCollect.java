@@ -70,11 +70,11 @@ class ConfigCollect
 				return c;
 			}
 
-			if( ( c = this.source.value().compareTo( that.source.value() ) ) != 0 ) {
+			if( ( c = this.source.type().compareTo( that.source.type() ) ) != 0 ) {
 				return c;
 			}
 
-			if( ( c = this.source.type().compareTo( that.source.type() ) ) != 0 ) {
+			if( ( c = this.source.value().compareTo( that.source.value() ) ) != 0 ) {
 				return c;
 			}
 
@@ -224,6 +224,10 @@ class ConfigCollect
 
 		this.ext.sources().forEach( s -> {
 			this.sources.add( new DelayedSource( s, 0 ) );
+		} );
+
+		this.ext.properties().forEach( s -> {
+			this.root.set( s, null );
 		} );
 
 		readConfigurations();

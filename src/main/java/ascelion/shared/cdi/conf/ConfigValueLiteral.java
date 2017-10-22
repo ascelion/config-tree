@@ -2,6 +2,8 @@
 package ascelion.shared.cdi.conf;
 
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.enterprise.util.AnnotationLiteral;
 
@@ -12,9 +14,9 @@ final class ConfigValueLiteral extends AnnotationLiteral<ConfigValue> implements
 	private final Class<? extends BiFunction> converter;
 	private final int unwrap;
 
-	ConfigValueLiteral( String value, Class<? extends BiFunction> converter, int unwrap )
+	ConfigValueLiteral( String[] n, Class<? extends BiFunction> converter, int unwrap )
 	{
-		this.value = value;
+		this.value = Stream.of( n ).collect( Collectors.joining( ":" ) );
 		this.converter = converter;
 		this.unwrap = unwrap;
 	}

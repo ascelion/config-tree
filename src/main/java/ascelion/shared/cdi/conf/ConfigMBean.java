@@ -1,12 +1,14 @@
 
 package ascelion.shared.cdi.conf;
 
-public interface ConfigMXBean
+public interface ConfigMBean
 {
 
 	String getName();
 
 	String getPath();
+
+	String getExpandedValue();
 
 	String getValue();
 

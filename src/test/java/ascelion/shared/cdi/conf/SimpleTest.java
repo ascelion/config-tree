@@ -12,10 +12,14 @@ import ascelion.tests.cdi.CdiUnit;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import org.jglue.cdiunit.AdditionalClasses;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
+@AdditionalClasses( {
+	SimpleTest.StringProd.class,
+} )
 @UseConfigExtension
 public class SimpleTest
 {

@@ -2,8 +2,9 @@
 package ascelion.shared.cdi.conf;
 
 import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 
 import javax.enterprise.inject.Produces;
@@ -15,6 +16,7 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.inject.Inject;
 
 import static java.lang.String.format;
+import static java.util.Collections.unmodifiableSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Typed
@@ -23,7 +25,8 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 
 	private boolean modified;
 
-	private final Set<Class<? extends BiFunction>> converters = new LinkedHashSet<>();
+	private final Set<Class<? extends BiFunction>> converters = new TreeSet<>( new TypeCMP<>() );
+	private final Set<String> properties = new TreeSet<>();
 
 	ConfigType( AnnotatedType<X> delegate )
 	{
@@ -67,21 +70,27 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 		}
 	}
 
-	private void updateAnnotation( Annotated p, String name )
+	private void updateAnnotation( Annotated m, String name )
 	{
-		final ConfigValue a = p.getAnnotation( ConfigValue.class );
+		ConfigValue a = m.getAnnotation( ConfigValue.class );
+		final ConfigPrefix p = getAnnotation( ConfigPrefix.class );
 
 		if( a != null ) {
 			boolean transform = false;
-			String n = a.value();
+			final String[] n = a.value().split( ":" );
 			Class<? extends BiFunction> c = a.converter();
 
-			if( n.isEmpty() ) {
+			if( n[0].isEmpty() ) {
 				if( isBlank( name ) ) {
-					throw new IllegalArgumentException( format( "Need to specify configuration name for %s", p ) );
+					throw new IllegalArgumentException( format( "Need to specify configuration name for %s", m ) );
 				}
 
-				n = name;
+				n[0] = name;
+				transform = true;
+			}
+			if( p != null ) {
+				n[0] = ConfigNode.path( p.value(), n[0] );
+
 				transform = true;
 			}
 			if( c == BiFunction.class ) {
@@ -90,13 +99,32 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 				transform = true;
 			}
 			if( transform ) {
-				p.getAnnotations().remove( a );
-				p.getAnnotations().add( new ConfigValueLiteral( n, c, a.unwrap() ) );
+				m.getAnnotations().remove( a );
+
+				a = new ConfigValueLiteral( n, c, a.unwrap() );
+
+				m.getAnnotations().add( a );
 
 				this.modified = true;
 			}
 
 			this.converters.add( c );
+
+			addProperties( a.value() );
+		}
+	}
+
+	private void addProperties( String value )
+	{
+		final String[] vec = value.split( ":" );
+
+		final List<ExpanderItem> items = ExpanderItem.items( vec[0] );
+
+		if( items.isEmpty() ) {
+			this.properties.add( vec[0] );
+		}
+		else {
+			items.forEach( i -> addProperties( i.v ) );
 		}
 	}
 
@@ -107,6 +135,11 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 
 	Set<Class<? extends BiFunction>> converters()
 	{
-		return this.converters;
+		return unmodifiableSet( this.converters );
+	}
+
+	Collection<? extends String> properties()
+	{
+		return unmodifiableSet( this.properties );
 	}
 }

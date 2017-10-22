@@ -8,6 +8,8 @@ import javax.inject.Inject;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 
+import ascelion.shared.cdi.conf.ConfigSource;
+import ascelion.shared.cdi.conf.JMXSupport;
 import ascelion.tests.cdi.CdiUnit;
 
 import org.jglue.cdiunit.AdditionalClasses;
@@ -18,6 +20,9 @@ import org.junit.runner.RunWith;
 @UseConfigExtension
 @AdditionalClasses( {
 	JMXTest.SP.class,
+	GenericTest.CustomSource.class,
+	ReloadTest.CustomSource1.class,
+	ReloadTest.CustomSource2.class,
 } )
 @ConfigSource( "config.ini" )
 @ConfigSource( "config.properties" )
@@ -27,7 +32,6 @@ import org.junit.runner.RunWith;
 @ConfigSource( "file2.conf" )
 @ConfigSource( "file3.ini" )
 @ConfigSource( "file4.yml" )
-@ConfigSource( "logback.xml" )
 @ConfigSource( "maps.yml" )
 public class JMXTest
 {

@@ -3,10 +3,9 @@ package ascelion.shared.cdi.conf;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 
 import javax.enterprise.event.Observes;
@@ -25,6 +24,7 @@ import javax.enterprise.inject.spi.WithAnnotations;
 import javax.inject.Inject;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 
 import com.google.common.primitives.Primitives;
 import org.slf4j.Logger;
@@ -35,10 +35,11 @@ public class ConfigExtension implements Extension
 
 	static private final Logger L = LoggerFactory.getLogger( ConfigExtension.class );
 
-	private final Set<ConfigSource> sources = new LinkedHashSet<>();
-	private final Set<Class<? extends BiFunction>> converters = new LinkedHashSet<>();
-	private final Set<Type> types = new HashSet<>();
-	private final Set<Type> producedTypes = new HashSet<>();
+	private final Set<ConfigSource> sources = new TreeSet<>( ConfigSourceCMP.INSTANCE );
+	private final Set<String> properties = new TreeSet<>();
+	private final Set<Class<? extends BiFunction>> converters = new TreeSet<>( new TypeCMP<>() );
+	private final Set<Type> types = new TreeSet<>( new TypeCMP<>() );
+	private final Set<Type> producedTypes = new TreeSet<>( new TypeCMP<>() );
 	private Bean<ConfigProd> producer;
 
 	<X> void collectConfigSourceList( @Observes ProcessAnnotatedType<X> event )
@@ -78,6 +79,7 @@ public class ConfigExtension implements Extension
 			event.setAnnotatedType( type );
 
 			this.converters.addAll( type.converters() );
+			this.properties.addAll( type.properties() );
 		}
 	}
 
@@ -125,14 +127,19 @@ public class ConfigExtension implements Extension
 		}
 	}
 
-	Collection<ConfigSource> sources()
+	Set<ConfigSource> sources()
 	{
-		return this.sources;
+		return unmodifiableSet( this.sources );
 	}
 
 	Set<Class<? extends BiFunction>> converters()
 	{
-		return this.converters;
+		return unmodifiableSet( this.converters );
+	}
+
+	Set<String> properties()
+	{
+		return unmodifiableSet( this.properties );
 	}
 
 	Type wrap( Type t )

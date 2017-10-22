@@ -52,21 +52,14 @@ class ConfigProd extends ConfigProdBase
 	{
 		L.trace( "Value: {}", ip.getAnnotated() );
 
-		final ConfigValue a = getValueAnnotation( ip );
-		final InstanceInfo<? extends BiFunction> c = this.converters.computeIfAbsent( a.converter(), x -> {
+		final ConfigValue a = annotation( ip );
+		final BiFunction<Class<?>, String, ?> f = this.converters.computeIfAbsent( a.converter(), x -> {
 			// shouldn't happen
 			throw new IllegalStateException( format( "Cannot find converter of type %s", x.getName() ) );
-		} );
+		} ).instance;
 
-		return convert( ip, c.instance );
-	}
-
-	private <T> T convert( InjectionPoint ip, BiFunction<Class<?>, String, T> f )
-	{
 		final Type t = ip.getType();
-		final ConfigNode n = getConfigNode( ip );
-		final ConfigValue a = getValueAnnotation( ip );
-		final String s = n != null ? n.getItem() : null;
+		final String s = configItem( ip, a );
 
 		if( t instanceof Class ) {
 			return convertTo( f, t, s );
@@ -77,10 +70,10 @@ class ConfigProd extends ConfigProdBase
 
 			if( Collection.class.isAssignableFrom( (Class) p.getRawType() ) ) {
 				if( p.getRawType() == Set.class ) {
-					return (T) Stream.of( expandValues( s ) ).map( x -> f.apply( o0, x ) ).collect( Collectors.toSet() );
+					return Stream.of( expandValues( s ) ).map( x -> f.apply( o0, x ) ).collect( Collectors.toSet() );
 				}
 				else {
-					return (T) Stream.of( expandValues( s ) ).map( x -> f.apply( o0, x ) ).collect( Collectors.toList() );
+					return Stream.of( expandValues( s ) ).map( x -> f.apply( o0, x ) ).collect( Collectors.toList() );
 				}
 			}
 			if( p.getRawType() == Map.class ) {
@@ -100,11 +93,13 @@ class ConfigProd extends ConfigProdBase
 					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
 				}
 
+				final ConfigNode n = configNode( ip, a );
+
 				if( n == null ) {
 					return null;
 				}
 
-				return (T) n.asMap( a.unwrap(), x -> convertTo( f, o1, x ) );
+				return n.asMap( a.unwrap(), x -> convertTo( f, o1, x ) );
 			}
 
 			throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
