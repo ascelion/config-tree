@@ -1,7 +1,10 @@
 value5: value5
 
-log:
+log1:
   mappings:
     ALL: 0
     ERR: 1
     ANY: [ 2, 3, 4 ]
+
+log2:
+  mappings: ${log1.mappings}

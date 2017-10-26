@@ -6,6 +6,7 @@ buildscript {
 
 apply plugin: 'ascelion'
 apply plugin: 'java'
+apply plugin: 'antlr'
 
 group = 'ascelion.shared'
 
@@ -20,11 +21,23 @@ ascelion {
 	}
 }
 
+//generateGrammarSource {
+//	arguments += ['-package', 'ascelion.cdi.conf']
+//}
+
+eclipseProject {
+	dependsOn generateGrammarSource
+}
+
 dependencies {
+	antlr 'org.antlr:antlr4'
+
 	apiCompile 'javax.enterprise:cdi-api'
 	apiCompile 'org.apache.commons:commons-lang3'
 
 	compile configurations.apiCompile
+
+	compile 'org.antlr:antlr4-runtime'
 
 	compile 'com.google.guava:guava'
 	compile 'commons-io:commons-io'

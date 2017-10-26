@@ -8,15 +8,18 @@ import java.net.URL;
 public interface ConfigReader
 {
 
-	default void readConfiguration( ConfigNode root, String source ) throws IOException
+	default void readConfiguration( ConfigNode root, String source ) throws ConfigException
 	{
 		throw new UnsupportedOperationException( source );
 	}
 
-	default void readConfiguration( ConfigNode root, URL source ) throws IOException
+	default void readConfiguration( ConfigNode root, URL source ) throws ConfigException
 	{
 		try( InputStream is = source.openStream() ) {
 			readConfiguration( root, is );
+		}
+		catch( final IOException e ) {
+			throw new ConfigException( source.toExternalForm(), e );
 		}
 	}
 
