@@ -1,12 +1,11 @@
 
 package ascelion.cdi.conf;
 
-import static org.hamcrest.CoreMatchers.is;
+import java.io.IOException;
+
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CodePointCharStream;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -19,45 +18,50 @@ public class ExpressionParserTest
 	static public Object data()
 	{
 		return new Object[] {
-			new Object[] { "root", 0, },
-			new Object[] { "item0.item1.item2", 0, },
-			new Object[] { "${root}", 0, },
-			new Object[] { "${${root}}", 0, },
-			new Object[] { "${root:default}", 0, },
-			new Object[] { "${root:${value}}", 0, },
-			new Object[] { "${${root:default}}", 0, },
-			new Object[] { "${${root}:default}", 0, },
-			new Object[] { "${${root}:${value}}", 0, },
-			new Object[] { "${${root:${value1}}}", 0, },
-			new Object[] { "${${root:${value1}}:value2}", 0, },
-			new Object[] { "$root", 1, },
-			new Object[] { "${root", 1, },
-			new Object[] { "${${root", 1, },
-			new Object[] { "$root}", 1, },
-			new Object[] { "{root}", 1, },
-			new Object[] { "ro~ot", 1, },
+			new Object[] { "root", 0 },
+			new Object[] { "${root}", 0 },
+			new Object[] { "item0.item1.item2", 0 },
+			new Object[] { "${item0.item1.item2}", 0 },
+			new Object[] { "${item0.${root.value}.item2}", 0 },
+			new Object[] { "item0.${root.value}.item2", 0 },
+			new Object[] { "item0.item1.item2}", 1 },
+			new Object[] { "${${root}}", 0 },
+			new Object[] { "${root.prop1:default}", 0 },
+			new Object[] { "${root:${value}}", 0 },
+			new Object[] { "${${root:default}}", 0 },
+			new Object[] { "${${root}:default}", 0 },
+			new Object[] { "${${root}:${value}}", 0 },
+			new Object[] { "${${root:${value1}}}", 0 },
+			new Object[] { "${${root:${value1}}:value2}", 0 },
+			new Object[] { "$root", 1 },
+			new Object[] { "${root", 1 },
+			new Object[] { "${${root", 1 },
+			new Object[] { "$root}", 2 },
+			new Object[] { "root}", 1 },
+			new Object[] { "{root}", 2 },
+			new Object[] { "ro~ot", 1 },
+			new Object[] { "${value}-1", 0 },
 		};
 	}
 
-	@Parameterized.Parameter( 0 )
-	public String value;
+	private final String value;
 
-	@Parameterized.Parameter( 1 )
-	public int errors;
+	private final int errors;
 
-	@Test
-	public void run()
+	public ExpressionParserTest( String value, int errors )
 	{
-		final CodePointCharStream cs = CharStreams.fromString( this.value );
-		final ExpressionLexer lx = new ExpressionLexer( cs );
-		final CommonTokenStream ts = new CommonTokenStream( lx );
-		final ExpressionParser px = new ExpressionParser( ts );
-
-		px.addParseListener( new ExpressionParserListener() );
-
-		px.expr();
-
-		assertThat( px.getNumberOfSyntaxErrors(), is( this.errors ) );
+		this.value = value;
+		this.errors = errors;
 	}
 
+	@Test
+	public void run() throws IOException
+	{
+		final ExpressionParser px = ExpressionParser.createFor( this.value, System.err::println );
+
+		px.setTrace( true );
+		px.root();
+
+		assertThat( px.getErrors(), hasSize( this.errors ) );
+	}
 }

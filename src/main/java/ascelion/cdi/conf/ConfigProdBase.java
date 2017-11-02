@@ -1,6 +1,8 @@
 
 package ascelion.cdi.conf;
 
+import java.util.LinkedHashSet;
+
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
@@ -27,7 +29,7 @@ public abstract class ConfigProdBase
 
 	protected final String expandValue( String value )
 	{
-		return new Expression( value ).asItem( this.cc.root() );
+		return ExpressionRules.parse( value ).evaluate( this.cc.root(), new LinkedHashSet<>() );
 	}
 
 	protected final String[] splitValues( String value )

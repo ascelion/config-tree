@@ -15,6 +15,8 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import ascelion.cdi.conf.Config;
+import ascelion.cdi.conf.ConfigMBean;
 import ascelion.cdi.conf.ConfigNodeImpl;
 import ascelion.shared.cdi.conf.ConfigException;
 import ascelion.shared.cdi.conf.ConfigNode;

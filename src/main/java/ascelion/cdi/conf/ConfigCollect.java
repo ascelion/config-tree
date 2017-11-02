@@ -229,10 +229,6 @@ class ConfigCollect
 			this.sources.add( new DelayedSource( s, 0 ) );
 		} );
 
-		this.ext.properties().forEach( s -> {
-			this.root.set( s, null );
-		} );
-
 		readConfigurations();
 	}
 

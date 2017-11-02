@@ -39,7 +39,6 @@ public class ConfigExtension implements Extension
 	static private final Logger L = LoggerFactory.getLogger( ConfigExtension.class );
 
 	private final Set<ConfigSource> sources = new TreeSet<>( ConfigSourceCMP.INSTANCE );
-	private final Set<String> properties = new TreeSet<>();
 	private final Set<Class<? extends BiFunction>> converters = new TreeSet<>( new TypeCMP<>() );
 	private final Set<Type> types = new TreeSet<>( new TypeCMP<>() );
 	private final Set<Type> producedTypes = new TreeSet<>( new TypeCMP<>() );
@@ -82,7 +81,6 @@ public class ConfigExtension implements Extension
 			event.setAnnotatedType( type );
 
 			this.converters.addAll( type.converters() );
-			this.properties.addAll( type.properties() );
 		}
 	}
 
@@ -138,11 +136,6 @@ public class ConfigExtension implements Extension
 	Set<Class<? extends BiFunction>> converters()
 	{
 		return unmodifiableSet( this.converters );
-	}
-
-	Set<String> properties()
-	{
-		return unmodifiableSet( this.properties );
 	}
 
 	Type wrap( Type t )

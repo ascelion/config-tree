@@ -2,7 +2,6 @@
 package ascelion.cdi.conf;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
@@ -29,7 +28,6 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 	private boolean modified;
 
 	private final Set<Class<? extends BiFunction>> converters = new TreeSet<>( new TypeCMP<>() );
-	private final Set<String> properties = new TreeSet<>();
 
 	ConfigType( AnnotatedType<X> delegate )
 	{
@@ -112,22 +110,6 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 			}
 
 			this.converters.add( c );
-
-			addProperties( a.value() );
-		}
-	}
-
-	private void addProperties( String value )
-	{
-		final String[] vec = value.split( ":" );
-
-		final List<ExpressionItem> items = ExpressionItem.items( vec[0] );
-
-		if( items == null ) {
-			this.properties.add( vec[0] );
-		}
-		else {
-			items.forEach( i -> addProperties( i.v ) );
 		}
 	}
 
@@ -139,10 +121,5 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 	Set<Class<? extends BiFunction>> converters()
 	{
 		return unmodifiableSet( this.converters );
-	}
-
-	Collection<? extends String> properties()
-	{
-		return unmodifiableSet( this.properties );
 	}
 }

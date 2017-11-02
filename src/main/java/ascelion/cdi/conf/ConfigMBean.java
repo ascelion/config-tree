@@ -1,5 +1,5 @@
 
-package ascelion.cdi.conf.read;
+package ascelion.cdi.conf;
 
 public interface ConfigMBean
 {
