@@ -50,7 +50,7 @@ grammar Expression;
 //					} 
 //				}
 
-				px.addError( new ExpressionError( msg, charPositionInLine ) );
+				px.addError( new EvalError( msg, charPositionInLine ) );
 			}
 		};
 
@@ -63,7 +63,7 @@ grammar Expression;
 		return px;
 	}
 
-	private final List<ExpressionError> errors = new ArrayList<>();
+	private final List<EvalError> errors = new ArrayList<>();
 	private Consumer<String> feedback = x->{};
 
 	private ExpressionParser( TokenStream ts, Consumer<String> feedback )
@@ -72,12 +72,12 @@ grammar Expression;
 		this.feedback = feedback;
 	}
 
-	public List<ExpressionError> getErrors()
+	public List<EvalError> getErrors()
 	{
 		return unmodifiableList(this.errors);
 	}
 
-	public void addError(ExpressionError error)
+	public void addError(EvalError error)
 	{
 		feedback.accept(format("Error: at=%d, text=%s", error.position, error.message));
 
