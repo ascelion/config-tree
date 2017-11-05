@@ -1,0 +1,1 @@
+${prop1:def1}, ${prop2:def2}, ${prop3:def3}

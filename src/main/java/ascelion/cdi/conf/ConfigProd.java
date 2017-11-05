@@ -2,7 +2,9 @@
 package ascelion.cdi.conf;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -60,52 +62,54 @@ class ConfigProd extends ConfigProdBase
 
 		final Type t = ip.getType();
 
-		return new Converter( this.cc.root(), a.value(), f, t ).convert();
+//		return new Converter( this.cc.root(), a, f, t ).convert();
 //		final String s = configItem( ip, a );
-//
-//		if( t instanceof Class ) {
-//			return convertTo( f, t, s );
-//		}
-//		else {
-//			final ParameterizedType p = (ParameterizedType) t;
-//			final Class<?> o0 = (Class<?>) p.getActualTypeArguments()[0];
-//
-//			if( Collection.class.isAssignableFrom( (Class) p.getRawType() ) ) {
-//				if( p.getRawType() == Set.class ) {
-//					return Stream.of( expandValues( s ) ).map( x -> f.apply( o0, x ) ).collect( Collectors.toSet() );
-//				}
-//				else {
-//					return Stream.of( expandValues( s ) ).map( x -> f.apply( o0, x ) ).collect( Collectors.toList() );
-//				}
-//			}
-//			if( p.getRawType() == Map.class ) {
-//				if( o0 != String.class ) {
-//					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
-//				}
-//
-//				final Type t1 = p.getActualTypeArguments()[1];
-//
-//				if( !( t1 instanceof Class ) ) {
-//					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
-//				}
-//
-//				final Class<?> o1 = (Class<?>) t1;
-//
-//				if( o1 == Object.class ) {
-//					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
-//				}
-//
-//				final ConfigNodeImpl n = configNode( ip, a );
-//
-//				if( n == null ) {
-//					return null;
-//				}
-//
-//				return n.asMap( a.unwrap(), x -> convertTo( f, o1, x ) );
-//			}
-//
-//			throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
-//		}
+
+		if( t instanceof Class ) {
+			return convertTo( f, t, a.value() );
+		}
+		else {
+			final ParameterizedType p = (ParameterizedType) t;
+			final Class<?> o0 = (Class<?>) p.getActualTypeArguments()[0];
+
+			if( Collection.class.isAssignableFrom( (Class) p.getRawType() ) ) {
+				final String[] s = splitValues( Eval.eval( a.value(), this.cc.root() ) );
+
+				if( p.getRawType() == Set.class ) {
+					return Stream.of( s ).map( x -> f.apply( o0, x ) ).collect( Collectors.toSet() );
+				}
+				else {
+					return Stream.of( s ).map( x -> f.apply( o0, x ) ).collect( Collectors.toList() );
+				}
+			}
+			if( p.getRawType() == Map.class ) {
+				if( o0 != String.class ) {
+					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
+				}
+
+				final Type t1 = p.getActualTypeArguments()[1];
+
+				if( !( t1 instanceof Class ) ) {
+					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
+				}
+
+				final Class<?> o1 = (Class<?>) t1;
+
+				if( o1 == Object.class ) {
+					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
+				}
+
+				final ConfigNodeImpl n = configNode( a );
+
+				if( n == null ) {
+					return null;
+				}
+
+				return n.asMap( a.unwrap(), x -> convertTo( f, o1, x ) );
+			}
+
+			throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
+		}
 	}
 
 	private <T> T convertTo( BiFunction<Class<?>, String, T> f, Type t, String v )
@@ -114,25 +118,27 @@ class ConfigProd extends ConfigProdBase
 
 		if( c.isArray() ) {
 			final Class<?> o = c.getComponentType();
+			final String[] s = splitValues( Eval.eval( v, this.cc.root() ) );
 
-			return (T) Stream.of( splitValues( v ) )
+			return (T) Stream.of( v )
 				.map( x -> f.apply( o, x ) )
-				.collect( Collectors.toList() )
-				.toArray( (Object[]) Array.newInstance( o, 0 ) );
+				.toArray( n -> (Object[]) Array.newInstance( o, n ) );
 		}
 		else {
+			String s = Eval.eval( v, this.cc.root() );
+
 			if( c.isPrimitive() ) {
 				c = Primitives.wrap( c );
 
 				if( isBlank( v ) ) {
-					v = "0";
+					s = "0";
 				}
 			}
-			if( isBlank( v ) ) {
+			if( isBlank( s ) ) {
 				return null;
 			}
 
-			return f.apply( c, v );
+			return f.apply( c, s );
 		}
 	}
 

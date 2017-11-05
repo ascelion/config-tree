@@ -1,8 +1,6 @@
 
 package ascelion.cdi.conf;
 
-import java.util.LinkedHashSet;
-
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
@@ -19,7 +17,7 @@ public abstract class ConfigProdBase
 
 	protected final ConfigNode getConfigNode( InjectionPoint ip )
 	{
-		return configNode( ip, annotation( ip ) );
+		return configNode( annotation( ip ) );
 	}
 
 	protected final String getConfigItem( InjectionPoint ip )
@@ -29,7 +27,7 @@ public abstract class ConfigProdBase
 
 	protected final String expandValue( String value )
 	{
-		return ExpressionRules.parse( value ).evaluate( this.cc.root(), new LinkedHashSet<>() );
+		return Eval.eval( value, this.cc.root() );
 	}
 
 	protected final String[] splitValues( String value )
@@ -37,7 +35,7 @@ public abstract class ConfigProdBase
 		return isNotBlank( value ) ? value.split( "\\s*[;,]\\s*" ) : new String[0];
 	}
 
-	final ConfigNodeImpl configNode( InjectionPoint ip, ConfigValue ano )
+	final ConfigNodeImpl configNode( ConfigValue ano )
 	{
 		final String[] vec = ano.value().split( ":" );
 		final String path = vec[0];
@@ -57,14 +55,7 @@ public abstract class ConfigProdBase
 
 	final String configItem( InjectionPoint ip, ConfigValue ano )
 	{
-		final String[] vec = ano.value().split( ":" );
-		String cn = this.cc.root().getValue( vec[0] );
-
-		if( cn == null && vec.length > 1 ) {
-			cn = vec[1];
-		}
-
-		return expandValue( cn );
+		return expandValue( ano.value() );
 	}
 
 	final ConfigValue annotation( InjectionPoint ip )

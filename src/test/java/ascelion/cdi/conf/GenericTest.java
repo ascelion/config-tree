@@ -48,6 +48,7 @@ public class GenericTest
 			root.setValue( "prop2", "20" );
 			root.setValue( "prop3", "30" );
 			root.setValue( "props", "${prop1}, ${prop2}, ${prop3}" );
+			root.setValue( "version", null );
 		}
 	}
 

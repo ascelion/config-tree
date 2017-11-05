@@ -1,9 +1,6 @@
 
 package ascelion.cdi.conf;
 
-import java.util.LinkedHashSet;
-
-import ascelion.cdi.conf.ExpressionRules.Rule;
 import ascelion.shared.cdi.conf.ConfigNode;
 
 public final class Config implements ConfigMBean
@@ -45,9 +42,7 @@ public final class Config implements ConfigMBean
 	@Override
 	public String getExpandedValue()
 	{
-		final Rule rule = ExpressionRules.parse( this.node.getValue() );
-
-		return rule.evaluate( this.root, new LinkedHashSet<>() );
+		return Eval.eval( this.node.getValue(), this.root );
 	}
 
 }

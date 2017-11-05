@@ -23,14 +23,14 @@ grammar Expression;
 
 	static public ExpressionParser createFor( String value, Consumer<String> feedback )
 	{
-		final boolean[] wrapped = new boolean[] { false };
-		final int length = value.length();
-
-		if( !value.contains( "${" ) ) {
-			value = "${" + value + "}";
-
-			wrapped[0] = true;
-		}
+//		final boolean[] wrapped = new boolean[] { false };
+//		final int length = value.length();
+//
+//		if( !value.contains( "${" ) ) {
+//			value = "${" + value + "}";
+//
+//			wrapped[0] = true;
+//		}
 
 		final CharStream cs = CharStreams.fromString( value );
 		final ExpressionLexer lx = new ExpressionLexer( cs );
@@ -42,13 +42,13 @@ grammar Expression;
 			@Override
 			public void syntaxError( Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e )
 			{
-				if( wrapped[0] ) {
-					charPositionInLine -= 2;
-					
-					if( charPositionInLine < 0 ) {
-						charPositionInLine = 0;
-					} 
-				}
+//				if( wrapped[0] ) {
+//					charPositionInLine -= 2;
+//					
+//					if( charPositionInLine < 0 ) {
+//						charPositionInLine = 0;
+//					} 
+//				}
 
 				px.addError( new ExpressionError( msg, charPositionInLine ) );
 			}
@@ -76,7 +76,7 @@ grammar Expression;
 	{
 		return unmodifiableList(this.errors);
 	}
-	
+
 	public void addError(ExpressionError error)
 	{
 		feedback.accept(format("Error: at=%d, text=%s", error.position, error.message));
@@ -94,12 +94,14 @@ root
 	;
 
 expr
-	: ITEM expr*
+	: STR expr*
+	| expr DEF expr
 	| BEG expr END
-	| BEG expr DEF expr END
 	;
 
 BEG : '${' ;
 END : '}' ;
 DEF : ':' ;
-ITEM: ('0'..'9'|'A'..'Z'|'a'..'z'|'-' |'_'|'.')+ ;
+//STR : (~[\u0000-\u001F${}:\u007f-\uffff])+ ;
+STR : ('0'..'9'|'A'..'Z'|'a'..'z'|'-' |'_'|'.'|','|';'|'~'|' ')+ ;
+

@@ -28,15 +28,6 @@ import org.junit.runner.RunWith;
 	ReloadTest.CustomSource1.class,
 	ReloadTest.CustomSource2.class,
 } )
-//@ConfigSource( "config.ini" )
-//@ConfigSource( "config.properties" )
-//@ConfigSource( "config.xml" )
-//@ConfigSource( "config.yml" )
-//@ConfigSource( "file1.properties" )
-//@ConfigSource( "file2.conf" )
-//@ConfigSource( "file3.ini" )
-//@ConfigSource( "file4.yml" )
-//@ConfigSource( "maps.yml" )
 public class JMXTest
 {
 
@@ -48,7 +39,7 @@ public class JMXTest
 		private final MBeanServer serv = ManagementFactory.getPlatformMBeanServer();
 	}
 
-	@ConfigValue( ":${java.version}" )
+	@ConfigValue( "${version:${java.version}}" )
 	private String version;
 
 	@Inject

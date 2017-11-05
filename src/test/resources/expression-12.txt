@@ -1,1 +1,1 @@
-${${root}:${value}}
+${${prop}:${value}}

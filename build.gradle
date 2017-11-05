@@ -75,8 +75,8 @@ test {
 
 task( grun, type: JavaExec ) {
 	main = 'org.antlr.v4.gui.TestRig'
-	classpath += sourceSets.main.output
-	classpath += sourceSets.main.runtimeClasspath
+	classpath += sourceSets.test.output
+	classpath += sourceSets.test.runtimeClasspath
 	classpath += configurations.antlr
 	args += [ 'ascelion.cdi.conf.Expression', 'root' ]
 	args += [ '-tokens', '-trace', '-diagnostics', '-SLL', '-tree']
