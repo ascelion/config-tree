@@ -1,16 +1,11 @@
 
 package ascelion.cdi.conf;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -26,9 +21,7 @@ import javax.inject.Inject;
 import ascelion.shared.cdi.conf.ConfigValue;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import com.google.common.primitives.Primitives;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,84 +55,7 @@ class ConfigProd extends ConfigProdBase
 
 		final Type t = ip.getType();
 
-//		return new Converter( this.cc.root(), a, f, t ).convert();
-//		final String s = configItem( ip, a );
-
-		if( t instanceof Class ) {
-			return convertTo( f, t, a.value() );
-		}
-		else {
-			final ParameterizedType p = (ParameterizedType) t;
-			final Class<?> o0 = (Class<?>) p.getActualTypeArguments()[0];
-
-			if( Collection.class.isAssignableFrom( (Class) p.getRawType() ) ) {
-				final String[] s = splitValues( Eval.eval( a.value(), this.cc.root() ) );
-
-				if( p.getRawType() == Set.class ) {
-					return Stream.of( s ).map( x -> f.apply( o0, x ) ).collect( Collectors.toSet() );
-				}
-				else {
-					return Stream.of( s ).map( x -> f.apply( o0, x ) ).collect( Collectors.toList() );
-				}
-			}
-			if( p.getRawType() == Map.class ) {
-				if( o0 != String.class ) {
-					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
-				}
-
-				final Type t1 = p.getActualTypeArguments()[1];
-
-				if( !( t1 instanceof Class ) ) {
-					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
-				}
-
-				final Class<?> o1 = (Class<?>) t1;
-
-				if( o1 == Object.class ) {
-					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
-				}
-
-				final ConfigNodeImpl n = configNode( a );
-
-				if( n == null ) {
-					return null;
-				}
-
-				return n.asMap( a.unwrap(), x -> convertTo( f, o1, x ) );
-			}
-
-			throw new UnsupportedOperationException( format( "Cannot inject field of type %s", t ) );
-		}
-	}
-
-	private <T> T convertTo( BiFunction<Class<?>, String, T> f, Type t, String v )
-	{
-		Class<?> c = (Class<?>) t;
-
-		if( c.isArray() ) {
-			final Class<?> o = c.getComponentType();
-			final String[] s = splitValues( Eval.eval( v, this.cc.root() ) );
-
-			return (T) Stream.of( v )
-				.map( x -> f.apply( o, x ) )
-				.toArray( n -> (Object[]) Array.newInstance( o, n ) );
-		}
-		else {
-			String s = Eval.eval( v, this.cc.root() );
-
-			if( c.isPrimitive() ) {
-				c = Primitives.wrap( c );
-
-				if( isBlank( v ) ) {
-					s = "0";
-				}
-			}
-			if( isBlank( s ) ) {
-				return null;
-			}
-
-			return f.apply( c, s );
-		}
+		return new Converter( this.cc.root(), a, f, t ).convert();
 	}
 
 	@PostConstruct

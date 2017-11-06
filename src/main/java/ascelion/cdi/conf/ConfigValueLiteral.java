@@ -16,11 +16,16 @@ final class ConfigValueLiteral extends AnnotationLiteral<ConfigValue> implements
 	private final Class<? extends BiFunction> converter;
 	private final int unwrap;
 
-	ConfigValueLiteral( String[] n, Class<? extends BiFunction> converter, int unwrap )
+	ConfigValueLiteral( String value, Class<? extends BiFunction> converter, int unwrap )
 	{
-		this.value = Stream.of( n ).collect( Collectors.joining( ":" ) );
+		this.value = value;
 		this.converter = converter;
 		this.unwrap = unwrap;
+	}
+
+	ConfigValueLiteral( String[] values, Class<? extends BiFunction> converter, int unwrap )
+	{
+		this( Stream.of( values ).collect( Collectors.joining( ":" ) ), converter, unwrap );
 	}
 
 	@Override

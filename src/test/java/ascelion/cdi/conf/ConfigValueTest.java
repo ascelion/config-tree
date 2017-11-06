@@ -15,7 +15,6 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
-import ascelion.cdi.conf.ConfigProdBase;
 import ascelion.shared.cdi.conf.ConfigSource;
 import ascelion.shared.cdi.conf.ConfigValue;
 import ascelion.tests.cdi.CdiUnit;
@@ -173,9 +172,9 @@ public class ConfigValueTest
 		assertThat( "logFile1", this.logFile1, is( notNullValue() ) );
 		assertThat( "logFile2", this.logFile2, is( notNullValue() ) );
 
-		this.map11.keySet().forEach( k -> assertThat( k, k, startsWith( "log." ) ) );
-		this.map12.keySet().forEach( k -> assertThat( k, k, startsWith( "log.mappings." ) ) );
-		this.map13.keySet().forEach( k -> assertThat( k, k, not( startsWith( "log.mappings." ) ) ) );
+		this.map11.keySet().forEach( k -> assertThat( k, k, startsWith( "log1." ) ) );
+		this.map12.keySet().forEach( k -> assertThat( k, k, startsWith( "mappings." ) ) );
+		this.map13.keySet().forEach( k -> assertThat( k, k, not( startsWith( "log1.mappings." ) ) ) );
 	}
 
 }
