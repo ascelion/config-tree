@@ -47,20 +47,34 @@ final class Converter
 			return convertFrom( (Class<?>) this.type );
 		}
 		else {
-			final ParameterizedType p = (ParameterizedType) this.type;
-			final Class<?> t0 = (Class<?>) p.getActualTypeArguments()[0];
+			final ParameterizedType p0;
+			final Class<?> r0;
+			final Class<?> t00;
 
-			if( Collection.class.isAssignableFrom( (Class) p.getRawType() ) ) {
-				if( p.getRawType() == Set.class ) {
-					return streamOf( t0 ).collect( Collectors.toSet() );
+			try {
+				p0 = (ParameterizedType) this.type;
+				r0 = (Class<?>) p0.getRawType();
+				t00 = (Class<?>) p0.getActualTypeArguments()[0];
+			}
+			catch( final ClassCastException e ) {
+				throw new UnsupportedOperationException( format( "Cannot inject field of type %s", this.type ) );
+			}
+
+			if( Collection.class.isAssignableFrom( r0 ) ) {
+				if( p0.getRawType() == Set.class ) {
+					return streamOf( t00 ).collect( Collectors.toSet() );
 				}
 				else {
-					return streamOf( t0 ).collect( Collectors.toList() );
+					return streamOf( t00 ).collect( Collectors.toList() );
 				}
 			}
-			if( p.getRawType() == Map.class ) {
-				if( t0 != String.class ) {
+			if( p0.getRawType() == Map.class ) {
+				if( t00 != String.class ) {
 					throw new UnsupportedOperationException( format( "Cannot inject field of type %s", this.type ) );
+				}
+
+				if( this.root == null ) {
+					return null;
 				}
 
 				final ConfigNodeImpl n = (ConfigNodeImpl) this.root.getNode( this.anno.value() );
@@ -69,10 +83,10 @@ final class Converter
 					return null;
 				}
 
-				final Type t1 = p.getActualTypeArguments()[1];
+				final Type t01 = p0.getActualTypeArguments()[1];
 
-				return n.asMap( this.anno.unwrap(), x -> {
-					final Converter cv = new Converter( this.root, new ConfigValueLiteral( x, this.anno.converter(), this.anno.unwrap() ), this.func, t1 );
+				return n.asMap( this.anno.unwrap(), v -> {
+					final Converter cv = new Converter( v.contains( "${" ) ? this.root : null, new ConfigValueLiteral( v, this.anno.converter(), this.anno.unwrap() ), this.func, t01 );
 					final Object vv = cv.convert();
 
 					return vv;
@@ -84,7 +98,7 @@ final class Converter
 
 	private Stream<?> streamOf( Class<?> cls )
 	{
-		final String[] sv = split( Eval.eval( this.anno.value(), this.root ) );
+		final String[] sv = split( eval() );
 
 		return Stream.of( sv ).map( x -> this.func.apply( cls, x ) );
 	}
@@ -100,7 +114,7 @@ final class Converter
 				} );
 		}
 		else {
-			String v = Eval.eval( this.anno.value(), this.root );
+			String v = eval();
 
 			if( cls.isPrimitive() ) {
 				cls = Primitives.wrap( cls );
@@ -116,5 +130,10 @@ final class Converter
 
 			return this.func.apply( cls, v );
 		}
+	}
+
+	private String eval()
+	{
+		return this.root != null ? Eval.eval( this.anno.value(), this.root ) : this.anno.value();
 	}
 }

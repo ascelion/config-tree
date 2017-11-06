@@ -1,4 +1,11 @@
+cors:
+  allowedMethods: "*"
+
 db:
+  host: 127.0.0.1
+  port: 43210
+  user: username
+  pass: password
   eclipselink:
     logging:
       level: FINEST
