@@ -6,6 +6,7 @@
 <stringAttribute key="gradle_user_home" value="/home/pappy/.gradle"/>
 <listAttribute key="jvm_arguments">
 <listEntry value="-DignoreTestFailures=true"/>
+<listEntry value="-DskipTests"/>
 </listAttribute>
 <booleanAttribute key="offline_mode" value="false"/>
 <listAttribute key="org.eclipse.debug.ui.favoriteGroups">

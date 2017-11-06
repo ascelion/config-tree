@@ -18,7 +18,7 @@ import org.ini4j.Profile.Section;
 
 @ConfigSource.Type( value = "INI" )
 @Dependent
-class INIConfigReader implements ConfigReader
+public class INIConfigReader implements ConfigReader
 {
 
 	@Override

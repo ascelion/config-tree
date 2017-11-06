@@ -13,7 +13,7 @@ import ascelion.shared.cdi.conf.ConfigSource;
 
 @ConfigSource.Type( value = "properties", types = "conf" )
 @Dependent
-class PRPConfigReader implements ConfigReader
+public class PRPConfigReader implements ConfigReader
 {
 
 	@Override

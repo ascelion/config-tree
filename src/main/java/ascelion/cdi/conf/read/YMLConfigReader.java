@@ -15,7 +15,7 @@ import org.yaml.snakeyaml.Yaml;
 
 @ConfigSource.Type( value = "YML", types = { "YML", "YAML" } )
 @Dependent
-class YMLConfigReader implements ConfigReader
+public class YMLConfigReader implements ConfigReader
 {
 
 	@Override

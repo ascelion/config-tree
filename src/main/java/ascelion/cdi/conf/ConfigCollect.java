@@ -1,10 +1,8 @@
 
 package ascelion.cdi.conf;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +26,6 @@ import ascelion.shared.cdi.conf.ConfigReader;
 import ascelion.shared.cdi.conf.ConfigSource;
 
 import static java.lang.String.format;
-import static java.util.Collections.list;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.gson.GsonBuilder;
@@ -154,7 +151,7 @@ class ConfigCollect
 
 	private void readFromURL( ConfigSource source, String t, ConfigReader rd )
 	{
-		final List<URL> all = getAll( source.value() );
+		final List<URL> all = ConfigReader.getResources( source.value() );
 
 		if( all.isEmpty() ) {
 			L.warn( "Cannot find configuration source {}", source.value() );
@@ -196,24 +193,5 @@ class ConfigCollect
 		}
 
 		return t;
-	}
-
-	private List<URL> getAll( String source )
-	{
-		final List<URL> all = new ArrayList<>();
-		final File file = new File( source );
-
-		try {
-			all.addAll( list( Thread.currentThread().getContextClassLoader().getResources( source ) ) );
-
-			if( file.exists() ) {
-				all.add( file.toURI().toURL() );
-			}
-
-			return all;
-		}
-		catch( final IOException e ) {
-			throw new RuntimeException( source, e );
-		}
 	}
 }

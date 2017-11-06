@@ -23,7 +23,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 @ConfigSource.Type( value = "XML" )
 @Dependent
-class XMLConfigReader implements ConfigReader
+public class XMLConfigReader implements ConfigReader
 {
 
 	class Context

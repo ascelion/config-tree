@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 @ConfigSource.Type( value = "JMX" )
 @ApplicationScoped
-class JMXConfigReader implements ConfigReader, NotificationListener
+public class JMXConfigReader implements ConfigReader, NotificationListener
 {
 
 	static private final Logger L = LoggerFactory.getLogger( JMXConfigReader.class );
