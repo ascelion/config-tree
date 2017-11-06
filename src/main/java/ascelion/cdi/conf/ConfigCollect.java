@@ -128,6 +128,11 @@ class ConfigCollect
 			readConfiguration( s );
 		} );
 
+		this.root.asMap( x -> x )
+			.forEach( ( k, v ) -> {
+				this.root.setValue( k, System.getProperty( k, v ) );
+			} );
+
 		if( L.isTraceEnabled() ) {
 			final String s = new GsonBuilder()
 				.setPrettyPrinting()
