@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
 public class JMXTest
 {
 
-	@ConfigSource( value = "config", priority = 2000, type = "JMX", reload = @ConfigSource.Reload( 0 ) )
+	@ConfigSource( value = "config", priority = 2000, type = "JMX" )
 	static class SP
 	{
 
@@ -39,7 +39,7 @@ public class JMXTest
 		private final MBeanServer serv = ManagementFactory.getPlatformMBeanServer();
 	}
 
-	@ConfigValue( "${version:${java.version}}" )
+	@ConfigValue( "version:${java.version}" )
 	private String version;
 
 	@Inject

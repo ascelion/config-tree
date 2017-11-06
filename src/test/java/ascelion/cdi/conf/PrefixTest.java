@@ -33,7 +33,7 @@ public class PrefixTest
 	{
 
 		@Override
-		public void readConfiguration( ConfigNode root, String source )
+		public void readConfiguration( ConfigSource source, ConfigNode root )
 		{
 			root.setValue( "cdi.prop1", "value1" );
 			root.setValue( "cdi.prop2", "value2" );

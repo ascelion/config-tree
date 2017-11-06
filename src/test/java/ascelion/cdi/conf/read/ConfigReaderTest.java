@@ -5,10 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import ascelion.cdi.conf.ConfigNodeImpl;
-import ascelion.cdi.conf.read.INIConfigReader;
-import ascelion.cdi.conf.read.PRPConfigReader;
-import ascelion.cdi.conf.read.XMLConfigReader;
-import ascelion.cdi.conf.read.YMLConfigReader;
 import ascelion.shared.cdi.conf.ConfigReader;
 import ascelion.shared.cdi.conf.ConfigSource;
 import ascelion.shared.cdi.conf.ConfigSource.Type;
@@ -55,7 +51,7 @@ public class ConfigReaderTest
 		final ConfigReader rd = this.cls.newInstance();
 		final ConfigNodeImpl cn = new ConfigNodeImpl();
 
-		rd.readConfiguration( cn, source );
+		rd.readConfiguration( null, cn, source );
 
 		assertThat( cn.getValue( "default" ), is( "0" ) );
 		assertThat( cn.getValue( "prop1" ), is( "value1" ) );

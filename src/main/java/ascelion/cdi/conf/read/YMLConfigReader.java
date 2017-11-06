@@ -19,11 +19,11 @@ class YMLConfigReader implements ConfigReader
 {
 
 	@Override
-	public void readConfiguration( ConfigNode root, InputStream source ) throws IOException
+	public void readConfiguration( ConfigSource source, ConfigNode root, InputStream is ) throws IOException
 	{
 		final Yaml yaml = new Yaml();
 
-		yaml.loadAll( source )
+		yaml.loadAll( is )
 			.forEach( o -> {
 				if( o instanceof Map ) {
 					root.setValues( null, (Map<String, ?>) o );

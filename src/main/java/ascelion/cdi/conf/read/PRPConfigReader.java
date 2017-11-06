@@ -17,7 +17,7 @@ class PRPConfigReader implements ConfigReader
 {
 
 	@Override
-	public void readConfiguration( ConfigNode root, InputStream is ) throws IOException
+	public void readConfiguration( ConfigSource source, ConfigNode root, InputStream is ) throws IOException
 	{
 		final Properties prop = new Properties();
 

@@ -8,22 +8,27 @@ import java.net.URL;
 public interface ConfigReader
 {
 
-	default void readConfiguration( ConfigNode root, String source ) throws ConfigException
+	default boolean enabled()
 	{
-		throw new UnsupportedOperationException( source );
+		return true;
 	}
 
-	default void readConfiguration( ConfigNode root, URL source ) throws ConfigException
+	default void readConfiguration( ConfigSource source, ConfigNode root ) throws ConfigException
 	{
-		try( InputStream is = source.openStream() ) {
-			readConfiguration( root, is );
+		throw new UnsupportedOperationException( source.value() );
+	}
+
+	default void readConfiguration( ConfigSource source, ConfigNode root, URL url ) throws ConfigException
+	{
+		try( InputStream is = url.openStream() ) {
+			readConfiguration( source, root, is );
 		}
 		catch( final IOException e ) {
-			throw new ConfigException( source.toExternalForm(), e );
+			throw new ConfigException( url.toExternalForm(), e );
 		}
 	}
 
-	default void readConfiguration( ConfigNode root, InputStream source ) throws IOException
+	default void readConfiguration( ConfigSource source, ConfigNode root, InputStream is ) throws IOException
 	{
 		throw new UnsupportedOperationException( "not implemented" );
 	}

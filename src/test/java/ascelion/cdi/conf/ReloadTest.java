@@ -1,9 +1,8 @@
 
 package ascelion.cdi.conf;
 
-import java.util.concurrent.TimeUnit;
-
 import javax.enterprise.context.Dependent;
+import javax.enterprise.event.Event;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
@@ -11,14 +10,15 @@ import ascelion.shared.cdi.conf.ConfigNode;
 import ascelion.shared.cdi.conf.ConfigReader;
 import ascelion.shared.cdi.conf.ConfigSource;
 import ascelion.shared.cdi.conf.ConfigValue;
-import ascelion.shared.cdi.conf.ConfigSource.Reload;
 import ascelion.tests.cdi.CdiUnit;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import org.apache.deltaspike.core.util.metadata.AnnotationInstanceProvider;
 import org.jglue.cdiunit.AdditionalClasses;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,31 +37,31 @@ public class ReloadTest
 
 	@Dependent
 	@ConfigSource.Type( "INC1" )
-	@ConfigSource( type = "INC1", reload = @Reload( value = INTERVAL / 2, unit = TimeUnit.MILLISECONDS ) )
+	@ConfigSource( type = "INC1" )
 	static class CustomSource1 implements ConfigReader
 	{
 
-		static int index;
+		int index;
 
 		@Override
-		public void readConfiguration( ConfigNode root, String source )
+		public void readConfiguration( ConfigSource source, ConfigNode root )
 		{
-			root.setValue( "value1", format( "value%01d", index++ ) );
+			root.setValue( "value1", format( "value%01d", this.index++ ) );
 		}
 	}
 
 	@Dependent
-	@ConfigSource.Type( value = "INC2", reload = @Reload( value = 3 * INTERVAL / 2, unit = TimeUnit.MILLISECONDS ) )
+	@ConfigSource.Type( value = "INC2" )
 	@ConfigSource( type = "INC2" )
 	static class CustomSource2 implements ConfigReader
 	{
 
-		static int index;
+		int index;
 
 		@Override
-		public void readConfiguration( ConfigNode root, String source )
+		public void readConfiguration( ConfigSource source, ConfigNode root )
 		{
-			root.setValue( "value2", format( "value%01d", index++ ) );
+			root.setValue( "value2", format( "value%01d", this.index++ ) );
 		}
 	}
 
@@ -78,18 +78,27 @@ public class ReloadTest
 	@Inject
 	private Instance<Bean> inst;
 
+	@Inject
+	Instance<CustomSource1> csi1;
+
+	@Inject
+	Instance<CustomSource2> csi2;
+
+	@Inject
+	Event<ConfigSource> event;
+
 	@Test
 	public void run() throws InterruptedException
 	{
 		final Bean b1 = this.inst.get();
 		final Bean b2 = this.inst.get();
 
-		Thread.sleep( INTERVAL );
+		this.event.fire( AnnotationInstanceProvider.of( ConfigSource.class, singletonMap( "type", "INC1" ) ) );
 
 		final Bean b3 = this.inst.get();
 		final Bean b4 = this.inst.get();
 
-		Thread.sleep( INTERVAL );
+		this.event.fire( AnnotationInstanceProvider.of( ConfigSource.class, singletonMap( "type", "INC2" ) ) );
 
 		final Bean b5 = this.inst.get();
 		final Bean b6 = this.inst.get();

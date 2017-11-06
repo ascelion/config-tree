@@ -32,9 +32,9 @@ public class CustomSourceTest
 	{
 
 		@Override
-		public void readConfiguration( ConfigNode root, String source )
+		public void readConfiguration( ConfigSource source, ConfigNode root )
 		{
-			root.setValues( new Gson().fromJson( source, Map.class ) );
+			root.setValues( new Gson().fromJson( source.value(), Map.class ) );
 		}
 	}
 

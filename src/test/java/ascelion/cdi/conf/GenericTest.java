@@ -42,7 +42,7 @@ public class GenericTest
 	{
 
 		@Override
-		public void readConfiguration( ConfigNode root, String source )
+		public void readConfiguration( ConfigSource source, ConfigNode root )
 		{
 			root.setValue( "prop1", "10" );
 			root.setValue( "prop2", "20" );

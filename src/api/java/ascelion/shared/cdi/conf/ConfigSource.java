@@ -4,7 +4,6 @@ package ascelion.shared.cdi.conf;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.util.Nonbinding;
@@ -21,16 +20,6 @@ public @interface ConfigSource
 
 	@Retention( RUNTIME )
 	@Target( TYPE )
-	@interface Reload
-	{
-
-		long value() default -1;
-
-		TimeUnit unit() default TimeUnit.SECONDS;
-	}
-
-	@Retention( RUNTIME )
-	@Target( TYPE )
 	@Qualifier
 	@ApplicationScoped
 	@interface Type
@@ -40,9 +29,6 @@ public @interface ConfigSource
 
 		@Nonbinding
 		String[] types() default {};
-
-		@Nonbinding
-		Reload reload() default @Reload( );
 	}
 
 	@Retention( RUNTIME )
@@ -58,6 +44,4 @@ public @interface ConfigSource
 	int priority() default 0;
 
 	String type() default "";
-
-	Reload reload() default @Reload( );
 }

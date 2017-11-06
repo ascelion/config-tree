@@ -105,13 +105,13 @@ class XMLConfigReader implements ConfigReader
 	}
 
 	@Override
-	public void readConfiguration( ConfigNode root, InputStream source ) throws IOException
+	public void readConfiguration( ConfigSource source, ConfigNode root, InputStream is ) throws IOException
 	{
 		try {
 			final SAXParserFactory f = SAXParserFactory.newInstance();
 			final SAXParser p = f.newSAXParser();
 
-			p.parse( source, new Handler( ( k, v ) -> root.setValue( k, v ) ) );
+			p.parse( is, new Handler( ( k, v ) -> root.setValue( k, v ) ) );
 		}
 		catch( final ParserConfigurationException | SAXException x ) {
 			throw new IOException( x );

@@ -83,9 +83,9 @@ public class EvalTest
 	@Test
 	public void run1()
 	{
-		this.root.setValue( "prop.prop1", "value" );
+		this.root.setValue( "prop", "value" );
 
-		final String x = eval( "prop.prop1", this.root );
+		final String x = eval( "prop", this.root );
 
 		assertThat( x, is( "value" ) );
 	}

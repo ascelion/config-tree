@@ -3,9 +3,12 @@ package ascelion.cdi.conf.read;
 
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
 import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.UnsatisfiedResolutionException;
 import javax.inject.Inject;
 import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
@@ -13,6 +16,8 @@ import javax.management.JMX;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import ascelion.cdi.conf.Config;
@@ -30,30 +35,40 @@ import org.slf4j.LoggerFactory;
 
 @ConfigSource.Type( value = "JMX" )
 @ApplicationScoped
-class JMXConfigReader implements ConfigReader
+class JMXConfigReader implements ConfigReader, NotificationListener
 {
 
 	static private final Logger L = LoggerFactory.getLogger( JMXConfigReader.class );
 
+	private ConfigSource source;
+
 	@Inject
 	private Instance<MBeanServer> mbsi;
-	private String domain;
+
+	@Inject
+	private Event<ConfigSource> event;
+
+	private MBeanServer mbs;
 
 	@Override
-	public void readConfiguration( ConfigNode root, String source )
+	public void readConfiguration( ConfigSource source, ConfigNode root )
 	{
-		final MBeanServer mbs = this.mbsi.get();
-
-		if( this.domain == null ) {
-			this.domain = source;
+		if( this.source == null ) {
+			this.source = source;
 		}
 
 		try {
-			root.asMap( x -> x ).forEach( ( k, v ) -> setValue( mbs, root, k, v ) );
+			root.asMap( x -> x ).forEach( ( k, v ) -> setValue( this.mbs, root, k, v ) );
 		}
 		finally {
-			this.mbsi.destroy( mbs );
+			this.mbsi.destroy( this.mbs );
 		}
+	}
+
+	@Override
+	public boolean enabled()
+	{
+		return this.mbs != null;
 	}
 
 	private void setValue( MBeanServer mbs, ConfigNode root, String path, String value )
@@ -70,7 +85,8 @@ class JMXConfigReader implements ConfigReader
 		}
 		else {
 			try {
-				mbs.registerMBean( new Config( root, root.getNode( path ) ), new ObjectName( name.toString() ) );
+				mbs.registerMBean( new Config( root, root.getNode( path ) ), name );
+				mbs.addNotificationListener( name, this, null, null );
 			}
 			catch( final JMException e ) {
 				L.warn( format( "Registering %s", name ), e );
@@ -91,7 +107,7 @@ class JMXConfigReader implements ConfigReader
 			name.append( format( "%02d=%s", k, keys[k] ) );
 		}
 
-		name.insert( 0, this.domain + ":" );
+		name.insert( 0, this.source.value() + ":" );
 
 		try {
 			return new ObjectName( name.toString() );
@@ -101,30 +117,50 @@ class JMXConfigReader implements ConfigReader
 		}
 	}
 
+	@PostConstruct
+	private void postConstruct()
+	{
+		try {
+			this.mbs = this.mbsi.get();
+		}
+		catch( final UnsatisfiedResolutionException e ) {
+			;
+		}
+	}
+
 	@PreDestroy
 	private void preDestroy()
 	{
-		final MBeanServer mbs = this.mbsi.get();
+		if( this.mbs == null ) {
+			return;
+		}
 
 		try {
-			final Set<ObjectName> names = mbs.queryNames( new ObjectName( this.domain + ":*" ), null );
+			final Set<ObjectName> names = this.mbs.queryNames( new ObjectName( this.source.value() + ":*" ), null );
 
 			names.forEach( n -> {
 				try {
 					L.trace( "Unregister {}", n.getCanonicalName() );
 
-					mbs.unregisterMBean( n );
+					this.mbs.unregisterMBean( n );
 				}
 				catch( MBeanRegistrationException | InstanceNotFoundException e ) {
 					L.warn( format( "Unregistering %s", n.getCanonicalName() ), e );
 				}
 			} );
 		}
+
 		catch( final MalformedObjectNameException e ) {
 			L.warn( "Unregistering...", e );
 		}
 		finally {
-			this.mbsi.destroy( mbs );
+			this.mbsi.destroy( this.mbs );
 		}
+	}
+
+	@Override
+	public void handleNotification( Notification notification, Object handback )
+	{
+		this.event.fire( this.source );
 	}
 }

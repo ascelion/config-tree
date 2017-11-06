@@ -5,19 +5,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.Delayed;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.UnsatisfiedResolutionException;
@@ -32,7 +29,6 @@ import ascelion.shared.cdi.conf.ConfigSource;
 
 import static java.lang.String.format;
 import static java.util.Collections.list;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.gson.GsonBuilder;
@@ -40,58 +36,12 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 class ConfigCollect
 {
-
-	static class DelayedSource implements Delayed
-	{
-
-		final ConfigSource source;
-		private final long next;
-
-		DelayedSource( ConfigSource source, long await )
-		{
-			this.source = source;
-			this.next = System.nanoTime() + await;
-		}
-
-		@Override
-		public int compareTo( Delayed o )
-		{
-			final DelayedSource that = (DelayedSource) o;
-			int c;
-
-			if( ( c = Long.compare( this.next, that.next ) ) != 0 ) {
-				return c;
-			}
-
-			if( ( c = Integer.compare( this.source.priority(), that.source.priority() ) ) != 0 ) {
-				return c;
-			}
-
-			if( ( c = this.source.type().compareTo( that.source.type() ) ) != 0 ) {
-				return c;
-			}
-
-			if( ( c = this.source.value().compareTo( that.source.value() ) ) != 0 ) {
-				return c;
-			}
-
-			return 0;
-		}
-
-		@Override
-		public long getDelay( TimeUnit unit )
-		{
-			return unit.convert( this.next - System.nanoTime(), NANOSECONDS );
-		}
-	}
 
 	@Vetoed
 	static class ConfigNodeTA extends TypeAdapter<ConfigNodeImpl>
@@ -140,77 +90,29 @@ class ConfigCollect
 
 	private final Map<ConfigReader, InstanceInfo<ConfigReader>> readers = new IdentityHashMap<>();
 
-	private final DelayQueue<DelayedSource> sources = new DelayQueue<>();
-
 	@Produces
 	@Dependent
 	@Typed( ConfigNode.class )
-	ConfigNodeImpl root()
+	synchronized ConfigNodeImpl root()
 	{
-		readConfigurations();
-
 		return this.root;
 	}
 
-	private synchronized void readConfigurations()
-	{
-		final Collection<Pair<ConfigSource, ConfigSource.Reload>> used = new ArrayList<>();
-		DelayedSource item;
-
-		while( ( item = this.sources.poll() ) != null ) {
-			final ConfigSource.Reload reload = readConfiguration( item.source );
-
-			used.add( new ImmutablePair<>( item.source, reload ) );
-		}
-
-		if( L.isTraceEnabled() ) {
-			final String s = new GsonBuilder()
-				.setPrettyPrinting()
-				.registerTypeAdapter( ConfigNodeImpl.class, new ConfigNodeTA() )
-				.create()
-				.toJson( this.root );
-
-			L.trace( "Config: {}", s );
-		}
-
-		used.forEach( i -> {
-			if( !addNext( i.getLeft(), i.getLeft().reload() ) ) {
-				addNext( i.getLeft(), i.getRight() );
-			}
-		} );
-	}
-
-	private ConfigSource.Reload readConfiguration( ConfigSource source )
+	synchronized void readConfiguration( @Observes ConfigSource source )
 	{
 		final String t = getType( source );
-		final String f = source.value();
 		final ConfigReader rd = getReader( t );
 
-		try {
-			L.trace( "Reading: type {} from '{}'", t, f );
+		if( rd.enabled() ) {
+			try {
+				L.trace( "Reading: type {} from '{}'", t, source.value() );
 
-			rd.readConfiguration( this.root, f );
+				rd.readConfiguration( source, this.root );
+			}
+			catch( final UnsupportedOperationException x1 ) {
+				readFromURL( source, t, rd );
+			}
 		}
-		catch( final UnsupportedOperationException x1 ) {
-			readFromURL( f, t, rd );
-		}
-
-		return this.readers.get( rd ).qualifier( ConfigSource.Type.class ).reload();
-	}
-
-	private boolean addNext( ConfigSource source, ConfigSource.Reload reload )
-	{
-		if( reload.value() >= 0 ) {
-			final long next = reload.unit().toNanos( reload.value() );
-
-			L.trace( "Reload: type {} from '{}' within {} seconds", source.type(), source.value(), NANOSECONDS.toSeconds( next ) );
-
-			this.sources.add( new DelayedSource( source, next ) );
-
-			return true;
-		}
-
-		return false;
 	}
 
 	@PostConstruct
@@ -226,10 +128,18 @@ class ConfigCollect
 			} );
 
 		this.ext.sources().forEach( s -> {
-			this.sources.add( new DelayedSource( s, 0 ) );
+			readConfiguration( s );
 		} );
 
-		readConfigurations();
+		if( L.isTraceEnabled() ) {
+			final String s = new GsonBuilder()
+				.setPrettyPrinting()
+				.registerTypeAdapter( ConfigNodeImpl.class, new ConfigNodeTA() )
+				.create()
+				.toJson( this.root );
+
+			L.trace( "Config: {}", s );
+		}
 	}
 
 	@PreDestroy
@@ -240,21 +150,20 @@ class ConfigCollect
 		} );
 
 		this.readers.clear();
-		this.sources.clear();
 	}
 
-	private void readFromURL( final String f, String t, final ConfigReader rd )
+	private void readFromURL( ConfigSource source, String t, ConfigReader rd )
 	{
-		final List<URL> all = getAll( f );
+		final List<URL> all = getAll( source.value() );
 
 		if( all.isEmpty() ) {
-			L.warn( "Cannot find configuration source {}", f );
+			L.warn( "Cannot find configuration source {}", source.value() );
 		}
 		else {
 			all.forEach( u -> {
 				L.trace( "Reading: type {} from '{}'", t, u );
 
-				rd.readConfiguration( this.root, u );
+				rd.readConfiguration( source, this.root, u );
 			} );
 		}
 	}
