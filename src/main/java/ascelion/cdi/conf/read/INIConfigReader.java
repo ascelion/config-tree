@@ -7,9 +7,9 @@ import java.util.stream.Stream;
 
 import javax.enterprise.context.Dependent;
 
-import ascelion.shared.cdi.conf.ConfigNode;
-import ascelion.shared.cdi.conf.ConfigReader;
-import ascelion.shared.cdi.conf.ConfigSource;
+import ascelion.cdi.conf.ConfigNode;
+import ascelion.cdi.conf.ConfigReader;
+import ascelion.cdi.conf.ConfigSource;
 
 import static ascelion.cdi.conf.ConfigNodeImpl.path;
 

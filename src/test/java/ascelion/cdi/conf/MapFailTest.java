@@ -8,8 +8,6 @@ import java.util.Set;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import ascelion.shared.cdi.conf.ConfigSource;
-import ascelion.shared.cdi.conf.ConfigValue;
 import ascelion.tests.cdi.CdiUnit;
 
 import org.junit.Test;
@@ -24,7 +22,7 @@ public class MapFailTest
 	static class Bean
 	{
 
-		@ConfigValue( "db" )
+		@ConfigValue( "db1" )
 		Map<String, List<Set<String>>> db;
 	}
 

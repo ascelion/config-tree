@@ -21,9 +21,9 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 
-import ascelion.shared.cdi.conf.ConfigNode;
-import ascelion.shared.cdi.conf.ConfigReader;
-import ascelion.shared.cdi.conf.ConfigSource;
+import ascelion.cdi.conf.ConfigNode;
+import ascelion.cdi.conf.ConfigReader;
+import ascelion.cdi.conf.ConfigSource;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;

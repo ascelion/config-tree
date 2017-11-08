@@ -18,7 +18,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
-import ascelion.shared.cdi.conf.ConfigValue;
+import ascelion.cdi.conf.ConfigValue;
 
 import static java.lang.String.format;
 

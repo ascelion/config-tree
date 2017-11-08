@@ -23,8 +23,8 @@ import javax.enterprise.inject.spi.ProcessProducer;
 import javax.enterprise.inject.spi.WithAnnotations;
 import javax.inject.Inject;
 
-import ascelion.shared.cdi.conf.ConfigSource;
-import ascelion.shared.cdi.conf.ConfigValue;
+import ascelion.cdi.conf.ConfigSource;
+import ascelion.cdi.conf.ConfigValue;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;

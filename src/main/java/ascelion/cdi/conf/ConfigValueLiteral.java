@@ -7,8 +7,6 @@ import java.util.stream.Stream;
 
 import javax.enterprise.util.AnnotationLiteral;
 
-import ascelion.shared.cdi.conf.ConfigValue;
-
 final class ConfigValueLiteral extends AnnotationLiteral<ConfigValue> implements ConfigValue
 {
 
@@ -25,7 +23,7 @@ final class ConfigValueLiteral extends AnnotationLiteral<ConfigValue> implements
 
 	ConfigValueLiteral( String[] values, Class<? extends BiFunction> converter, int unwrap )
 	{
-		this( Stream.of( values ).collect( Collectors.joining( ":" ) ), converter, unwrap );
+		this( Stream.of( values ).collect( Collectors.joining( Eval.Token.S_DEF ) ), converter, unwrap );
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 
-package ascelion.shared.cdi.conf;
+package ascelion.cdi.conf;
 
 import java.util.Map;
 import java.util.function.Function;

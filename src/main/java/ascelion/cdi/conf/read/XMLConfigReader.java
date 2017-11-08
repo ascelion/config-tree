@@ -10,9 +10,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import ascelion.shared.cdi.conf.ConfigNode;
-import ascelion.shared.cdi.conf.ConfigReader;
-import ascelion.shared.cdi.conf.ConfigSource;
+import ascelion.cdi.conf.ConfigNode;
+import ascelion.cdi.conf.ConfigReader;
+import ascelion.cdi.conf.ConfigSource;
 
 import static ascelion.cdi.conf.ConfigNodeImpl.path;
 import static org.apache.commons.lang3.StringUtils.trimToNull;

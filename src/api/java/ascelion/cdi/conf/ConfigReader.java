@@ -1,5 +1,5 @@
 
-package ascelion.shared.cdi.conf;
+package ascelion.cdi.conf;
 
 import java.io.File;
 import java.io.IOException;

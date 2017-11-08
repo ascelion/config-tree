@@ -3,7 +3,7 @@ package ascelion.cdi.conf;
 
 import java.util.Comparator;
 
-import ascelion.shared.cdi.conf.ConfigSource;
+import ascelion.cdi.conf.ConfigSource;
 
 final class ConfigSourceCMP implements Comparator<ConfigSource>
 {

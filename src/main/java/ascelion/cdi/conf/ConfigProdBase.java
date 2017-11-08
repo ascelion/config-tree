@@ -4,9 +4,6 @@ package ascelion.cdi.conf;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
-import ascelion.shared.cdi.conf.ConfigNode;
-import ascelion.shared.cdi.conf.ConfigValue;
-
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public abstract class ConfigProdBase
@@ -37,7 +34,7 @@ public abstract class ConfigProdBase
 
 	final ConfigNodeImpl configNode( ConfigValue ano )
 	{
-		final String[] vec = ano.value().split( ":" );
+		final String[] vec = ano.value().split( Eval.Token.S_DEF );
 		final String path = vec[0];
 		ConfigNodeImpl cn = this.cc.root().getNode( path );
 

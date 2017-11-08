@@ -4,10 +4,10 @@ package ascelion.cdi.conf;
 import java.util.ArrayList;
 import java.util.List;
 
+import ascelion.cdi.conf.ConfigNode;
 import ascelion.cdi.conf.Eval.Expr;
 import ascelion.cdi.conf.Eval.Rule;
 import ascelion.cdi.conf.Eval.Text;
-import ascelion.shared.cdi.conf.ConfigNode;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStream;

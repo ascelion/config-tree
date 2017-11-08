@@ -1,7 +1,7 @@
 buildscript {
-    dependencies {
-        classpath 'ascelion.gradle.plugins:gradle-ascelion-plugin:1.1.0-SNAPSHOT'
-    }
+	dependencies {
+		classpath 'ascelion.gradle.plugins:gradle-ascelion-plugin:1.1.0-SNAPSHOT'
+	}
 }
 
 apply plugin: 'ascelion'
@@ -35,7 +35,9 @@ dependencies {
 
 	compile configurations.apiCompile
 
-	compile 'org.antlr:antlr4-runtime'
+	compile 'ascelion.shared:cdi-utils'
+
+	testCompile 'org.antlr:antlr4-runtime'
 
 	compile 'com.google.guava:guava'
 	compile 'commons-io:commons-io'

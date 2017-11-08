@@ -1,5 +1,5 @@
 
-package ascelion.shared.cdi.conf;
+package ascelion.cdi.conf;
 
 public class ConfigException extends RuntimeException
 {

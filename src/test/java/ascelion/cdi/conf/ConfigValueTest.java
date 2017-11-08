@@ -15,8 +15,6 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
-import ascelion.shared.cdi.conf.ConfigSource;
-import ascelion.shared.cdi.conf.ConfigValue;
 import ascelion.tests.cdi.CdiUnit;
 
 import static java.lang.annotation.ElementType.TYPE;

@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import ascelion.shared.cdi.conf.ConfigNode;
-
 import static java.lang.String.format;
 
 import com.google.common.base.Objects;
@@ -20,6 +18,11 @@ final class Eval
 
 	static class Token
 	{
+
+		static final char C_ESC = '\\';
+		static final String S_BEG = "${";
+		static final String S_DEF = ":";
+		static final String S_END = "}";
 
 		enum Type
 		{
@@ -55,6 +58,7 @@ final class Eval
 		final List<EvalError> errors = new ArrayList<>();
 
 		int position;
+		private boolean escape;
 
 		Tokenizer( Reader rd )
 		{
@@ -67,36 +71,50 @@ final class Eval
 				final String tx = this.sb.toString();
 
 				switch( tx ) {
-					case "${":
+					case Token.S_BEG:
 						return new Token( Token.Type.BEG, this.sb );
-					case ":":
+					case Token.S_DEF:
 						return new Token( Token.Type.DEF, this.sb );
-					case "}":
+					case Token.S_END:
 						return new Token( Token.Type.END, this.sb );
 				}
 			}
 
 			while( true ) {
-				final int c;
+				final char c;
 
 				try {
-					c = this.rd.read();
+					final int n = this.rd.read();
+					if( n == -1 ) {
+						break;
+					}
+
+					c = (char) n;
 				}
 				catch( final IOException e ) {
 					throw new EvalException( e.getMessage() );
 				}
 
-				if( c == -1 ) {
-					break;
-				}
-
 				this.position++;
 
-				this.sb.append( Character.toChars( c ) );
+				switch( c ) {
+					case Token.C_ESC:
+						if( this.escape ) {
+							this.escape = false;
+						}
+						else {
+							this.escape = true;
+
+							continue;
+						}
+
+					default:
+						this.sb.append( c );
+				}
 
 				final String tx = this.sb.toString();
 
-				if( tx.endsWith( "${" ) ) {
+				if( tx.endsWith( Token.S_BEG ) && !this.escape ) {
 					if( this.sb.length() > 2 ) {
 						check( this.sb.length() - 2 );
 
@@ -106,7 +124,7 @@ final class Eval
 						return new Token( Token.Type.BEG, this.sb );
 					}
 				}
-				if( tx.endsWith( ":" ) ) {
+				if( tx.endsWith( Token.S_DEF ) && !this.escape ) {
 					if( this.sb.length() > 1 ) {
 						check( this.sb.length() - 1 );
 
@@ -116,7 +134,7 @@ final class Eval
 						return new Token( Token.Type.DEF, this.sb );
 					}
 				}
-				if( tx.endsWith( "}" ) ) {
+				if( tx.endsWith( Token.S_END ) && !this.escape ) {
 					if( this.sb.length() > 1 ) {
 						check( this.sb.length() - 1 );
 
@@ -126,6 +144,8 @@ final class Eval
 						return new Token( Token.Type.END, this.sb );
 					}
 				}
+
+				this.escape = false;
 			}
 
 			if( this.sb.length() == 0 ) {
@@ -348,13 +368,13 @@ final class Eval
 			this.val.forEach( b::append );
 
 			if( this.def.size() > 0 ) {
-				b.append( ":" );
+				b.append( Token.S_DEF );
 
 				this.def.forEach( b::append );
 			}
 
 			if( this.parent != null || this.parent == null && this.val.stream().allMatch( Text.class::isInstance ) ) {
-				return format( "${%s}", b );
+				return format( "%s%s%s", Token.S_BEG, b, Token.S_END );
 			}
 			else {
 				return b.toString();

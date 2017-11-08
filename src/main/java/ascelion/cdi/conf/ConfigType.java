@@ -14,8 +14,7 @@ import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.inject.Inject;
 
-import ascelion.shared.cdi.conf.ConfigPrefix;
-import ascelion.shared.cdi.conf.ConfigValue;
+import ascelion.cdi.type.AnnotatedTypeW;
 
 import static java.lang.String.format;
 import static java.util.Collections.unmodifiableSet;
@@ -78,7 +77,7 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 
 		if( a != null ) {
 			boolean transform = false;
-			final String[] n = a.value().split( ":" );
+			final String[] n = a.value().split( Eval.Token.S_DEF );
 			Class<? extends BiFunction> c = a.converter();
 
 			if( n[0].isEmpty() ) {

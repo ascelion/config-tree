@@ -8,8 +8,8 @@ import javax.inject.Inject;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 
-import ascelion.shared.cdi.conf.ConfigSource;
-import ascelion.shared.cdi.conf.ConfigValue;
+import ascelion.cdi.conf.ConfigSource;
+import ascelion.cdi.conf.ConfigValue;
 import ascelion.tests.cdi.CdiUnit;
 
 import static org.hamcrest.CoreMatchers.is;

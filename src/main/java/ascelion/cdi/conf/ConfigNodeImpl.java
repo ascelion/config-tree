@@ -9,8 +9,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ascelion.shared.cdi.conf.ConfigNode;
-
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
@@ -219,6 +217,11 @@ public final class ConfigNodeImpl implements ConfigNode
 	{
 		if( this.tree == null || this.tree.isEmpty() ) {
 			String p = getPath();
+
+			if( p.isEmpty() ) {
+				return;
+			}
+
 			int u = unwrap;
 
 			while( u-- > 0 ) {

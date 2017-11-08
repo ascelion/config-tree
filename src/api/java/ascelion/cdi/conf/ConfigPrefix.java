@@ -1,5 +1,5 @@
 
-package ascelion.shared.cdi.conf;
+package ascelion.cdi.conf;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

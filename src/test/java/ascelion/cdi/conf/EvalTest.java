@@ -1,8 +1,6 @@
 
 package ascelion.cdi.conf;
 
-import ascelion.shared.cdi.conf.ConfigNode;
-
 import static ascelion.cdi.conf.Eval.eval;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;

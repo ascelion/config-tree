@@ -21,12 +21,12 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import ascelion.cdi.conf.Config;
+import ascelion.cdi.conf.ConfigException;
 import ascelion.cdi.conf.ConfigMBean;
+import ascelion.cdi.conf.ConfigNode;
 import ascelion.cdi.conf.ConfigNodeImpl;
-import ascelion.shared.cdi.conf.ConfigException;
-import ascelion.shared.cdi.conf.ConfigNode;
-import ascelion.shared.cdi.conf.ConfigReader;
-import ascelion.shared.cdi.conf.ConfigSource;
+import ascelion.cdi.conf.ConfigReader;
+import ascelion.cdi.conf.ConfigSource;
 
 import static java.lang.String.format;
 

@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import ascelion.cdi.conf.ConfigNodeImpl;
-import ascelion.shared.cdi.conf.ConfigReader;
-import ascelion.shared.cdi.conf.ConfigSource;
-import ascelion.shared.cdi.conf.ConfigSource.Type;
+import ascelion.cdi.conf.ConfigReader;
+import ascelion.cdi.conf.ConfigSource;
+import ascelion.cdi.conf.ConfigSource.Type;
 
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.is;

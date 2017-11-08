@@ -6,7 +6,7 @@ import javax.management.MBeanNotificationInfo;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
-import ascelion.shared.cdi.conf.ConfigNode;
+import ascelion.cdi.conf.ConfigNode;
 
 public final class Config extends NotificationBroadcasterSupport implements ConfigMBean
 {

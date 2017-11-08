@@ -11,8 +11,8 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ascelion.shared.cdi.conf.ConfigNode;
-import ascelion.shared.cdi.conf.ConfigValue;
+import ascelion.cdi.conf.ConfigNode;
+import ascelion.cdi.conf.ConfigValue;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;

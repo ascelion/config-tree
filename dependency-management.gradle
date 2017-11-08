@@ -16,8 +16,9 @@ dependencyManagement {
 	}
 
 	dependencies {
-		dependency 'javax.ws.rs:javax.ws.rs-api:2.0.1'
 		dependency 'javax.enterprise:cdi-api:1.2'
+
+		dependency 'ascelion.shared:cdi-utils:1.0.4-SNAPSHOT'
 
 		dependencySet( group: 'ascelion.shared', version: '1.0.4-SNAPSHOT' ) {
 			entry 'cdi-unit-ext'

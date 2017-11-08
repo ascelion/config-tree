@@ -3,11 +3,11 @@ package ascelion.cdi.conf.read;
 
 import java.util.Map;
 
+import ascelion.cdi.conf.ConfigNode;
+import ascelion.cdi.conf.ConfigReader;
+import ascelion.cdi.conf.ConfigSource;
+import ascelion.cdi.conf.ConfigValue;
 import ascelion.cdi.conf.UseConfigExtension;
-import ascelion.shared.cdi.conf.ConfigNode;
-import ascelion.shared.cdi.conf.ConfigReader;
-import ascelion.shared.cdi.conf.ConfigSource;
-import ascelion.shared.cdi.conf.ConfigValue;
 import ascelion.tests.cdi.CdiUnit;
 
 import static org.hamcrest.CoreMatchers.is;
