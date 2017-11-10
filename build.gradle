@@ -64,6 +64,7 @@ dependencies {
 	
 	testRuntime 'javax.el:javax.el-api'
 	testRuntime 'org.jboss.weld.se:weld-se-core'
+	testRuntime 'org.postgresql:postgresql'
 }
 
 task( cleanLog, type: Delete ) {

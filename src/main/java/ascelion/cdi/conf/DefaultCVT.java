@@ -15,6 +15,15 @@ class DefaultCVT implements BiFunction<Class<Object>, String, Object>
 	@Override
 	public Object apply( Class<Object> t, String u )
 	{
+		if( (Object) Class.class == t ) {
+			try {
+				return Thread.currentThread().getContextClassLoader().loadClass( u );
+			}
+			catch( final ClassNotFoundException e ) {
+				throw new RuntimeException( e );
+			}
+		}
+
 		try {
 			final Method m = t.getMethod( "valueOf", String.class );
 

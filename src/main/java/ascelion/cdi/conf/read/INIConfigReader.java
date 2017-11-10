@@ -11,7 +11,7 @@ import ascelion.cdi.conf.ConfigNode;
 import ascelion.cdi.conf.ConfigReader;
 import ascelion.cdi.conf.ConfigSource;
 
-import static ascelion.cdi.conf.ConfigNodeImpl.path;
+import static ascelion.cdi.conf.Utils.path;
 
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;

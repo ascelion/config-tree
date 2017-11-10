@@ -10,27 +10,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
-import org.apache.commons.lang3.StringUtils;
-
-public final class ConfigNodeImpl implements ConfigNode
+final class ConfigNodeImpl implements ConfigNode
 {
-
-	static public String[] keys( String path )
-	{
-		return path != null ? path.split( "\\." ) : new String[0];
-	}
-
-	static public String path( int s, int e, String[] keys )
-	{
-		return asList( keys ).subList( s, e ).stream().collect( Collectors.joining( "." ) );
-	}
-
-	static public String path( String... names )
-	{
-		return Stream.of( names ).filter( StringUtils::isNotBlank ).collect( Collectors.joining( "." ) );
-	}
 
 	private ConfigNodeImpl parent;
 	private final String name;
@@ -78,7 +61,13 @@ public final class ConfigNodeImpl implements ConfigNode
 	@Override
 	public String getPath()
 	{
-		return path( this.parent != null ? this.parent.getPath() : null, this.name );
+		return Utils.path( this.parent != null ? this.parent.getPath() : null, this.name );
+	}
+
+	@Override
+	public Collection<? extends ConfigNode> getNodes()
+	{
+		return this.tree != null ? this.tree.values() : emptyList();
 	}
 
 	@Override
@@ -133,12 +122,7 @@ public final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public <T> Map<String, T> asMap( Function<String, T> fun )
-	{
-		return asMap( 0, fun );
-	}
-
-	<T> Map<String, T> asMap( int unwrap, Function<String, T> fun )
+	public <T> Map<String, T> asMap( int unwrap, Function<String, T> fun )
 	{
 		final TreeMap<String, T> m = new TreeMap<>();
 
@@ -183,7 +167,7 @@ public final class ConfigNodeImpl implements ConfigNode
 
 	private ConfigNodeImpl findNode( String path, boolean create )
 	{
-		final String[] keys = keys( path );
+		final String[] keys = Utils.keys( path );
 		ConfigNodeImpl node = this;
 
 		for( final String key : keys ) {

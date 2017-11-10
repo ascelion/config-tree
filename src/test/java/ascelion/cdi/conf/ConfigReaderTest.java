@@ -1,5 +1,5 @@
 
-package ascelion.cdi.conf.read;
+package ascelion.cdi.conf;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +8,10 @@ import ascelion.cdi.conf.ConfigNodeImpl;
 import ascelion.cdi.conf.ConfigReader;
 import ascelion.cdi.conf.ConfigSource;
 import ascelion.cdi.conf.ConfigSource.Type;
+import ascelion.cdi.conf.read.INIConfigReader;
+import ascelion.cdi.conf.read.PRPConfigReader;
+import ascelion.cdi.conf.read.XMLConfigReader;
+import ascelion.cdi.conf.read.YMLConfigReader;
 
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.is;

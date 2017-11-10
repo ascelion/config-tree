@@ -24,9 +24,9 @@ import ascelion.cdi.conf.Config;
 import ascelion.cdi.conf.ConfigException;
 import ascelion.cdi.conf.ConfigMBean;
 import ascelion.cdi.conf.ConfigNode;
-import ascelion.cdi.conf.ConfigNodeImpl;
 import ascelion.cdi.conf.ConfigReader;
 import ascelion.cdi.conf.ConfigSource;
+import ascelion.cdi.conf.Utils;
 
 import static java.lang.String.format;
 
@@ -96,7 +96,7 @@ public class JMXConfigReader implements ConfigReader, NotificationListener
 
 	private ObjectName objectName( String path )
 	{
-		final String[] keys = ConfigNodeImpl.keys( path );
+		final String[] keys = Utils.keys( path );
 		final StringBuilder name = new StringBuilder();
 
 		for( int k = 0; k < keys.length; k++ ) {

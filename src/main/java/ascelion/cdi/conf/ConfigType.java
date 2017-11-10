@@ -89,7 +89,7 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 				transform = true;
 			}
 			if( p != null ) {
-				n[0] = ConfigNodeImpl.path( p.value(), n[0] );
+				n[0] = Utils.path( p.value(), n[0] );
 
 				transform = true;
 			}

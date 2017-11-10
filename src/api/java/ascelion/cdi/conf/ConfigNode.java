@@ -1,6 +1,7 @@
 
 package ascelion.cdi.conf;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -12,6 +13,8 @@ public interface ConfigNode
 	String getPath();
 
 	String getValue();
+
+	Collection<? extends ConfigNode> getNodes();
 
 	void setValue( String value );
 
@@ -25,5 +28,11 @@ public interface ConfigNode
 
 	void setValues( String path, Map<String, ?> values );
 
-	<T> Map<String, T> asMap( Function<String, T> fun );
+	<T> Map<String, T> asMap( int unwrap, Function<String, T> fun );
+
+	default <T> Map<String, T> asMap( Function<String, T> fun )
+	{
+		return asMap( 0, fun );
+	}
+
 }
