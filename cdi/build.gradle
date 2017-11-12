@@ -10,7 +10,7 @@ tasks.withType( AntlrTask ).all { t ->
 dependencies {
 	antlr 'org.antlr:antlr4'
 
-	compile project( ':cdi-conf-api' )
+	compile project( ':api' )
 
 	compile 'ascelion.shared:cdi-utils'
 	compile 'commons-io:commons-io'

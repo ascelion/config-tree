@@ -1,5 +1,5 @@
 
-rootProject.name = 'cdi-conf'
+rootProject.name = 'config'
 
 def includeChildren( File root )
 {
@@ -24,6 +24,3 @@ def includeChildren( File root )
 
 includeChildren( rootProject.projectDir )
 
-rootProject.children.each {
-	it.name = "${rootProject.name}-${it.name.replace('/', '-')}"
-}

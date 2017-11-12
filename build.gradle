@@ -11,8 +11,23 @@ allprojects {
 subprojects {
 	group = 'ascelion.shared'
 
+	def baseName = "${rootProject.name}${path.replace(':', '-')}"
+
 	tasks.withType( JavaCompile ) {
 		options.compilerArgs << '-parameters'
 	}
-}
 
+	ascelion {
+		java {
+			main {
+				artifactId = baseName
+			}
+		}
+	}
+
+	eclipse {
+		project {
+			name = baseName
+		}
+	}
+}

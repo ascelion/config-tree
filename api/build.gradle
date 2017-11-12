@@ -1,13 +1,5 @@
 apply plugin: 'java'
 
-ascelion {
-	java {
-		main {
-			artifactId = "${rootProject.name}-api"
-		}
-	}
-}
-
 dependencies {
 	compile 'javax.enterprise:cdi-api'
 }
