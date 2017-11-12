@@ -1,8 +1,29 @@
 
 rootProject.name = 'cdi-conf'
 
-//includeBuild( '../cdi-unit-ext' ) {
-//	dependencySubstitution {
-//		substitute module( 'ascelion.shared:cdi-unit-ext' ) with project(':ext')
-//	}
-//}
+def includeChildren( File root )
+{
+	int size = rootProject.projectDir.absolutePath.length() + 1
+	def children = root.listFiles()
+
+	children.each {
+		if( file( "$it/build.gradle").exists() ) {
+			if( file( "$it/.no-build").exists() ) {
+				return
+			}
+	
+			if( it.name != 'bin' && it.name != 'build' ) {
+				include it.absolutePath.substring(size);
+			}
+		}
+		else {
+			includeChildren( it )
+		}
+	}
+}
+
+includeChildren( rootProject.projectDir )
+
+rootProject.children.each {
+	it.name = "${rootProject.name}-${it.name.replace('/', '-')}"
+}

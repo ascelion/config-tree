@@ -11,7 +11,7 @@ ext {
 
 dependencyManagement {
 	imports {
-		mavenBom( 'ascelion:defaults-bom:1.3.4-SNAPSHOT' )
+		mavenBom 'ascelion:defaults-bom:1.3.4-SNAPSHOT'
 		mavenBom "org.apache.deltaspike.distribution:distributions-bom:${versions.deltaspike}"
 	}
 
