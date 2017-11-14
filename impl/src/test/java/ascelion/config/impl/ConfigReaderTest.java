@@ -3,14 +3,19 @@ package ascelion.config.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
+import ascelion.config.api.ConfigException;
+import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
+import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.read.INIConfigReader;
 import ascelion.config.impl.read.PRPConfigReader;
 import ascelion.config.impl.read.XMLConfigReader;
 import ascelion.config.impl.read.YMLConfigReader;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -37,6 +42,37 @@ public class ConfigReaderTest
 	@Parameterized.Parameter( 0 )
 	public Class<? extends ConfigReader> cls;
 
+	@ConfigReader.Type( "STREAM" )
+	static class ConfigStreamReader implements ConfigReader
+	{
+
+		final InputStream stream;
+		final ConfigReader delegate;
+
+		ConfigStreamReader( InputStream stream, ConfigReader delegate )
+		{
+			this.stream = stream;
+			this.delegate = delegate;
+		}
+
+		@Override
+		public boolean enabled()
+		{
+			return this.delegate.enabled();
+		}
+
+		@Override
+		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
+		{
+			try {
+				return this.delegate.readConfiguration( source, this.stream );
+			}
+			catch( final IOException e ) {
+				throw new ConfigException( e.getMessage() );
+			}
+		}
+	}
+
 	@Test
 	public void run() throws InstantiationException, IllegalAccessException, IOException
 	{
@@ -49,10 +85,12 @@ public class ConfigReaderTest
 
 		assertThat( source, is( notNullValue() ) );
 
-		final ConfigReader rd = this.cls.newInstance();
-		final ConfigNodeImpl cn = new ConfigNodeImpl();
+		final ConfigLoad ld = new ConfigLoad();
+		final ConfigReader rd = new ConfigStreamReader( source, this.cls.newInstance() );
 
-		rd.readConfiguration( null, cn, source );
+		ld.addReader( rd );
+
+		final ConfigNode cn = ld.load( asList( new ConfigSourceLiteral( "", 0, "STREAM" ) ) );
 
 		assertThat( cn.getValue( "default" ), is( "0" ) );
 		assertThat( cn.getValue( "prop1" ), is( "value1" ) );

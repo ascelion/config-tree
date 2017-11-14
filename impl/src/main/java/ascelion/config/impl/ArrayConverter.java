@@ -2,11 +2,12 @@
 package ascelion.config.impl;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
+
+import static java.lang.String.format;
 
 class ArrayConverter<T> implements ConfigConverter<T[]>
 {
@@ -38,20 +39,29 @@ class ArrayConverter<T> implements ConfigConverter<T[]>
 		}
 	}
 
+	static class StringArray extends ArrayConverter<String>
+	{
+
+		StringArray( ConfigConverter<String> conv )
+		{
+			super( conv );
+		}
+	}
+
 	private final Class<T> type;
 	private final ConfigConverter<T> conv;
 
 	ArrayConverter( ConfigConverter<T> conv )
 	{
-		final Type sc = getClass().getGenericSuperclass();
+		final Type ct = Utils.converterType( getClass() );
 
-		if( !( sc instanceof ParameterizedType ) ) {
-			throw new IllegalArgumentException( "No type info" );
+		if( ct instanceof Class ) {
+			this.type = (Class<T>) ( (Class<?>) ct ).getComponentType();
+		}
+		else {
+			throw new IllegalArgumentException( format( "Cannot convert from String to %s", ct ) );
 		}
 
-		final ParameterizedType pt = (ParameterizedType) sc;
-
-		this.type = (Class<T>) pt.getActualTypeArguments()[0];
 		this.conv = conv;
 	}
 

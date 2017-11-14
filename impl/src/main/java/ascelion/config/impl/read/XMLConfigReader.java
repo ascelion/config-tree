@@ -3,13 +3,13 @@ package ascelion.config.impl.read;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.function.BiConsumer;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 
@@ -24,55 +24,59 @@ import org.xml.sax.helpers.DefaultHandler;
 public class XMLConfigReader implements ConfigReader
 {
 
-	class Context
+	static class Context
 	{
 
-		final BiConsumer<String, String> action;
-
+		final Map<String, String> map;
 		final Context parent;
 		final String prefix;
 
-		Context( BiConsumer<String, String> action )
+		Context( Map<String, String> map )
 		{
-			this.action = action;
+			this.map = map;
 			this.parent = null;
 			this.prefix = null;
 		}
 
-		Context( BiConsumer<String, String> action, Context parent, String name )
+		Context( Map<String, String> map, Context parent, String name )
 		{
-			this.action = action;
+			this.map = map;
 			this.parent = parent;
 			this.prefix = path( parent.prefix, name );
 		}
 
 		void set( String name, String value )
 		{
-			this.action.accept( path( this.prefix, name ), value );
+			this.map.put( path( this.prefix, name ), value );
 		}
 
 		void set( String value )
 		{
-			this.action.accept( this.prefix, value );
+			this.map.put( this.prefix, value );
 		}
 	}
 
-	class Handler extends DefaultHandler
+	static class Handler extends DefaultHandler
 	{
 
-		final BiConsumer<String, String> action;
+		final Map<String, String> map;
 
 		private Context context;
 		private String content;
+
+		Handler( Map<String, String> map )
+		{
+			this.map = map;
+		}
 
 		@Override
 		public void startElement( String uri, String localName, String qName, Attributes attributes ) throws SAXException
 		{
 			if( this.context == null ) {
-				this.context = new Context( this.action );
+				this.context = new Context( this.map );
 			}
 			else {
-				this.context = new Context( this.action, this.context, qName );
+				this.context = new Context( this.map, this.context, qName );
 			}
 
 			for( int n = 0; n < attributes.getLength(); n++ ) {
@@ -95,21 +99,19 @@ public class XMLConfigReader implements ConfigReader
 
 			this.context = this.context.parent;
 		}
-
-		Handler( BiConsumer<String, String> action )
-		{
-			this.action = action;
-		}
 	}
 
 	@Override
-	public void readConfiguration( ConfigSource source, ConfigNode root, InputStream is ) throws IOException
+	public Map<String, ?> readConfiguration( ConfigSource source, InputStream is ) throws IOException
 	{
 		try {
+			final Map<String, String> m = new HashMap<>();
 			final SAXParserFactory f = SAXParserFactory.newInstance();
 			final SAXParser p = f.newSAXParser();
 
-			p.parse( is, new Handler( ( k, v ) -> root.setValue( k, v ) ) );
+			p.parse( is, new Handler( m ) );
+
+			return m;
 		}
 		catch( final ParserConfigurationException | SAXException x ) {
 			throw new IOException( x );

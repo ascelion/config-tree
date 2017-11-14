@@ -3,13 +3,48 @@ package ascelion.config.impl;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 import ascelion.config.api.ConfigException;
 
 import static ascelion.config.impl.Utils.toStream;
+import static java.lang.String.format;
 
 class ExtraConverters
 {
+
+	static private final Map<String, Boolean> BOOLEAN_VALUES = new HashMap<>();
+
+	static {
+		BOOLEAN_VALUES.put( "false", false );
+		BOOLEAN_VALUES.put( "0", false );
+		BOOLEAN_VALUES.put( "n", false );
+		BOOLEAN_VALUES.put( "no", false );
+		BOOLEAN_VALUES.put( "off", false );
+
+		BOOLEAN_VALUES.put( "true", true );
+		BOOLEAN_VALUES.put( "1", true );
+		BOOLEAN_VALUES.put( "y", true );
+		BOOLEAN_VALUES.put( "yes", true );
+		BOOLEAN_VALUES.put( "on", true );
+
+		try {
+			final ResourceBundle b = ResourceBundle.getBundle( "META-INF/boolean.properties" );
+
+			for( final Enumeration<String> en = b.getKeys(); en.hasMoreElements(); ) {
+				final String k = en.nextElement();
+
+				BOOLEAN_VALUES.put( k, Boolean.valueOf( b.getString( k ) ) );
+			}
+		}
+		catch( final MissingResourceException e ) {
+			;
+		}
+	}
 
 	static Class<?> createClass( String x )
 	{
@@ -19,6 +54,17 @@ class ExtraConverters
 		catch( final ClassNotFoundException e ) {
 			throw new ConfigException( x, e );
 		}
+	}
+
+	static Boolean createBoolean( String x )
+	{
+		final Boolean b = BOOLEAN_VALUES.get( x );
+
+		if( b == null ) {
+			throw new IllegalArgumentException( format( "Cannot convert value '%s' to a boolean", x ) );
+		}
+
+		return b;
 	}
 
 	static URL createURL( String x )

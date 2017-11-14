@@ -30,30 +30,30 @@ public class ConfigLoad
 
 	static private final Logger L = LoggerFactory.getLogger( ConfigLoad.class );
 
-	static class ConfigNodeTA extends TypeAdapter<ConfigNodeImpl>
+	static class ConfigNodeTA extends TypeAdapter<ConfigNode>
 	{
 
 		@Override
-		public void write( JsonWriter out, ConfigNodeImpl value ) throws IOException
+		public void write( JsonWriter out, ConfigNode root ) throws IOException
 		{
-			final String item = value.getValue();
-			final Map<String, ConfigNodeImpl> tree = value.tree( false );
+			final String value = root.getValue();
+			final Collection<? extends ConfigNode> nodes = root.getNodes();
 
-			if( tree != null ) {
+			if( nodes != null ) {
 				out.beginObject();
 
-				if( item != null ) {
-					out.name( "@" ).value( item );
+				if( value != null ) {
+					out.name( "@" ).value( value );
 				}
-				for( final Map.Entry<String, ConfigNodeImpl> e : tree.entrySet() ) {
-					out.name( e.getKey() );
-					write( out, e.getValue() );
+				for( final ConfigNode node : nodes ) {
+					out.name( node.getName() );
+					write( out, node );
 				}
 
 				out.endObject();
 			}
 			else {
-				out.value( item );
+				out.value( value );
 			}
 		}
 
@@ -87,7 +87,7 @@ public class ConfigLoad
 
 	public ConfigNode load( Collection<ConfigSource> sources )
 	{
-		final ConfigNode root = new ConfigNodeImpl();
+		final ConfigNodeImpl root = new ConfigNodeImpl();
 
 		sources.stream()
 			.sorted( ( s1, s2 ) -> Integer.compare( s1.priority(), s2.priority() ) )
@@ -96,7 +96,7 @@ public class ConfigLoad
 		if( L.isTraceEnabled() ) {
 			final String s = new GsonBuilder()
 				.setPrettyPrinting()
-				.registerTypeAdapter( ConfigNodeImpl.class, new ConfigNodeTA() )
+				.registerTypeHierarchyAdapter( ConfigNode.class, new ConfigNodeTA() )
 				.create()
 				.toJson( root );
 
@@ -106,7 +106,7 @@ public class ConfigLoad
 		return root;
 	}
 
-	public void load( ConfigSource source, ConfigNode root )
+	public void load( ConfigSource source, ConfigNodeImpl root )
 	{
 		final String t = getType( source );
 		final ConfigReader r = getReader( t );
@@ -115,7 +115,7 @@ public class ConfigLoad
 			try {
 				L.trace( "Reading: type {} from '{}'", t, source.value() );
 
-				r.readConfiguration( source, root );
+				root.set( "", r.readConfiguration( source ) );
 			}
 			catch( final UnsupportedOperationException x ) {
 				readFromURL( source, t, r, root );
@@ -123,7 +123,7 @@ public class ConfigLoad
 		}
 	}
 
-	private void readFromURL( ConfigSource source, String type, ConfigReader rd, ConfigNode root )
+	private void readFromURL( ConfigSource source, String type, ConfigReader rd, ConfigNodeImpl root )
 	{
 		final List<URL> all = ConfigReader.getResources( source.value() );
 
@@ -134,7 +134,7 @@ public class ConfigLoad
 			all.forEach( u -> {
 				L.trace( "Reading: type {} from '{}'", type, u );
 
-				rd.readConfiguration( source, root, u );
+				root.set( "", rd.readConfiguration( source, u ) );
 			} );
 		}
 	}

@@ -233,11 +233,7 @@ public class ConvertersTest
 	@Test
 	public void intArray()
 	{
-		final TypeRefArray<Integer> ref = new TypeRefArray<Integer>()
-		{
-		};
-
-		final Object values = this.cvs.create( ref.type(), "1, 2, 3, 4" );
+		final Object values = this.cvs.create( Integer[].class, "1, 2, 3, 4" );
 
 		assertThat( values, is( new Integer[] { 1, 2, 3, 4 } ) );
 	}

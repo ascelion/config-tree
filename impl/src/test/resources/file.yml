@@ -1,0 +1,15 @@
+file:
+  prop4: value4
+  prop5: ${file.prop4), ${file.prop3}, ${file.prop2}, ${file.prop1}
+  prop6: ${file.int1}, ${file.int2}, ${file.int3}
+  int1: 1
+  int2: 2
+  int3: 3
+  map1:
+    values:
+      VAL0: 0
+      VAL1: 1
+      VAL2: 2, 3, 4
+      VAL3: [ 5, 6, 7 ]
+  map2:
+    values: ${file.map1.values}

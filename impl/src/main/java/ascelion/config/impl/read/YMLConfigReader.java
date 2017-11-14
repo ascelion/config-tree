@@ -3,9 +3,9 @@ package ascelion.config.impl.read;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 
-import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 
@@ -16,15 +16,18 @@ public class YMLConfigReader implements ConfigReader
 {
 
 	@Override
-	public void readConfiguration( ConfigSource source, ConfigNode root, InputStream is ) throws IOException
+	public Map<String, ?> readConfiguration( ConfigSource source, InputStream is ) throws IOException
 	{
-		final Yaml yaml = new Yaml();
+		final Map<String, ?> map = new HashMap<>();
+		final Yaml yml = new Yaml();
 
-		yaml.loadAll( is )
+		yml.loadAll( is )
 			.forEach( o -> {
 				if( o instanceof Map ) {
-					root.setValues( null, (Map<String, ?>) o );
+					map.putAll( (Map) o );
 				}
 			} );
+
+		return map;
 	}
 }

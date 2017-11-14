@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.util.Nonbinding;
 import javax.inject.Qualifier;
@@ -58,22 +59,22 @@ public interface ConfigReader
 		return true;
 	}
 
-	default void readConfiguration( ConfigSource source, ConfigNode root ) throws ConfigException
+	default Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
 	{
 		throw new UnsupportedOperationException( source.value() );
 	}
 
-	default void readConfiguration( ConfigSource source, ConfigNode root, URL url ) throws ConfigException
+	default Map<String, ?> readConfiguration( ConfigSource source, URL url ) throws ConfigException
 	{
 		try( InputStream is = url.openStream() ) {
-			readConfiguration( source, root, is );
+			return readConfiguration( source, is );
 		}
 		catch( final IOException e ) {
 			throw new ConfigException( url.toExternalForm(), e );
 		}
 	}
 
-	default void readConfiguration( ConfigSource source, ConfigNode root, InputStream is ) throws IOException
+	default Map<String, ?> readConfiguration( ConfigSource source, InputStream is ) throws IOException
 	{
 		throw new UnsupportedOperationException( "not implemented" );
 	}

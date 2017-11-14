@@ -40,18 +40,27 @@ class SetConverter<T> implements ConfigConverter<Set<T>>
 		}
 	}
 
+	static class StringSet extends SetConverter<String>
+	{
+
+		StringSet( ConfigConverter<String> conv )
+		{
+			super( conv );
+		}
+	}
+
 	private final Type type;
 	private final ConfigConverter<T> conv;
 
 	SetConverter( ConfigConverter<T> conv )
 	{
-		final Type sc = getClass().getGenericSuperclass();
+		final Type ct = Utils.converterType( getClass() );
 
-		if( !( sc instanceof ParameterizedType ) ) {
+		if( !( ct instanceof ParameterizedType ) ) {
 			throw new IllegalArgumentException( "No type info" );
 		}
 
-		final ParameterizedType pt = (ParameterizedType) sc;
+		final ParameterizedType pt = (ParameterizedType) ct;
 
 		this.type = pt.getActualTypeArguments()[0];
 		this.conv = conv;

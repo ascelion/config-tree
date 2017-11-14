@@ -8,7 +8,8 @@ configurations {
 }
 
 dependencies {
-	compile project( ':api' )
+	compile project( ':impl' )
+
 	compile 'org.eclipse.microprofile.config:microprofile-config-api:1.1'
 
 	tck 'org.eclipse.microprofile.config:microprofile-config-tck:1.1'

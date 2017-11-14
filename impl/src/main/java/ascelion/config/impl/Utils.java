@@ -2,16 +2,25 @@
 package ascelion.config.impl;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ascelion.config.api.ConfigConverter;
+import ascelion.config.api.ConfigNode;
+
 import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import org.apache.commons.lang3.StringUtils;
+import ru.vyarus.java.generics.resolver.GenericsResolver;
+import ru.vyarus.java.generics.resolver.context.GenericsContext;
 
 public final class Utils
 {
@@ -38,7 +47,12 @@ public final class Utils
 
 	static public String[] keys( String path )
 	{
-		return path != null ? path.split( "\\." ) : new String[0];
+		return isBlank( path ) ? new String[0] : path.split( "\\." );
+	}
+
+	static public String path( ConfigNode node )
+	{
+		return node != null ? node.getPath() : null;
 	}
 
 	static public String path( int s, int e, String[] keys )
@@ -66,5 +80,23 @@ public final class Utils
 
 	private Utils()
 	{
+	}
+
+	static Type converterType( final Class<? extends ConfigConverter> cls )
+	{
+		final GenericsContext c1 = GenericsResolver.resolve( cls );
+		final GenericsContext c2 = c1.type( ConfigConverter.class );
+		Type t = c2.genericType( 0 );
+
+		if( t instanceof GenericArrayType ) {
+			final GenericArrayType gat = (GenericArrayType) t;
+			final Type gct = gat.getGenericComponentType();
+
+			if( gct instanceof Class<?> ) {
+				t = Array.newInstance( (Class<?>) gct, 0 ).getClass();
+			}
+		}
+
+		return t;
 	}
 }

@@ -49,7 +49,7 @@ public class ConverterTypeTest
 	@Test
 	public void run11()
 	{
-		final Type at = Converters.getType( Derived11.class );
+		final Type at = Utils.converterType( Derived11.class );
 
 		System.out.println( at );
 
@@ -59,7 +59,7 @@ public class ConverterTypeTest
 	@Test
 	public void run21()
 	{
-		final Type at = Converters.getType( Derived21.class );
+		final Type at = Utils.converterType( Derived21.class );
 		final TypeRef<List<Long>> ref = new TypeRef<List<Long>>()
 		{
 		};
@@ -72,7 +72,7 @@ public class ConverterTypeTest
 	@Test
 	public void run3()
 	{
-		final Type at = Converters.getType( ListConverter.LongList.class );
+		final Type at = Utils.converterType( ListConverter.LongList.class );
 		final TypeRef<List<Long>> ref = new TypeRef<List<Long>>()
 		{
 		};

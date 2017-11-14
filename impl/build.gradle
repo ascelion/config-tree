@@ -18,13 +18,13 @@ dependencies {
 	compile 'com.google.code.gson:gson'
 
 	compile 'io.github.lukehutch:fast-classpath-scanner'
-	compile 'net.jodah:typetools:0.5.0'
 	compile 'ru.vyarus:generics-resolver:2.0.1'
 
 	testCompile 'org.antlr:antlr4-runtime'
 	testCompile 'junit:junit'
 	testCompile 'org.hamcrest:hamcrest-library'
-	
+	testCompile 'io.leangen.geantyref:geantyref'
+
 	testRuntime'org.slf4j:jul-to-slf4j'
 	testRuntime 'org.slf4j:jcl-over-slf4j'
 	testRuntime 'org.slf4j:log4j-over-slf4j'

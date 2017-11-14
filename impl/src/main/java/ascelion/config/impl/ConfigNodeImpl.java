@@ -11,47 +11,40 @@ import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigNode;
 
+import static ascelion.config.impl.Utils.keys;
+import static ascelion.config.impl.Utils.path;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 
 final class ConfigNodeImpl implements ConfigNode
 {
 
-	private ConfigNodeImpl parent;
 	private final String name;
+	private final String path;
 	private String item;
 	private Map<String, ConfigNodeImpl> tree;
 
 	public ConfigNodeImpl()
 	{
-		this( null, null );
+		this.name = null;
+		this.path = null;
 	}
 
 	public ConfigNodeImpl( String name )
 	{
-		this( name, null );
+		this.name = name;
+		this.path = null;
 	}
 
 	public ConfigNodeImpl( String name, ConfigNodeImpl parent )
 	{
 		this.name = name;
+		this.path = path( path( parent ), name );
 
-		parent( parent );
-	}
-
-	public ConfigNode parent( ConfigNodeImpl parent )
-	{
-		if( this.parent != null && parent.tree != null ) {
-			this.parent.tree.remove( this.name );
+		if( parent != null ) {
+			parent.tree( true ).put( this.path, this );
 		}
-
-		this.parent = parent;
-
-		if( this.parent != null ) {
-			this.parent.tree( true ).put( this.name, this );
-		}
-
-		return this;
 	}
 
 	@Override
@@ -63,13 +56,7 @@ final class ConfigNodeImpl implements ConfigNode
 	@Override
 	public String getPath()
 	{
-		return Utils.path( this.parent != null ? this.parent.getPath() : null, this.name );
-	}
-
-	@Override
-	public Collection<? extends ConfigNode> getNodes()
-	{
-		return this.tree != null ? this.tree.values() : emptyList();
+		return this.path;
 	}
 
 	@Override
@@ -79,48 +66,43 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public void setValue( String value )
-	{
-		this.item = value;
-	}
-
-	@Override
-	public String getValue( String path )
-	{
-		final ConfigNodeImpl node = findNode( path, false );
-
-		return node != null ? node.item : null;
-	}
-
-	@Override
-	public void setValue( String path, String value )
-	{
-		findNode( path, true ).item = value;
-	}
-
-	@Override
-	public void setValues( String path, Map<String, ?> values )
-	{
-		set( path, values );
-	}
-
-	@Override
-	public void setValues( Map<String, ?> values )
-	{
-		set( null, values );
-	}
-
-	@Override
 	public ConfigNodeImpl getNode( String path )
 	{
 		return findNode( path, false );
 	}
 
 	@Override
+	public Collection<? extends ConfigNode> getNodes()
+	{
+		return this.tree != null ? this.tree.values() : emptyList();
+	}
+
+	@Override
 	public String toString()
 	{
-		return Stream.of( this.item, this.tree ).filter( Objects::nonNull )
-			.map( Object::toString ).collect( Collectors.joining( ",", "{", "}" ) );
+		final StringBuilder sb = new StringBuilder();
+
+		if( this.item != null ) {
+			if( this.path != null ) {
+				sb.append( "{" );
+			}
+			sb.append( this.item );
+		}
+		if( this.tree != null ) {
+			if( sb.length() > 0 ) {
+				sb.append( ", " );
+			}
+			else if( this.path != null ) {
+				sb.append( "{" );
+			}
+
+			sb.append( this.tree.entrySet().stream().map( Object::toString ).collect( Collectors.joining( ", " ) ) );
+		}
+		if( this.path != null && sb.length() > 0 ) {
+			sb.append( "}" );
+		}
+
+		return sb.toString();
 	}
 
 	@Override
@@ -138,7 +120,7 @@ final class ConfigNodeImpl implements ConfigNode
 		findNode( path, true ).set( payload );
 	}
 
-	void set( Object payload )
+	private void set( Object payload )
 	{
 		if( payload instanceof Map ) {
 			final Map<String, Object> ms = (Map<String, Object>) payload;
@@ -169,34 +151,39 @@ final class ConfigNodeImpl implements ConfigNode
 
 	private ConfigNodeImpl findNode( String path, boolean create )
 	{
-		final String[] keys = Utils.keys( path );
+		final String[] keys = keys( path );
 		ConfigNodeImpl node = this;
 
 		for( final String key : keys ) {
-			if( node == null || node.tree( create ) == null ) {
+			if( node == null ) {
 				return null;
 			}
 
-			final ConfigNodeImpl temp = node;
-
-			if( create ) {
-				node = node.tree( false ).computeIfAbsent( key, k -> new ConfigNodeImpl( k, temp ) );
-			}
-			else {
-				node = node.tree( false ).get( key );
-			}
+			node = node.child( key, create );
 		}
 
 		return node;
 	}
 
-	Map<String, ConfigNodeImpl> tree( boolean create )
+	private ConfigNodeImpl child( String name, boolean create )
+	{
+		final String path = path( this.path, name );
+
+		if( create ) {
+			return tree( true ).computeIfAbsent( path, ignored -> new ConfigNodeImpl( name, this ) );
+		}
+		else {
+			return tree( false ).get( path );
+		}
+	}
+
+	private Map<String, ConfigNodeImpl> tree( boolean create )
 	{
 		if( this.tree == null && create ) {
 			this.tree = new TreeMap<>();
 		}
 
-		return this.tree != null ? this.tree : null;
+		return this.tree != null ? this.tree : emptyMap();
 	}
 
 	private <T> void fillMap( int unwrap, TreeMap<String, T> m, Function<String, T> f )

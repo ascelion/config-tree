@@ -31,8 +31,7 @@ import ascelion.config.api.ConfigException;
 
 import static java.lang.String.format;
 
-import ru.vyarus.java.generics.resolver.GenericsResolver;
-import ru.vyarus.java.generics.resolver.context.GenericsContext;
+import com.google.common.primitives.Primitives;
 
 public class Converters implements ConfigConverter<Object>
 {
@@ -113,15 +112,15 @@ public class Converters implements ConfigConverter<Object>
 		put( Enum.class, ( t, u ) -> Enum.valueOf( (Class) t, u ) );
 
 		add( Class.class, ExtraConverters::createClass );
-		add( Boolean.class, Boolean::parseBoolean );
 		add( String.class, u -> u );
 
-		add( Byte.class, Byte::parseByte );
-		add( Short.class, Short::parseShort );
-		add( Integer.class, Integer::parseInt );
-		add( Long.class, Long::parseLong );
-		add( Float.class, Float::parseFloat );
-		add( Double.class, Double::parseDouble );
+		add( boolean.class, ExtraConverters::createBoolean );
+		add( byte.class, Byte::parseByte );
+		add( short.class, Short::parseShort );
+		add( int.class, Integer::parseInt );
+		add( long.class, Long::parseLong );
+		add( float.class, Float::parseFloat );
+		add( double.class, Double::parseDouble );
 
 		add( Duration.class, Duration::parse );
 		add( Instant.class, Instant::parse );
@@ -140,14 +139,17 @@ public class Converters implements ConfigConverter<Object>
 		add( new ArrayConverter.IntArray( self() ) );
 		add( new ArrayConverter.LongArray( self() ) );
 		add( new ArrayConverter.DoubleArray( self() ) );
+		add( new ArrayConverter.StringArray( self() ) );
 
 		add( new ListConverter.IntList( self() ) );
 		add( new ListConverter.LongList( self() ) );
 		add( new ListConverter.DoubleList( self() ) );
+		add( new ListConverter.StringList( self() ) );
 
 		add( new SetConverter.IntSet( self() ) );
 		add( new SetConverter.LongSet( self() ) );
 		add( new SetConverter.DoubleSet( self() ) );
+		add( new SetConverter.StringSet( self() ) );
 	}
 
 	public void register( ConfigConverter<?> c )
@@ -307,27 +309,25 @@ public class Converters implements ConfigConverter<Object>
 
 	private <X> void put( Class<X> type, ConfigConverter<X> conv )
 	{
+		final Class<X> wrap = Primitives.wrap( type );
+
+		if( wrap != type ) {
+			this.cached.put( wrap, conv );
+		}
+
 		this.cached.put( type, conv );
 	}
 
 	private void add( ConfigConverter<?> c )
 	{
 		final Class<? extends ConfigConverter> cls = c.getClass();
-		final Type t = getType( cls );
+		final Type t = Utils.converterType( cls );
 
 		if( t == null ) {
 			throw new IllegalArgumentException( format( "No type information for converter %s", cls.getName() ) );
 		}
 
 		this.cached.put( t, c );
-	}
-
-	static Type getType( final Class<? extends ConfigConverter> cls )
-	{
-		final GenericsContext c1 = GenericsResolver.resolve( cls );
-		final GenericsContext c2 = c1.type( ConfigConverter.class );
-
-		return c2.genericType( 0 );
 	}
 
 }

@@ -16,17 +16,24 @@ public interface ConfigNode
 
 	Collection<? extends ConfigNode> getNodes();
 
-	void setValue( String value );
+	default String getValue( String path )
+	{
+		final ConfigNode node = getNode( path );
 
-	void setValues( Map<String, ?> values );
+		return node != null ? node.getValue() : null;
+	}
 
 	ConfigNode getNode( String path );
 
-	String getValue( String path );
-
-	void setValue( String path, String value );
-
-	void setValues( String path, Map<String, ?> values );
+//	void setValue( String value );
+//
+//	void setValues( Map<String, ?> values );
+//
+//	String getValue( String path );
+//
+//	void setValue( String path, String value );
+//
+//	void setValues( String path, Map<String, ?> values );
 
 	<T> Map<String, T> asMap( int unwrap, Function<String, T> fun );
 
