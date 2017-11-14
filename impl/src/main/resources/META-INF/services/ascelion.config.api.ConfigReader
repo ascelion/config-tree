@@ -1,0 +1,5 @@
+ascelion.config.impl.read.INIConfigReader
+ascelion.config.impl.read.JMXConfigReader
+ascelion.config.impl.read.PRPConfigReader
+ascelion.config.impl.read.XMLConfigReader
+ascelion.config.impl.read.YMLConfigReader

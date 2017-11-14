@@ -17,7 +17,6 @@ import javax.inject.Inject;
 
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
-import ascelion.config.impl.ConfigProdBase;
 import ascelion.tests.cdi.CdiUnit;
 
 import static java.lang.annotation.ElementType.TYPE;
@@ -128,10 +127,10 @@ public class ConfigValueTest
 	@Inject
 	private Bean3 bean3;
 
-	@ConfigValue( "log.file1:${sys.user.dir}/file1.log" )
+	@ConfigValue( "log.file1:${user.dir}/file1.log" )
 	private String logFile1;
 
-	@ConfigValue( "log.file2:${env.user.dir}/file2.log" )
+	@ConfigValue( "log.file2:${user.dir}/file2.log" )
 	private File logFile2;
 
 	@ConfigValue( "log.categories:2,3,4,5" )

@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
 public class CustomSourceTest
 {
 
-	@ConfigSource.Type( "custom" )
+	@ConfigReader.Type( "custom" )
 	static class CustomReader implements ConfigReader
 	{
 

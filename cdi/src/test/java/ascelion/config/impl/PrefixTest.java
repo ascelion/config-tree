@@ -28,7 +28,7 @@ public class PrefixTest
 {
 
 	@Dependent
-	@ConfigSource.Type( "PFX" )
+	@ConfigReader.Type( "PFX" )
 	static class CustomSource implements ConfigReader
 	{
 

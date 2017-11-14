@@ -4,7 +4,6 @@ package ascelion.config.impl;
 import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.BiFunction;
 
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Typed;
@@ -15,6 +14,7 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.inject.Inject;
 
 import ascelion.cdi.type.AnnotatedTypeW;
+import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigValue;
 
@@ -28,7 +28,7 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 
 	private boolean modified;
 
-	private final Set<Class<? extends BiFunction>> converters = new TreeSet<>( new TypeCMP<>() );
+	private final Set<Class<? extends ConfigConverter<?>>> converters = new TreeSet<>( new TypeCMP<>() );
 
 	ConfigType( AnnotatedType<X> delegate )
 	{
@@ -80,7 +80,7 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 		if( a != null ) {
 			boolean transform = false;
 			final String[] n = a.value().split( Eval.Token.S_DEF );
-			Class<? extends BiFunction> c = a.converter();
+			final Class<? extends ConfigConverter<?>> c = (Class<? extends ConfigConverter<?>>) a.converter();
 
 			if( n[0].isEmpty() ) {
 				if( isBlank( name ) ) {
@@ -95,22 +95,19 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 
 				transform = true;
 			}
-			if( c == BiFunction.class ) {
-				c = DefaultCVT.class;
-
-				transform = true;
-			}
 			if( transform ) {
 				m.getAnnotations().remove( a );
 
-				a = new ConfigValueLiteral( n, c, a.unwrap() );
+				a = new ConfigValueLiteral( n, a.converter(), a.unwrap() );
 
 				m.getAnnotations().add( a );
 
 				this.modified = true;
 			}
 
-			this.converters.add( c );
+			if( c != ConfigConverter.class ) {
+				this.converters.add( c );
+			}
 		}
 	}
 
@@ -119,7 +116,7 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 		return this.modified;
 	}
 
-	Set<Class<? extends BiFunction>> converters()
+	Collection<Class<? extends ConfigConverter<?>>> converters()
 	{
 		return unmodifiableSet( this.converters );
 	}

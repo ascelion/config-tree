@@ -29,7 +29,8 @@ dependencyManagement {
 		dependency 'org.yaml:snakeyaml:1.18'
 		dependency 'org.ini4j:ini4j:0.5.4'
 		dependency 'com.google.code.gson:gson:2.8.2'
-		dependency 'io.github.lukehutch:fast-classpath-scanner:2.7.1'
+		dependency 'io.github.lukehutch:fast-classpath-scanner:2.8.2'
+		dependency 'io.leangen.geantyref:geantyref:1.2.1'
 
 		dependencySet( group: 'org.antlr', version: versions.antlr4 ) {
 			entry 'antlr4'

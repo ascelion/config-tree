@@ -4,14 +4,35 @@ package ascelion.config.api;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.enterprise.util.Nonbinding;
+import javax.inject.Qualifier;
+import javax.inject.Singleton;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Collections.list;
 
 public interface ConfigReader
 {
+
+	@Retention( RUNTIME )
+	@Target( TYPE )
+	@Qualifier
+	@Singleton
+	@interface Type
+	{
+
+		String value();
+
+		@Nonbinding
+		String[] types() default {};
+	}
 
 	static List<URL> getResources( String source )
 	{

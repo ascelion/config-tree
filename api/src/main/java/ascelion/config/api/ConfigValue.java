@@ -4,7 +4,6 @@ package ascelion.config.api;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import java.util.function.BiFunction;
 
 import javax.enterprise.util.Nonbinding;
 import javax.inject.Qualifier;
@@ -29,5 +28,5 @@ public @interface ConfigValue
 	int unwrap() default 0;
 
 	@Nonbinding
-	Class<? extends BiFunction> converter() default BiFunction.class;
+	Class<? extends ConfigConverter> converter() default ConfigConverter.class;
 }

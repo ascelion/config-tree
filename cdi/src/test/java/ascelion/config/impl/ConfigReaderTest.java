@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import ascelion.config.api.ConfigReader;
-import ascelion.config.api.ConfigSource;
-import ascelion.config.api.ConfigSource.Type;
-import ascelion.config.impl.ConfigNodeImpl;
 import ascelion.config.impl.read.INIConfigReader;
 import ascelion.config.impl.read.PRPConfigReader;
 import ascelion.config.impl.read.XMLConfigReader;
@@ -43,7 +40,7 @@ public class ConfigReaderTest
 	@Test
 	public void run() throws InstantiationException, IllegalAccessException, IOException
 	{
-		final Type a = this.cls.getAnnotation( ConfigSource.Type.class );
+		final ConfigReader.Type a = this.cls.getAnnotation( ConfigReader.Type.class );
 
 		assertThat( a, is( notNullValue() ) );
 

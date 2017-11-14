@@ -21,5 +21,5 @@
 <listEntry value="build"/>
 <listEntry value="publishToMavenLocal"/>
 </listAttribute>
-<stringAttribute key="working_dir" value="${workspace_loc:/cdi-conf}"/>
+<stringAttribute key="working_dir" value="${workspace_loc:/config}"/>
 </launchConfiguration>

@@ -36,7 +36,7 @@ public class ReloadTest
 	static final long INTERVAL = 500;
 
 	@Dependent
-	@ConfigSource.Type( "INC1" )
+	@ConfigReader.Type( "INC1" )
 	@ConfigSource( type = "INC1" )
 	static class CustomSource1 implements ConfigReader
 	{
@@ -46,12 +46,12 @@ public class ReloadTest
 		@Override
 		public void readConfiguration( ConfigSource source, ConfigNode root )
 		{
-			root.setValue( "value1", format( "value%01d", this.index++ ) );
+			root.setValue( "reload1", format( "reload%01d", this.index++ ) );
 		}
 	}
 
 	@Dependent
-	@ConfigSource.Type( value = "INC2" )
+	@ConfigReader.Type( value = "INC2" )
 	@ConfigSource( type = "INC2" )
 	static class CustomSource2 implements ConfigReader
 	{
@@ -61,7 +61,7 @@ public class ReloadTest
 		@Override
 		public void readConfiguration( ConfigSource source, ConfigNode root )
 		{
-			root.setValue( "value2", format( "value%01d", this.index++ ) );
+			root.setValue( "reload2", format( "reload%01d", this.index++ ) );
 		}
 	}
 
@@ -69,10 +69,10 @@ public class ReloadTest
 	{
 
 		@ConfigValue
-		String value1;
+		String reload1;
 
 		@ConfigValue
-		String value2;
+		String reload2;
 	}
 
 	@Inject
@@ -103,13 +103,13 @@ public class ReloadTest
 		final Bean b5 = this.inst.get();
 		final Bean b6 = this.inst.get();
 
-		assertThat( b1.value1, is( b2.value1 ) );
-		assertThat( b1.value2, is( b2.value2 ) );
+		assertThat( b1.reload1, is( b2.reload1 ) );
+		assertThat( b1.reload2, is( b2.reload2 ) );
 
-		assertThat( b1.value1, is( not( b3.value1 ) ) );
-		assertThat( b1.value2, is( b4.value2 ) );
+		assertThat( b1.reload1, is( not( b3.reload1 ) ) );
+		assertThat( b1.reload2, is( b4.reload2 ) );
 
-		assertThat( b1.value1, is( not( b5.value1 ) ) );
-		assertThat( b1.value2, is( not( b6.value2 ) ) );
+		assertThat( b1.reload1, is( not( b5.reload1 ) ) );
+		assertThat( b1.reload2, is( not( b6.reload2 ) ) );
 	}
 }

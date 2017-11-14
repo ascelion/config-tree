@@ -1,66 +1,21 @@
 apply plugin: 'java'
-apply plugin: 'antlr'
-
-tasks.withType( AntlrTask ).all { t ->
-	eclipseClasspath {
-		dependsOn t
-	}
-}
 
 dependencies {
-	antlr 'org.antlr:antlr4'
-
-	compile project( ':api' )
+	compile project( ':impl' )
 
 	compile 'ascelion.shared:cdi-utils'
-	compile 'commons-io:commons-io'
-	compile 'org.apache.commons:commons-lang3'
-
-	compile 'com.google.guava:guava'
 
 	compile 'org.slf4j:slf4j-api'
-	compile 'org.yaml:snakeyaml'
-	compile 'org.ini4j:ini4j'
-	compile 'com.google.code.gson:gson'
 
 	compile 'org.apache.deltaspike.core:deltaspike-core-api'
 
 	testCompile 'junit:junit'
-	testCompile 'org.antlr:antlr4-runtime'
 	testCompile 'ascelion.shared:cdi-unit-ext'
 	testCompile 'ascelion.shared:cdi-unit-weld'
-	
-	testCompile 'org.slf4j:jul-to-slf4j'
-	testCompile 'org.slf4j:jcl-over-slf4j'
-	testCompile 'org.slf4j:log4j-over-slf4j'
-	testCompile 'ch.qos.logback:logback-classic'
+
+	testRuntime project( path: ':impl', configuration: 'testArtifacts' )
 
 	testRuntime 'javax.el:javax.el-api'
 	testRuntime 'org.jboss.weld.se:weld-se-core'
 	testRuntime 'org.postgresql:postgresql'
-}
-
-task( cleanLog, type: Delete ) {
-	delete '**/*.log'
-	outputs.upToDateWhen { false }
-}
-
-test {
-	dependsOn cleanLog
-}
-
-task( grun, type: JavaExec ) {
-	main = 'org.antlr.v4.gui.TestRig'
-	classpath += sourceSets.test.output
-	classpath += sourceSets.test.runtimeClasspath
-	classpath += configurations.antlr
-	args += [ 'ascelion.cdi.conf.Expression', 'root' ]
-	args += [ '-tokens', '-trace', '-diagnostics', '-SLL', '-tree']
-	
-	if( System.getProperty( "stdin" ) == '' ) {
-		standardInput = System.in
-	}
-	else {
-		args += fileTree( dir: 'src/test/resources', include: 'expression-??.txt' ).sort()
-	}
 }

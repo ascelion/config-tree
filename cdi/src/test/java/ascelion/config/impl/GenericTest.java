@@ -36,7 +36,7 @@ public class GenericTest
 {
 
 	@Dependent
-	@ConfigSource.Type( "custom" )
+	@ConfigReader.Type( "custom" )
 	@ConfigSource( type = "custom" )
 	static class CustomSource implements ConfigReader
 	{
