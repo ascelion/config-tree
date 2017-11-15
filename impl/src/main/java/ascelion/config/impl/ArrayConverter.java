@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
 
+import static ascelion.config.impl.Utils.values;
 import static java.lang.String.format;
 
 class ArrayConverter<T> implements ConfigConverter<T[]>
@@ -68,7 +69,7 @@ class ArrayConverter<T> implements ConfigConverter<T[]>
 	@Override
 	public T[] create( Type t, String u )
 	{
-		final String[] v = Utils.toArray( u );
+		final String[] v = values( u );
 
 		return Stream.of( v )
 			.map( x -> this.conv.create( this.type, x ) )

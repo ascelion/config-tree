@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
 
+import static ascelion.config.impl.Utils.values;
 import static java.util.stream.Collectors.toList;
 
 abstract class ListConverter<T> implements ConfigConverter<List<T>>
@@ -69,7 +70,7 @@ abstract class ListConverter<T> implements ConfigConverter<List<T>>
 	@Override
 	public List<T> create( Type t, String u )
 	{
-		final String[] v = Utils.toArray( u );
+		final String[] v = values( u );
 
 		return Stream.of( v )
 			.map( x -> this.conv.create( this.type, x ) )

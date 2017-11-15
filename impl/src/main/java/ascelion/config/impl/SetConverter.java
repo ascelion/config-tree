@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
 
+import static ascelion.config.impl.Utils.values;
 import static java.util.stream.Collectors.toSet;
 
 class SetConverter<T> implements ConfigConverter<Set<T>>
@@ -75,7 +76,7 @@ class SetConverter<T> implements ConfigConverter<Set<T>>
 	@Override
 	public Set<T> create( Type t, String u )
 	{
-		final String[] v = Utils.toArray( u );
+		final String[] v = values( u );
 
 		return Stream.of( v )
 			.map( x -> this.conv.create( this.type, x ) )

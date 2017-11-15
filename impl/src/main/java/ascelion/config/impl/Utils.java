@@ -15,7 +15,6 @@ import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,29 +24,29 @@ import ru.vyarus.java.generics.resolver.context.GenericsContext;
 public final class Utils
 {
 
-	static public Stream<Method> sMethodsOf( Class<?> cls )
+	static public <X> X[] asArray( X... x )
 	{
-		return Stream.of( cls.getMethods() );
+		return x;
+	}
+
+	static public <X> Set<? super X> asSet( X... x )
+	{
+		return asList( x ).stream().collect( Collectors.toSet() );
 	}
 
 	static public Set<Method> methodsOf( Class<?> cls )
 	{
-		return sMethodsOf( cls ).collect( Collectors.toSet() );
+		return Stream.of( cls.getMethods() ).collect( Collectors.toSet() );
 	}
 
-	static public String[] toArray( String value )
+	static public String[] values( String value )
 	{
 		return isNotBlank( value ) ? value.split( "\\s*[;,]\\s*" ) : new String[0];
 	}
 
-	static public Stream<String> toStream( String value )
-	{
-		return Stream.of( toArray( value ) );
-	}
-
 	static public String[] keys( String path )
 	{
-		return isBlank( path ) ? new String[0] : path.split( "\\." );
+		return isNotBlank( path ) ? path.split( "\\." ) : new String[0];
 	}
 
 	static public String path( ConfigNode node )
@@ -78,10 +77,6 @@ public final class Utils
 		return findAnnotation( annotation, cls.getSuperclass() );
 	}
 
-	private Utils()
-	{
-	}
-
 	static Type converterType( final Class<? extends ConfigConverter> cls )
 	{
 		final GenericsContext c1 = GenericsResolver.resolve( cls );
@@ -98,5 +93,9 @@ public final class Utils
 		}
 
 		return t;
+	}
+
+	private Utils()
+	{
 	}
 }

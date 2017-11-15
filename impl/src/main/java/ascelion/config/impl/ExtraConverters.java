@@ -8,10 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigException;
 
-import static ascelion.config.impl.Utils.toStream;
+import static ascelion.config.impl.Utils.values;
 import static java.lang.String.format;
 
 class ExtraConverters
@@ -79,7 +80,7 @@ class ExtraConverters
 
 	static int[] createIntA( String u )
 	{
-		return toStream( u )
+		return Stream.of( values( u ) )
 			.map( Integer::parseInt )
 			.mapToInt( Integer::intValue )
 			.toArray();
@@ -87,7 +88,7 @@ class ExtraConverters
 
 	static long[] createLongA( String u )
 	{
-		return toStream( u )
+		return Stream.of( values( u ) )
 			.map( Long::parseLong )
 			.mapToLong( Long::longValue )
 			.toArray();
@@ -95,7 +96,7 @@ class ExtraConverters
 
 	static double[] createDoubleA( String u )
 	{
-		return toStream( u )
+		return Stream.of( values( u ) )
 			.map( Double::parseDouble )
 			.mapToDouble( Double::doubleValue )
 			.toArray();
