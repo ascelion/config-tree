@@ -21,7 +21,6 @@ import ascelion.config.impl.ItemTokenizer.Token;
 import static ascelion.config.impl.Utils.keys;
 import static ascelion.config.impl.Utils.path;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -101,7 +100,7 @@ final class ConfigNodeImpl implements ConfigNode
 		@Override
 		String eval( ConfigNodeImpl root )
 		{
-			return this.text;
+			return this.text.replace( "\\:", "" );
 		}
 
 		@Override
@@ -172,9 +171,6 @@ final class ConfigNodeImpl implements ConfigNode
 
 				try {
 					item = root.value( path );
-				}
-				catch( final ConfigNotFoundException e ) {
-					item = null;
 				}
 				finally {
 					CHAIN.get().pop();
@@ -320,13 +316,13 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public String getValue( boolean expand )
+	public String getValue()
 	{
 		if( this.expr == null ) {
 			return null;
 		}
 
-		return expand ? this.expr.eval( this.root ) : this.expr.toString();
+		return this.expr.eval( this.root );
 	}
 
 	@Override
@@ -353,22 +349,16 @@ final class ConfigNodeImpl implements ConfigNode
 		return node;
 	}
 
-	private String value( String path )
+	@Override
+	public Map<String, String> asMap()
 	{
-		final ConfigNodeImpl node = node( path );
-
-		return node != null ? node.getValue() : null;
-	}
-
-	private ConfigNodeImpl node( String path )
-	{
-		return findNode( path, false );
+		return asMap( 0 );
 	}
 
 	@Override
-	public Collection<? extends ConfigNode> getChildren( boolean expand )
+	public Collection<? extends ConfigNode> getChildren()
 	{
-		return this.tree != null ? this.tree.values() : emptyList();
+		return tree( false ).values();
 	}
 
 	@Override
@@ -399,21 +389,6 @@ final class ConfigNodeImpl implements ConfigNode
 		return sb.toString();
 	}
 
-	@Override
-	public Map<String, String> asMap()
-	{
-		return asMap( 0 );
-	}
-
-	Map<String, String> asMap( int unwrap )
-	{
-		final TreeMap<String, String> m = new TreeMap<>();
-
-		fillMap( unwrap, m );
-
-		return m;
-	}
-
 	void setValue( Object value )
 	{
 		setValue( null, value );
@@ -426,6 +401,52 @@ final class ConfigNodeImpl implements ConfigNode
 		}
 
 		set( path, value );
+	}
+
+	String getLiteral()
+	{
+		return Objects.toString( this.expr, null );
+	}
+
+	Map<String, ConfigNodeImpl> tree( boolean create )
+	{
+		if( this.tree == null && create ) {
+			this.tree = new TreeMap<>();
+		}
+
+		return this.tree != null ? this.tree : emptyMap();
+	}
+
+	private Map<String, String> asMap( int unwrap )
+	{
+		final TreeMap<String, String> m = new TreeMap<>();
+
+		fillMap( unwrap, m );
+
+		return m;
+	}
+
+	private String value( String path )
+	{
+		assert !PATH_EXPRESSION.matcher( path ).matches() : path;
+
+		final String[] keys = keys( path );
+		ConfigNodeImpl node = this;
+
+		for( final String key : keys ) {
+			if( node == null ) {
+				return null;
+			}
+
+			node = node.child( key, false );
+		}
+
+		return node.getValue();
+	}
+
+	private ConfigNodeImpl node( String path )
+	{
+		return findNode( path, false );
 	}
 
 	private void set( String path, Object value )
@@ -493,15 +514,6 @@ final class ConfigNodeImpl implements ConfigNode
 		}
 	}
 
-	private Map<String, ConfigNodeImpl> tree( boolean create )
-	{
-		if( this.tree == null && create ) {
-			this.tree = new TreeMap<>();
-		}
-
-		return this.tree != null ? this.tree : emptyMap();
-	}
-
 	private void fillMap( int unwrap, Map<String, String> m )
 	{
 		if( this.tree == null || this.tree.isEmpty() ) {
@@ -528,5 +540,15 @@ final class ConfigNodeImpl implements ConfigNode
 		else {
 			this.tree.forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
 		}
+	}
+
+	void add( ConfigNodeImpl node )
+	{
+		this.expr = node.expr;
+
+		node.tree( false )
+			.forEach( ( k, v ) -> {
+				child( k, true ).add( v );
+			} );
 	}
 }

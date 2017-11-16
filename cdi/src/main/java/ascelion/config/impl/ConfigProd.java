@@ -10,6 +10,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.Bean;
@@ -18,6 +20,8 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
 import ascelion.config.api.ConfigConverter;
+import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigValue;
 
 import org.slf4j.Logger;
@@ -31,19 +35,17 @@ class ConfigProd
 	static private final Logger L = LoggerFactory.getLogger( ConfigProd.class );
 
 	@Inject
-	private ConfigCollect cc;
-
-	@Inject
 	private BeanManager bm;
-
 	@Inject
 	private ConfigExtension ext;
-
 	@Inject
 	private Converters cvs;
+	@Inject
+	@Any
+	private Instance<ConfigReader> rdi;
 
-	private InstanceInfo<? extends ConfigConverter> cvti;
-
+	private final ConfigLoad load = new ConfigLoad();
+	private ConfigNode root;
 	private final Map<Class<? extends ConfigConverter>, InstanceInfo<? extends ConfigConverter>> converters = new IdentityHashMap<>();
 
 	@Produces
@@ -55,14 +57,24 @@ class ConfigProd
 
 		final ConfigValue a = ip.getAnnotated().getAnnotation( ConfigValue.class );
 		final Type t = ip.getType();
-		final TypedValue v = new TypedValue( this.cc.root() );
+		final TypedValue v = new TypedValue( this.root );
+
+		registerIfNeeded( t, a );
 
 		return v.getValue( t, a.value(), a.unwrap() );
 	}
 
-	private ConfigConverter getConverter( Class<? extends ConfigConverter> type )
+	private void registerIfNeeded( Type t, ConfigValue a )
 	{
-		return this.converters.computeIfAbsent( type, x -> this.cvti ).instance;
+		if( !( t instanceof Class ) ) {
+			return;
+		}
+
+		final Class<?> c = (Class<?>) t;
+
+		if( c.isInterface() ) {
+			this.cvs.register( t, () -> new InterfaceConverter( this.root ) );
+		}
 	}
 
 	@PostConstruct
@@ -89,7 +101,9 @@ class ConfigProd
 			this.converters.put( c, info );
 		} );
 
-		this.cvti = new InstanceInfo<>( this.cvs );
+		this.rdi.forEach( this.load::addReader );
+
+		this.root = this.load.load( this.ext.sources() );
 	}
 
 	@PreDestroy

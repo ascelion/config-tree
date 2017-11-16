@@ -24,7 +24,6 @@ public final class ConfigJava
 	private final List<Predicate<ConfigSource>> filters = new ArrayList<>();
 
 	private ConfigNode root;
-	private TypedValue tv;
 
 	public void add( ConfigReader rd )
 	{
@@ -65,7 +64,6 @@ public final class ConfigJava
 				.forEach( this.cvs::register );
 
 			this.root = this.ld.load( getSources() );
-			this.tv = new TypedValue( this.root );
 		}
 
 		return this.root;
@@ -82,6 +80,6 @@ public final class ConfigJava
 
 	public <T> T getValue( Type type, String prop, int unwrap )
 	{
-		return this.tv.getValue( type, prop, unwrap );
+		return new TypedValue( root() ).getValue( type, prop, unwrap );
 	}
 }

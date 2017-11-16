@@ -23,6 +23,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -173,6 +174,40 @@ public class Converters implements ConfigConverter<Object>
 		}
 	}
 
+	public void register( Type t, Supplier<ConfigConverter<?>> s )
+	{
+		final Lock rdLock = this.RW_LOCK.readLock();
+
+		rdLock.lock();
+
+		try {
+			if( this.cached.containsKey( t ) ) {
+				return;
+			}
+
+			rdLock.unlock();
+
+			try {
+				final Lock wrLock = this.RW_LOCK.writeLock();
+
+				wrLock.lock();
+
+				try {
+					this.cached.put( t, s.get() );
+				}
+				finally {
+					wrLock.unlock();
+				}
+			}
+			finally {
+				rdLock.lock();
+			}
+		}
+		finally {
+			rdLock.unlock();
+		}
+	}
+
 	@Override
 	public Object create( Type t, String u )
 	{
@@ -191,24 +226,29 @@ public class Converters implements ConfigConverter<Object>
 			return null;
 		}
 
-		return get( t ).create( t, u );
+		return getConverter( t ).create( t, u );
 	}
 
 	@Override
 	public Object create( Class<? super Object> t, String u )
 	{
-		return get( t ).create( t, u );
+		return getConverter( t ).create( t, u );
 	}
 
-	ConfigConverter<Object> get( Type t )
+	<X> ConfigConverter<X> self()
+	{
+		return (ConfigConverter<X>) this;
+	}
+
+	private ConfigConverter<Object> getConverter( Type type )
 	{
 		final Lock rdLock = this.RW_LOCK.readLock();
 
 		rdLock.lock();
 
 		try {
-			if( this.cached.containsKey( t ) ) {
-				return (ConfigConverter<Object>) this.cached.get( t );
+			if( this.cached.containsKey( type ) ) {
+				return (ConfigConverter<Object>) this.cached.get( type );
 			}
 
 			rdLock.unlock();
@@ -219,25 +259,25 @@ public class Converters implements ConfigConverter<Object>
 				wrLock.lock();
 
 				try {
-					if( this.cached.containsKey( t ) ) {
-						return (ConfigConverter<Object>) this.cached.get( t );
+					if( this.cached.containsKey( type ) ) {
+						return (ConfigConverter<Object>) this.cached.get( type );
 					}
 
 					ConfigConverter<Object> c = this.cached.entrySet().stream()
-						.filter( e -> isBaseOf( e.getKey(), t ) )
+						.filter( e -> isBaseOf( e.getKey(), type ) )
 						.map( e -> (ConfigConverter<Object>) e.getValue() )
 						.findFirst()
 						.orElse( null );
 
 					if( c != null ) {
-						this.cached.put( t, c );
+						this.cached.put( type, c );
 
 						return c;
 					}
 
-					c = inferConverter( t );
+					c = inferConverter( type );
 
-					this.cached.put( t, c );
+					this.cached.put( type, c );
 
 					return c;
 				}
@@ -254,12 +294,7 @@ public class Converters implements ConfigConverter<Object>
 		}
 	}
 
-	<X> ConfigConverter<X> self()
-	{
-		return (ConfigConverter<X>) this;
-	}
-
-	ConfigConverter<Object> inferConverter( Type type )
+	private ConfigConverter<Object> inferConverter( Type type )
 	{
 		if( type instanceof Class ) {
 			final Class<?> cls = (Class<?>) type;

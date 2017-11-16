@@ -125,6 +125,7 @@ final class ItemTokenizer
 					}
 					else {
 						this.escape = true;
+						this.sb.append( c );
 
 						continue;
 					}

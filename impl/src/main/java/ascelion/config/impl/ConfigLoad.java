@@ -30,14 +30,14 @@ public class ConfigLoad
 
 	static private final Logger L = LoggerFactory.getLogger( ConfigLoad.class );
 
-	static class ConfigNodeTA extends TypeAdapter<ConfigNode>
+	static class ConfigNodeTA extends TypeAdapter<ConfigNodeImpl>
 	{
 
 		@Override
-		public void write( JsonWriter out, ConfigNode root ) throws IOException
+		public void write( JsonWriter out, ConfigNodeImpl root ) throws IOException
 		{
-			final String value = root.getValue();
-			final Collection<? extends ConfigNode> nodes = root.getChildren();
+			final String value = root.getLiteral();
+			final Map<String, ConfigNodeImpl> nodes = root.tree( false );
 
 			if( nodes != null ) {
 				out.beginObject();
@@ -45,7 +45,7 @@ public class ConfigLoad
 				if( value != null ) {
 					out.name( "@" ).value( value );
 				}
-				for( final ConfigNode node : nodes ) {
+				for( final ConfigNodeImpl node : nodes.values() ) {
 					out.name( node.getName() );
 					write( out, node );
 				}
@@ -58,7 +58,7 @@ public class ConfigLoad
 		}
 
 		@Override
-		public ConfigNode read( JsonReader in ) throws IOException
+		public ConfigNodeImpl read( JsonReader in ) throws IOException
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -92,9 +92,7 @@ public class ConfigLoad
 		sources.stream()
 			.sorted( ( s1, s2 ) -> Integer.compare( s1.priority(), s2.priority() ) )
 			.forEach( s -> {
-				final ConfigNode node = load( s );
-
-				node.asMap().forEach( ( k, v ) -> root.setValue( k, v ) );
+				root.add( (ConfigNodeImpl) load( s ) );
 			} );
 
 		if( L.isTraceEnabled() ) {
@@ -125,6 +123,11 @@ public class ConfigLoad
 			catch( final UnsupportedOperationException x ) {
 				readFromURL( source, t, r, root );
 			}
+			catch( final ConfigException e ) {
+				L.error( "Cannot read config source: " + source.value() );
+
+				throw e;
+			}
 		}
 
 		return root;
@@ -141,7 +144,14 @@ public class ConfigLoad
 			all.forEach( u -> {
 				L.trace( "Reading: type {} from '{}'", type, u );
 
-				root.setValue( rd.readConfiguration( source, u ) );
+				try {
+					root.setValue( rd.readConfiguration( source, u ) );
+				}
+				catch( final ConfigException e ) {
+					L.error( "Cannot read config source: " + source.value() );
+
+					throw e;
+				}
 			} );
 		}
 	}
