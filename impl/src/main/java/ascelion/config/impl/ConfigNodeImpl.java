@@ -167,7 +167,7 @@ final class ConfigNodeImpl implements ConfigNode
 			final String path = eval( this.val, root );
 			String item = null;
 
-			if( path != null && follow() ) {
+			if( follow() ) {
 				CHAIN.get().push( this );
 
 				try {
@@ -186,6 +186,10 @@ final class ConfigNodeImpl implements ConfigNode
 
 			if( item == null ) {
 				item = eval( this.def, root );
+			}
+
+			if( follow() && item == null ) {
+				throw new ConfigNotFoundException( this.val.get( 0 ).toString() );
 			}
 
 			return item;
@@ -316,9 +320,13 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public String getValue()
+	public String getValue( boolean expand )
 	{
-		return this.expr != null ? this.expr.eval( this.root ) : null;
+		if( this.expr == null ) {
+			return null;
+		}
+
+		return expand ? this.expr.eval( this.root ) : this.expr.toString();
 	}
 
 	@Override
@@ -328,14 +336,12 @@ final class ConfigNodeImpl implements ConfigNode
 			throw new IllegalArgumentException( "Configuration path cannot be null or empty" );
 		}
 
-		if( isNotBlank( path ) ) {
-			if( PATH_EXPRESSION.matcher( path ).matches() ) {
-				final ConfigNodeImpl node = new ConfigNodeImpl( this.root );
+		if( PATH_EXPRESSION.matcher( path ).matches() ) {
+			final ConfigNodeImpl node = new ConfigNodeImpl( this.root );
 
-				node.set( path );
+			node.set( path );
 
-				return node;
-			}
+			return node;
 		}
 
 		final ConfigNode node = findNode( path, false );
@@ -360,7 +366,7 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public Collection<? extends ConfigNode> getChildren()
+	public Collection<? extends ConfigNode> getChildren( boolean expand )
 	{
 		return this.tree != null ? this.tree.values() : emptyList();
 	}
@@ -501,7 +507,7 @@ final class ConfigNodeImpl implements ConfigNode
 		if( this.tree == null || this.tree.isEmpty() ) {
 			String p = getPath();
 
-			if( p.isEmpty() ) {
+			if( isBlank( p ) ) {
 				return;
 			}
 

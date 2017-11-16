@@ -200,11 +200,6 @@ public class Converters implements ConfigConverter<Object>
 		return get( t ).create( t, u );
 	}
 
-	<X> ConfigConverter<X> self()
-	{
-		return (ConfigConverter<X>) this;
-	}
-
 	ConfigConverter<Object> get( Type t )
 	{
 		final Lock rdLock = this.RW_LOCK.readLock();
@@ -257,6 +252,11 @@ public class Converters implements ConfigConverter<Object>
 		finally {
 			rdLock.unlock();
 		}
+	}
+
+	<X> ConfigConverter<X> self()
+	{
+		return (ConfigConverter<X>) this;
 	}
 
 	ConfigConverter<Object> inferConverter( Type type )

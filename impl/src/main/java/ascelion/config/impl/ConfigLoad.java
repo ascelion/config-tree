@@ -91,7 +91,11 @@ public class ConfigLoad
 
 		sources.stream()
 			.sorted( ( s1, s2 ) -> Integer.compare( s1.priority(), s2.priority() ) )
-			.forEach( s -> load( s, root ) );
+			.forEach( s -> {
+				final ConfigNode node = load( s );
+
+				node.asMap().forEach( ( k, v ) -> root.setValue( k, v ) );
+			} );
 
 		if( L.isTraceEnabled() ) {
 			final String s = new GsonBuilder()
@@ -106,8 +110,9 @@ public class ConfigLoad
 		return root;
 	}
 
-	public void load( ConfigSource source, ConfigNodeImpl root )
+	public ConfigNode load( ConfigSource source )
 	{
+		final ConfigNodeImpl root = new ConfigNodeImpl();
 		final String t = getType( source );
 		final ConfigReader r = getReader( t );
 
@@ -121,6 +126,8 @@ public class ConfigLoad
 				readFromURL( source, t, r, root );
 			}
 		}
+
+		return root;
 	}
 
 	private void readFromURL( ConfigSource source, String type, ConfigReader rd, ConfigNodeImpl root )

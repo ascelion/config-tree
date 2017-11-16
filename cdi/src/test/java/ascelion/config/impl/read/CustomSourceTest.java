@@ -3,7 +3,6 @@ package ascelion.config.impl.read;
 
 import java.util.Map;
 
-import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
@@ -32,9 +31,9 @@ public class CustomSourceTest
 	{
 
 		@Override
-		public void readConfiguration( ConfigSource source, ConfigNode root )
+		public Map<String, ?> readConfiguration( ConfigSource source )
 		{
-			root.setValues( new Gson().fromJson( source.value(), Map.class ) );
+			return new Gson().fromJson( source.value(), Map.class );
 		}
 	}
 

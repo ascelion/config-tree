@@ -91,7 +91,7 @@ public class ConfigMapTest
 	@Test
 	public void run1()
 	{
-		final Object o = CJ.getValue( this.type, PROP1 );
+		final Object o = CJ.getValue( this.type, PROP1, 1 );
 
 		System.out.printf( "Type: %s\n", this.type.getTypeName() );
 
@@ -115,7 +115,7 @@ public class ConfigMapTest
 	@Test
 	public void run2()
 	{
-		final Object o = CJ.getValue( this.type, PROP2 );
+		final Object o = CJ.getValue( this.type, PROP2, 1 );
 
 		assertThat( o, is( instanceOf( Map.class ) ) );
 

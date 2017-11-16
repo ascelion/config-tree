@@ -1,9 +1,12 @@
 
 package ascelion.config.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.enterprise.context.Dependent;
 
-import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
@@ -33,10 +36,14 @@ public class PrefixTest
 	{
 
 		@Override
-		public void readConfiguration( ConfigSource source, ConfigNode root )
+		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
 		{
-			root.setValue( "cdi.prop1", "value1" );
-			root.setValue( "cdi.prop2", "value2" );
+			final Map<String, String> map = new HashMap<>();
+
+			map.put( "cdi.prop1", "value1" );
+			map.put( "cdi.prop2", "value2" );
+
+			return map;
 		}
 	}
 

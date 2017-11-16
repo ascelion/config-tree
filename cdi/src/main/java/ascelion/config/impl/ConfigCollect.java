@@ -36,14 +36,14 @@ class ConfigCollect
 	@Produces
 	@Dependent
 	@Typed( ConfigNode.class )
-	synchronized ConfigNodeImpl root()
+	synchronized ConfigNode root()
 	{
-		return (ConfigNodeImpl) this.root;
+		return this.root;
 	}
 
 	synchronized void readConfiguration( @Observes ConfigSource source )
 	{
-		this.load.load( source, this.root );
+		this.load.load( source );
 	}
 
 	@PostConstruct
@@ -52,11 +52,5 @@ class ConfigCollect
 		this.rdi.forEach( this.load::addReader );
 
 		this.root = this.load.load( this.ext.sources() );
-
-		// XXX
-		this.root.asMap( x -> x )
-			.forEach( ( k, v ) -> {
-				this.root.setValue( k, System.getProperty( k, v ) );
-			} );
 	}
 }

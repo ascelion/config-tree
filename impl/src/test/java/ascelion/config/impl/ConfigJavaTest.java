@@ -69,7 +69,7 @@ public class ConfigJavaTest
 	@Test
 	public void run()
 	{
-		final Object o = this.cj.getValue( this.type, this.prop );
+		final Object o = this.cj.getValue( this.type, this.prop, 0 );
 
 		assertThat( o, is( this.expected ) );
 	}

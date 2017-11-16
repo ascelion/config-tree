@@ -25,10 +25,13 @@ import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Typed( ConfigProd.class )
-class ConfigProd extends ConfigProdBase
+class ConfigProd
 {
 
 	static private final Logger L = LoggerFactory.getLogger( ConfigProd.class );
+
+	@Inject
+	private ConfigCollect cc;
 
 	@Inject
 	private BeanManager bm;
@@ -37,7 +40,7 @@ class ConfigProd extends ConfigProdBase
 	private ConfigExtension ext;
 
 	@Inject
-	private Converters cvt;
+	private Converters cvs;
 
 	private InstanceInfo<? extends ConfigConverter> cvti;
 
@@ -50,11 +53,11 @@ class ConfigProd extends ConfigProdBase
 	{
 		L.trace( "Value: {}", ip.getAnnotated() );
 
-		final ConfigValue a = annotation( ip );
+		final ConfigValue a = ip.getAnnotated().getAnnotation( ConfigValue.class );
 		final Type t = ip.getType();
-		final Object v = new TypedValue( this.cc.root(), a, t, x -> getConverter( x ) ).get();
+		final TypedValue v = new TypedValue( this.cc.root() );
 
-		return v;
+		return v.getValue( t, a.value(), a.unwrap() );
 	}
 
 	private ConfigConverter getConverter( Class<? extends ConfigConverter> type )
@@ -81,10 +84,12 @@ class ConfigProd extends ConfigProdBase
 				}
 			}
 
+			this.cvs.register( info.instance );
+
 			this.converters.put( c, info );
 		} );
 
-		this.cvti = new InstanceInfo<>( this.cvt );
+		this.cvti = new InstanceInfo<>( this.cvs );
 	}
 
 	@PreDestroy

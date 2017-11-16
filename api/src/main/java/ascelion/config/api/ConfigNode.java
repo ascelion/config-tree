@@ -11,9 +11,19 @@ public interface ConfigNode
 
 	String getPath();
 
-	String getValue();
+	String getValue( boolean expand );
 
-	Collection<? extends ConfigNode> getChildren();
+	default String getValue()
+	{
+		return getValue( true );
+	}
+
+	Collection<? extends ConfigNode> getChildren( boolean expand );
+
+	default Collection<? extends ConfigNode> getChildren()
+	{
+		return getChildren( true );
+	}
 
 	ConfigNode getNode( String path );
 

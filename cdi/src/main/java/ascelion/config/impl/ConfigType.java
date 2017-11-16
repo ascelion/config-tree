@@ -18,9 +18,7 @@ import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigValue;
 
-import static java.lang.String.format;
 import static java.util.Collections.unmodifiableSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Typed
 final class ConfigType<X> extends AnnotatedTypeW<X>
@@ -79,31 +77,29 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 
 		if( a != null ) {
 			boolean transform = false;
-			final String[] n = a.value().split( Eval.Token.S_DEF );
-			final Class<? extends ConfigConverter<?>> c = (Class<? extends ConfigConverter<?>>) a.converter();
+			String v = a.value();
 
-			if( n[0].isEmpty() ) {
-				if( isBlank( name ) ) {
-					throw new IllegalArgumentException( format( "Need to specify configuration name for %s", m ) );
-				}
+			if( v.isEmpty() ) {
+				v = name;
 
-				n[0] = name;
 				transform = true;
 			}
-			if( p != null ) {
-				n[0] = Utils.path( p.value(), n[0] );
+			if( p != null && p.value().length() > 0 ) {
+				v = p + "." + v;
 
 				transform = true;
 			}
 			if( transform ) {
 				m.getAnnotations().remove( a );
 
-				a = new ConfigValueLiteral( n, a.converter(), a.unwrap() );
+				a = new ConfigValueLiteral( v, a.converter(), a.unwrap() );
 
 				m.getAnnotations().add( a );
 
 				this.modified = true;
 			}
+
+			final Class<? extends ConfigConverter<?>> c = (Class<? extends ConfigConverter<?>>) a.converter();
 
 			if( c != ConfigConverter.class ) {
 				this.converters.add( c );

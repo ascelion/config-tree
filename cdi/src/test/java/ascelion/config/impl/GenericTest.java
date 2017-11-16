@@ -1,13 +1,14 @@
 
 package ascelion.config.impl;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
@@ -42,13 +43,17 @@ public class GenericTest
 	{
 
 		@Override
-		public void readConfiguration( ConfigSource source, ConfigNode root )
+		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
 		{
-			root.setValue( "prop1", "10" );
-			root.setValue( "prop2", "20" );
-			root.setValue( "prop3", "30" );
-			root.setValue( "props", "${prop1}, ${prop2}, ${prop3}" );
-			root.setValue( "version", null );
+			final Map<String, String> map = new HashMap<>();
+
+			map.put( "prop1", "10" );
+			map.put( "prop2", "20" );
+			map.put( "prop3", "30" );
+			map.put( "props", "${prop1}, ${prop2}, ${prop3}" );
+			map.put( "version", null );
+
+			return map;
 		}
 	}
 

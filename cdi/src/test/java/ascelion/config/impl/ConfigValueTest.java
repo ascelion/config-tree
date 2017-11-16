@@ -2,25 +2,18 @@
 package ascelion.config.impl;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
 import ascelion.tests.cdi.CdiUnit;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -36,36 +29,14 @@ import org.junit.runner.RunWith;
 	ConfigValueTest.Bean1.class,
 	ConfigValueTest.Bean2.class,
 	ConfigValueTest.Bean3.class,
-	ConfigValueTest.BigDecimalProd.class,
 } )
 @UseConfigExtension
 public class ConfigValueTest
 {
 
 	@ConfigSource( "file4.yml" )
-	@Retention( RUNTIME )
-	@Target( TYPE )
-	@interface Config
-	{
-	}
-
 	@ConfigSource( "file1.properties" )
 	@ConfigSource( "file2.conf" )
-	static class BigDecimalProd extends ConfigProdBase
-	{
-
-		@Produces
-		@Dependent
-		@ConfigValue( "" )
-		BigDecimal create( InjectionPoint ip )
-		{
-			final String val = getConfigItem( ip );
-
-			return val != null ? new BigDecimal( val ) : null;
-		}
-	}
-
-	@Config
 	static class Bean1
 	{
 
