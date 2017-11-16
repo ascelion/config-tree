@@ -1,6 +1,6 @@
 file:
   prop4: value4
-  prop5: ${file.prop4), ${file.prop3}, ${file.prop2}, ${file.prop1}
+  prop5: ${file.prop4}, ${file.prop3}, ${file.prop2}, ${file.prop1}
   prop6: ${file.int1}, ${file.int2}, ${file.int3}
   int1: 1
   int2: 2

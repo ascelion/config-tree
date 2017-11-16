@@ -20,20 +20,20 @@ public class ConfigNodeTest
 	public void itemOnly()
 	{
 
-		this.root.set( "a.b.c1.d1", "abcd11" );
+		this.root.setValue( "a.b.c1.d1", "abcd11" );
 		System.out.println( this.root );
-		this.root.set( "a.b.c2.d2", "abcd22" );
+		this.root.setValue( "a.b.c2.d2", "abcd22" );
 		System.out.println( this.root );
-		this.root.set( "a.b.c", singletonMap( "d", singletonMap( "e1", "abcde1" ) ) );
+		this.root.setValue( "a.b.c", singletonMap( "d", singletonMap( "e1", "abcde1" ) ) );
 		System.out.println( this.root );
-		this.root.set( "a.b.c", singletonMap( "d.e2", "abcde2" ) );
+		this.root.setValue( "a.b.c", singletonMap( "d.e2", "abcde2" ) );
 		System.out.println( this.root );
 
 		assertThat( this.root.getValue( "x.y.z" ), is( nullValue() ) );
 		assertThat( this.root.getValue( "a.b.c1.d1" ), is( "abcd11" ) );
 		assertThat( this.root.getValue( "a.b.c2.d2" ), is( "abcd22" ) );
 
-		this.root.set( "a.b", "ab" );
+		this.root.setValue( "a.b", "ab" );
 		System.out.println( this.root );
 
 		assertThat( this.root.getValue( "a.b" ), is( "ab" ) );
@@ -48,11 +48,11 @@ public class ConfigNodeTest
 	@Test
 	public void expr()
 	{
-		this.root.set( "item1", "${item2}" );
-		this.root.set( "item2", "value" );
-		this.root.set( "item12", "${item1}-${item2}" );
-		this.root.set( "def1", "${undefined:def_val}" );
-		this.root.set( "def2", "${undefined:${def1}}" );
+		this.root.setValue( "item1", "${item2}" );
+		this.root.setValue( "item2", "value" );
+		this.root.setValue( "item12", "${item1}-${item2}" );
+		this.root.setValue( "def1", "${undefined:def_val}" );
+		this.root.setValue( "def2", "${undefined:${def1}}" );
 
 		final String v1 = this.root.getValue( "item1" );
 		final String v2 = this.root.getValue( "item2" );
@@ -73,10 +73,18 @@ public class ConfigNodeTest
 		assertThat( d2, is( "def_val" ) );
 	}
 
+	@Test( expected = IllegalArgumentException.class )
+	public void pathInvalid()
+	{
+		this.root.setValue( "prefix-${prop}-suffix", "" );
+	}
+
 	@Test
 	public void sys()
 	{
-		System.getProperties().forEach( ( k, v ) -> this.root.set( (String) k, v.toString().replaceAll( ":", "\\:" ) ) );
+		System.getProperties().forEach( ( k, v ) -> {
+			this.root.setValue( (String) k, ( (String) v ).replace( ":", "\\:" ) );
+		} );
 
 		System.getProperties().keySet().stream()
 			.sorted()
@@ -92,7 +100,7 @@ public class ConfigNodeTest
 	@Test
 	public void map()
 	{
-		this.root.set( null, singletonMap( "a.b", "ab" ) );
+		this.root.setValue( singletonMap( "a.b", "ab" ) );
 
 		assertThat( this.root.getValue( "a.b" ), is( "ab" ) );
 	}
@@ -100,7 +108,7 @@ public class ConfigNodeTest
 	@Test( expected = ConfigException.class )
 	public void loop1()
 	{
-		this.root.set( "prop", "${prop}" );
+		this.root.setValue( "prop", "${prop}" );
 
 		try {
 			this.root.getValue( "prop" );
@@ -115,10 +123,10 @@ public class ConfigNodeTest
 	@Test( expected = ConfigException.class )
 	public void loop2()
 	{
-		this.root.set( "prop", "1-${value1}-${value2}-2" );
-		this.root.set( "value1", "${value}-1" );
-		this.root.set( "value2", "${value}-2" );
-		this.root.set( "value", "${prop}" );
+		this.root.setValue( "prop", "1-${value1}-${value2}-2" );
+		this.root.setValue( "value1", "${value}-1" );
+		this.root.setValue( "value2", "${value}-2" );
+		this.root.setValue( "value", "${prop}" );
 
 		try {
 			this.root.getValue( "prop" );
@@ -133,7 +141,7 @@ public class ConfigNodeTest
 	@Test( expected = ConfigException.class )
 	public void loop3()
 	{
-		this.root.set( "prop", "${prop1:${prop2:${prop3:${prop}}}}" );
+		this.root.setValue( "prop", "${prop1:${prop2:${prop3:${prop}}}}" );
 
 		try {
 			this.root.getValue( "prop" );
@@ -148,10 +156,10 @@ public class ConfigNodeTest
 	@Test
 	public void notLoop()
 	{
-		this.root.set( "prop", "1-${value1}-${value2}-2" );
-		this.root.set( "value1", "${value}-1" );
-		this.root.set( "value2", "${value}-2" );
-		this.root.set( "value", "xxx" );
+		this.root.setValue( "prop", "1-${value1}-${value2}-2" );
+		this.root.setValue( "value1", "${value}-1" );
+		this.root.setValue( "value2", "${value}-2" );
+		this.root.setValue( "value", "xxx" );
 
 		try {
 			this.root.getValue( "prop" );
@@ -166,7 +174,7 @@ public class ConfigNodeTest
 	@Test
 	public void run1()
 	{
-		this.root.set( "prop", "value" );
+		this.root.setValue( "prop", "value" );
 
 		final String x = this.root.getValue( "prop" );
 
@@ -176,21 +184,20 @@ public class ConfigNodeTest
 	@Test
 	public void run2()
 	{
-		this.root.set( "prop", "value" );
+		this.root.setValue( "prop", "value" );
 
 		final String x = this.root.getValue( "${prop}" );
 
-		assertThat( x, is( nullValue() ) );
+		assertThat( x, is( "value" ) );
 	}
 
 	@Test
 	public void run3()
 	{
-		this.root.set( "prop1", "value1-${prop2}" );
-		this.root.set( "prop2", "value2" );
-		this.root.set( "prop3", "prefix-${prop1}-suffix" );
+		this.root.setValue( "prop1", "value1-${prop2}" );
+		this.root.setValue( "prop2", "value2" );
 
-		final String x = this.root.getValue( "prop3" );
+		final String x = this.root.getValue( "prefix-${prop1}-suffix" );
 
 		assertThat( x, is( "prefix-value1-value2-suffix" ) );
 	}
@@ -198,7 +205,7 @@ public class ConfigNodeTest
 	@Test
 	public void run4()
 	{
-		this.root.set( "prop1", "value1-${prop2:value2}" );
+		this.root.setValue( "prop1", "value1-${prop2:value2}" );
 
 		final String x = this.root.getValue( "prefix-${prop1}-suffix" );
 
@@ -210,7 +217,7 @@ public class ConfigNodeTest
 	{
 		final String x = this.root.getValue( "java.version" );
 
-		assertThat( x, is( System.getProperty( "java.version" ) ) );
+		assertThat( x, is( nullValue() ) );
 	}
 
 	@Test
@@ -221,7 +228,7 @@ public class ConfigNodeTest
 		assertThat( x, is( System.getProperty( "java.version" ) ) );
 	}
 
-	@Test
+	@Test( expected = EvalException.class )
 	public void sys3()
 	{
 		final String x = this.root.getValue( "version:${java.version}" );
@@ -237,7 +244,7 @@ public class ConfigNodeTest
 		assertThat( x, is( System.getProperty( "java.version" ) ) );
 	}
 
-	@Test
+	@Test( expected = EvalException.class )
 	public void run1Def()
 	{
 		final String x = this.root.getValue( "prop:default" );

@@ -115,7 +115,7 @@ public class ConfigLoad
 			try {
 				L.trace( "Reading: type {} from '{}'", t, source.value() );
 
-				root.set( "", r.readConfiguration( source ) );
+				root.setValue( r.readConfiguration( source ) );
 			}
 			catch( final UnsupportedOperationException x ) {
 				readFromURL( source, t, r, root );
@@ -134,7 +134,7 @@ public class ConfigLoad
 			all.forEach( u -> {
 				L.trace( "Reading: type {} from '{}'", type, u );
 
-				root.set( "", rd.readConfiguration( source, u ) );
+				root.setValue( rd.readConfiguration( source, u ) );
 			} );
 		}
 	}

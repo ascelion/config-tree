@@ -25,16 +25,6 @@ public interface ConfigNode
 
 	ConfigNode getNode( String path );
 
-//	void setValue( String value );
-//
-//	void setValues( Map<String, ?> values );
-//
-//	String getValue( String path );
-//
-//	void setValue( String path, String value );
-//
-//	void setValues( String path, Map<String, ?> values );
-
 	<T> Map<String, T> asMap( int unwrap, Function<String, T> fun );
 
 	default <T> Map<String, T> asMap( Function<String, T> fun )

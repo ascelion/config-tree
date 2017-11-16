@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,10 +23,13 @@ import static ascelion.config.impl.Utils.path;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.joining;;
+import static java.util.stream.Collectors.joining;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;;
 
 final class ConfigNodeImpl implements ConfigNode
 {
+
+	static private final Pattern PATH_EXPRESSION = Pattern.compile( ".*[\\$\\{\\}:].*" );
 
 	static class Item
 	{
@@ -72,7 +76,7 @@ final class ConfigNodeImpl implements ConfigNode
 	static abstract class Eval extends Item
 	{
 
-		abstract String eval( ConfigNode root );
+		abstract String eval( ConfigNodeImpl root );
 
 		abstract boolean follow();
 	}
@@ -94,7 +98,7 @@ final class ConfigNodeImpl implements ConfigNode
 		}
 
 		@Override
-		String eval( ConfigNode root )
+		String eval( ConfigNodeImpl root )
 		{
 			return this.text;
 		}
@@ -145,7 +149,7 @@ final class ConfigNodeImpl implements ConfigNode
 		}
 
 		@Override
-		String eval( ConfigNode root )
+		String eval( ConfigNodeImpl root )
 		{
 			final StringBuilder b = new StringBuilder();
 
@@ -159,27 +163,38 @@ final class ConfigNodeImpl implements ConfigNode
 				}
 			} );
 
-			String value = eval( this.val, root );
+			final String path = eval( this.val, root );
+			String item = null;
 
-			if( follow() ) {
+			if( path != null && follow() ) {
 				CHAIN.get().push( this );
 
 				try {
-					value = root.getValue( value );
+					item = root.value( path );
+
+					if( item == null ) {
+						item = System.getenv( path );
+					}
+					if( item == null ) {
+						item = System.getProperty( path );
+					}
 				}
 				finally {
 					CHAIN.get().pop();
 				}
 			}
-
-			if( value == null ) {
-				value = eval( this.def, root );
+			else {
+				item = path;
 			}
 
-			return value;
+			if( item == null ) {
+				item = eval( this.def, root );
+			}
+
+			return item;
 		}
 
-		final String eval( List<Eval> elements, ConfigNode root )
+		final String eval( List<Eval> elements, ConfigNodeImpl root )
 		{
 			if( elements.isEmpty() ) {
 				return null;
@@ -253,7 +268,7 @@ final class ConfigNodeImpl implements ConfigNode
 
 	private final String name;
 	private final String path;
-	private final ConfigNode root;
+	private final ConfigNodeImpl root;
 
 	private Map<String, ConfigNodeImpl> tree;
 	private Eval expr;
@@ -263,6 +278,13 @@ final class ConfigNodeImpl implements ConfigNode
 		this.name = null;
 		this.path = null;
 		this.root = this;
+	}
+
+	private ConfigNodeImpl( ConfigNodeImpl root )
+	{
+		this.name = null;
+		this.path = null;
+		this.root = root;
 	}
 
 	private ConfigNodeImpl( String name, ConfigNodeImpl parent )
@@ -294,6 +316,28 @@ final class ConfigNodeImpl implements ConfigNode
 
 	@Override
 	public ConfigNodeImpl getNode( String path )
+	{
+		if( isNotBlank( path ) ) {
+			if( PATH_EXPRESSION.matcher( path ).matches() ) {
+				final ConfigNodeImpl node = new ConfigNodeImpl( this.root );
+
+				node.set( path );
+
+				return node.getNode( null );
+			}
+		}
+
+		return findNode( path, false );
+	}
+
+	private String value( String path )
+	{
+		final ConfigNode node = node( path );
+
+		return node != null ? node.getValue() : null;
+	}
+
+	private ConfigNodeImpl node( String path )
 	{
 		return findNode( path, false );
 	}
@@ -342,15 +386,29 @@ final class ConfigNodeImpl implements ConfigNode
 		return m;
 	}
 
-	void set( String path, Object payload )
+	void setValue( Object value )
 	{
-		findNode( path, true ).set( payload );
+		setValue( null, value );
 	}
 
-	private void set( Object payload )
+	void setValue( String path, Object value )
 	{
-		if( payload instanceof Map ) {
-			final Map<String, Object> ms = (Map<String, Object>) payload;
+		if( isNotBlank( path ) && PATH_EXPRESSION.matcher( path ).matches() ) {
+			throw new IllegalArgumentException( path );
+		}
+
+		set( path, value );
+	}
+
+	private void set( String path, Object value )
+	{
+		findNode( path, true ).set( value );
+	}
+
+	private void set( Object value )
+	{
+		if( value instanceof Map ) {
+			final Map<String, Object> ms = (Map<String, Object>) value;
 
 			ms.forEach( ( k, s ) -> {
 				set( k, s );
@@ -358,23 +416,23 @@ final class ConfigNodeImpl implements ConfigNode
 
 			return;
 		}
-		if( payload instanceof Collection ) {
-			final Collection<?> c = (Collection<?>) payload;
+		if( value instanceof Collection ) {
+			final Collection<?> c = (Collection<?>) value;
 
 			set( c.stream().map( Object::toString ).collect( Collectors.joining( "," ) ) );
 
 			return;
 		}
-		if( payload instanceof Object[] ) {
-			final Object[] v = (Object[]) payload;
+		if( value instanceof Object[] ) {
+			final Object[] v = (Object[]) value;
 
 			set( Stream.of( v ).map( Object::toString ).collect( Collectors.joining( "," ) ) );
 
 			return;
 		}
 
-		if( payload != null ) {
-			this.expr = new ItemParser( payload.toString() ).parse( new Listener() );
+		if( value != null ) {
+			this.expr = new ItemParser( value.toString() ).parse( new Listener() );
 		}
 		else {
 			this.expr = null;

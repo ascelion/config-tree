@@ -89,7 +89,7 @@ public class ExprParseTest
 		try {
 			final ConfigNodeImpl node = new ConfigNodeImpl();
 
-			node.set( null, this.content );
+			node.setValue( null, this.content );
 		}
 		catch( final EvalException e ) {
 			e.getErrors().forEach( System.err::println );
