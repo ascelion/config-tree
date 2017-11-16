@@ -24,6 +24,7 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;;
 
 final class ConfigNodeImpl implements ConfigNode
@@ -172,6 +173,9 @@ final class ConfigNodeImpl implements ConfigNode
 				try {
 					item = root.value( path );
 				}
+				catch( final ConfigNotFoundException e ) {
+					item = null;
+				}
 				finally {
 					CHAIN.get().pop();
 				}
@@ -296,7 +300,7 @@ final class ConfigNodeImpl implements ConfigNode
 		this.path = path( path( parent ), name );
 		this.root = parent.root;
 
-		parent.tree( true ).put( this.path, this );
+		parent.tree( true ).put( name, this );
 	}
 
 	@Override
@@ -318,32 +322,34 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public String getValue( String path )
+	public ConfigNode getNode( String path )
 	{
-		final ConfigNode node = getNode( path );
+		if( isBlank( path ) ) {
+			throw new IllegalArgumentException( "Configuration path cannot be null or empty" );
+		}
 
-		return node != null ? node.getValue() : null;
-	}
-
-	@Override
-	public ConfigNodeImpl getNode( String path )
-	{
 		if( isNotBlank( path ) ) {
 			if( PATH_EXPRESSION.matcher( path ).matches() ) {
 				final ConfigNodeImpl node = new ConfigNodeImpl( this.root );
 
 				node.set( path );
 
-				return node.getNode( null );
+				return node;
 			}
 		}
 
-		return findNode( path, false );
+		final ConfigNode node = findNode( path, false );
+
+		if( node == null ) {
+			throw new ConfigNotFoundException( path );
+		}
+
+		return node;
 	}
 
 	private String value( String path )
 	{
-		final ConfigNode node = node( path );
+		final ConfigNodeImpl node = node( path );
 
 		return node != null ? node.getValue() : null;
 	}
@@ -354,7 +360,7 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public Collection<? extends ConfigNode> getNodes()
+	public Collection<? extends ConfigNode> getChildren()
 	{
 		return this.tree != null ? this.tree.values() : emptyList();
 	}
@@ -388,7 +394,12 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public Map<String, String> asMap( int unwrap )
+	public Map<String, String> asMap()
+	{
+		return asMap( 0 );
+	}
+
+	Map<String, String> asMap( int unwrap )
 	{
 		final TreeMap<String, String> m = new TreeMap<>();
 
@@ -456,8 +467,8 @@ final class ConfigNodeImpl implements ConfigNode
 		ConfigNodeImpl node = this;
 
 		for( final String key : keys ) {
-			if( node == null && !create ) {
-				throw new ConfigNotFoundException( path );
+			if( node == null ) {
+				return null;
 			}
 
 			node = node.child( key, create );
@@ -468,13 +479,11 @@ final class ConfigNodeImpl implements ConfigNode
 
 	private ConfigNodeImpl child( String name, boolean create )
 	{
-		final String path = path( this.path, name );
-
 		if( create ) {
-			return tree( true ).computeIfAbsent( path, ignored -> new ConfigNodeImpl( name, this ) );
+			return tree( true ).computeIfAbsent( name, ignored -> new ConfigNodeImpl( name, this ) );
 		}
 		else {
-			return tree( false ).get( path );
+			return tree( false ).get( name );
 		}
 	}
 

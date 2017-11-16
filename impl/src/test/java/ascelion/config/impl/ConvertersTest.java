@@ -131,10 +131,10 @@ public class ConvertersTest
 
 		assertThat( this.cached.size(), is( count + 1 ) );
 
-		final Base ob = (Base) this.cvs.create( Base.class, null );
-		final Base o1 = (Base) this.cvs.create( Derived1.class, null );
-		final Base o2 = (Base) this.cvs.create( Derived2.class, null );
-		final Base o21 = (Base) this.cvs.create( Derived21.class, null );
+		final Base ob = (Base) this.cvs.create( Base.class, "" );
+		final Base o1 = (Base) this.cvs.create( Derived1.class, "" );
+		final Base o2 = (Base) this.cvs.create( Derived2.class, "" );
+		final Base o21 = (Base) this.cvs.create( Derived21.class, "" );
 
 		assertThat( this.cached.size(), is( count + 4 ) );
 
@@ -164,10 +164,10 @@ public class ConvertersTest
 
 		assertThat( this.cached.size(), is( count + 3 ) );
 
-		final Base ob = (Base) this.cvs.create( Base.class, null );
-		final Base o1 = (Base) this.cvs.create( Derived1.class, null );
-		final Base o2 = (Base) this.cvs.create( Derived2.class, null );
-		final Base o21 = (Base) this.cvs.create( Derived21.class, null );
+		final Base ob = (Base) this.cvs.create( Base.class, "" );
+		final Base o1 = (Base) this.cvs.create( Derived1.class, "" );
+		final Base o2 = (Base) this.cvs.create( Derived2.class, "" );
+		final Base o21 = (Base) this.cvs.create( Derived21.class, "" );
 
 		assertThat( this.cached.size(), is( count + 4 ) );
 

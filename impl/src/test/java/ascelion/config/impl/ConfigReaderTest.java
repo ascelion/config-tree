@@ -92,15 +92,15 @@ public class ConfigReaderTest
 
 		final ConfigNode cn = ld.load( asList( new ConfigSourceLiteral( "", 0, "STREAM" ) ) );
 
-		assertThat( cn.getValue( "default" ), is( "0" ) );
-		assertThat( cn.getValue( "prop1" ), is( "value1" ) );
-		assertThat( cn.getValue( "prop2" ), is( "value2" ) );
-		assertThat( cn.getValue( "map1.prop1" ), is( "value1" ) );
-		assertThat( cn.getValue( "map1.prop2" ), is( "value2" ) );
-		assertThat( cn.getValue( "map2.prop1" ), is( "value1" ) );
-		assertThat( cn.getValue( "map2.prop2" ), is( "value2" ) );
-		assertThat( cn.getValue( "map3.prop1" ), is( "value1" ) );
-		assertThat( cn.getValue( "map3.prop2" ), is( "value2" ) );
+		assertThat( cn.getNode( "default" ).getValue(), is( "0" ) );
+		assertThat( cn.getNode( "prop1" ).getValue(), is( "value1" ) );
+		assertThat( cn.getNode( "prop2" ).getValue(), is( "value2" ) );
+		assertThat( cn.getNode( "map1.prop1" ).getValue(), is( "value1" ) );
+		assertThat( cn.getNode( "map1.prop2" ).getValue(), is( "value2" ) );
+		assertThat( cn.getNode( "map2.prop1" ).getValue(), is( "value1" ) );
+		assertThat( cn.getNode( "map2.prop2" ).getValue(), is( "value2" ) );
+		assertThat( cn.getNode( "map3.prop1" ).getValue(), is( "value1" ) );
+		assertThat( cn.getNode( "map3.prop2" ).getValue(), is( "value2" ) );
 	}
 
 }

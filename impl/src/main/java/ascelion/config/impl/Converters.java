@@ -187,6 +187,9 @@ public class Converters implements ConfigConverter<Object>
 				}
 			}
 		}
+		if( u == null ) {
+			return null;
+		}
 
 		return get( t ).create( t, u );
 	}

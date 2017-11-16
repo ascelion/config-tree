@@ -189,7 +189,7 @@ public final class EvalTool
 		String getValue( ConfigNode root, final String prop )
 		{
 			if( this.parent != null || this.parent == null && this.val.stream().allMatch( Text.class::isInstance ) ) {
-				return root.getValue( prop );
+				return root.getNode( prop ).getValue();
 			}
 
 			return prop;

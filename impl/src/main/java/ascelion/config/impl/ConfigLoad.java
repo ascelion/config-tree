@@ -37,7 +37,7 @@ public class ConfigLoad
 		public void write( JsonWriter out, ConfigNode root ) throws IOException
 		{
 			final String value = root.getValue();
-			final Collection<? extends ConfigNode> nodes = root.getNodes();
+			final Collection<? extends ConfigNode> nodes = root.getChildren();
 
 			if( nodes != null ) {
 				out.beginObject();
@@ -58,7 +58,7 @@ public class ConfigLoad
 		}
 
 		@Override
-		public ConfigNodeImpl read( JsonReader in ) throws IOException
+		public ConfigNode read( JsonReader in ) throws IOException
 		{
 			throw new UnsupportedOperationException();
 		}
