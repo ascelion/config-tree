@@ -9,11 +9,12 @@ import java.util.stream.Collectors;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.impl.ItemTokenizer.Token;
 
 import static java.lang.String.format;
 
-public final class Eval
+public final class EvalTool
 {
 
 	static abstract class Rule
@@ -158,7 +159,7 @@ public final class Eval
 			final String path = eval( this.val, root, parser );
 
 			if( path == null ) {
-				return null;
+				throw new ConfigNotFoundException( toString() );
 			}
 
 			String item = getValue( root, path );
@@ -170,7 +171,7 @@ public final class Eval
 				item = System.getProperty( path );
 			}
 			if( item == null ) {
-				return null;
+				throw new ConfigNotFoundException( toString() );
 			}
 
 			if( item.contains( "${" ) ) {
@@ -229,20 +230,20 @@ public final class Eval
 		}
 	}
 
-	static class Listener extends ItemParserListener<Expr>
+	static class Listener implements ItemParser.Listener<Expr>
 	{
 
 		Expr root;
 
 		@Override
-		void start()
+		public void start()
 		{
 			this.root = new Expr();
 		}
 
 		@SuppressWarnings( "incomplete-switch" )
 		@Override
-		void seen( ItemTokenizer.Token tok )
+		public void seen( ItemTokenizer.Token tok )
 		{
 			switch( tok.type ) {
 				case BEG:
@@ -265,7 +266,7 @@ public final class Eval
 		}
 
 		@Override
-		Expr finish()
+		public Expr finish()
 		{
 			if( this.root != null && this.root.val.stream().allMatch( Text.class::isInstance ) ) {
 				final Expr expr = new Expr();
@@ -288,7 +289,7 @@ public final class Eval
 	{
 		final Rule rule = parse( value );
 
-		return rule.eval( root, Eval::parse );
+		return rule.eval( root, EvalTool::parse );
 	}
 
 }

@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ascelion.config.api.ConfigNode;
-import ascelion.config.impl.Eval.Expr;
-import ascelion.config.impl.Eval.Rule;
-import ascelion.config.impl.Eval.Text;
+import ascelion.config.api.ConfigParseException;
+import ascelion.config.api.ConfigParsePosition;
+import ascelion.config.impl.EvalTool.Expr;
+import ascelion.config.impl.EvalTool.Rule;
+import ascelion.config.impl.EvalTool.Text;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStream;
@@ -23,7 +25,7 @@ public class EvalLex
 	{
 		final CharStream cs = CharStreams.fromString( content );
 		final ExprLex lx = new ExprLex( cs );
-		final List<EvalError> errors = new ArrayList<>();
+		final List<ConfigParsePosition> errors = new ArrayList<>();
 
 		lx.addErrorListener( new BaseErrorListener()
 		{
@@ -31,7 +33,7 @@ public class EvalLex
 			@Override
 			public void syntaxError( Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e )
 			{
-				errors.add( new EvalError( msg, charPositionInLine ) );
+				errors.add( new ConfigParsePosition( msg, charPositionInLine ) );
 			}
 		} );
 
@@ -53,7 +55,7 @@ public class EvalLex
 
 				case ExprLex.END:
 					if( root.parent == null ) {
-						errors.add( new EvalError( "unbalanced '}'", lx.getCharPositionInLine() ) );
+						errors.add( new ConfigParsePosition( "unbalanced '}'", lx.getCharPositionInLine() ) );
 
 						eof = true;
 
@@ -74,10 +76,10 @@ public class EvalLex
 		}
 
 		if( root.parent != null ) {
-			errors.add( new EvalError( "unbalanced '${'", lx.getCharPositionInLine() ) );
+			errors.add( new ConfigParsePosition( "unbalanced '${'", lx.getCharPositionInLine() ) );
 		}
 		if( errors.size() > 0 ) {
-			throw new EvalException( content, errors );
+			throw new ConfigParseException( content, errors );
 		}
 
 		if( root.val.stream().allMatch( Text.class::isInstance ) ) {

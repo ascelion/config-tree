@@ -2,12 +2,15 @@
 package ascelion.config.impl;
 
 import ascelion.config.api.ConfigException;
+import ascelion.config.api.ConfigNotFoundException;
+import ascelion.config.api.ConfigParseException;
 
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -29,7 +32,13 @@ public class ConfigNodeTest
 		this.root.setValue( "a.b.c", singletonMap( "d.e2", "abcde2" ) );
 		System.out.println( this.root );
 
-		assertThat( this.root.getValue( "x.y.z" ), is( nullValue() ) );
+		try {
+			this.root.getValue( "x.y.z" );
+			fail( "x.y.z" );
+		}
+		catch( final ConfigNotFoundException e ) {
+			;
+		}
 		assertThat( this.root.getValue( "a.b.c1.d1" ), is( "abcd11" ) );
 		assertThat( this.root.getValue( "a.b.c2.d2" ), is( "abcd22" ) );
 
@@ -90,8 +99,12 @@ public class ConfigNodeTest
 			.sorted()
 			.forEach( k -> {
 				final String p = (String) k;
-				final String v = System.getProperty( p );
+				String v = System.getProperty( p );
 				final String o = this.root.getValue( p );
+
+				if( v.isEmpty() ) {
+					v = null;
+				}
 
 				assertThat( p, o, is( (Object) v ) );
 			} );
@@ -228,7 +241,7 @@ public class ConfigNodeTest
 		assertThat( x, is( System.getProperty( "java.version" ) ) );
 	}
 
-	@Test( expected = EvalException.class )
+	@Test( expected = ConfigParseException.class )
 	public void sys3()
 	{
 		final String x = this.root.getValue( "version:${java.version}" );
@@ -244,7 +257,7 @@ public class ConfigNodeTest
 		assertThat( x, is( System.getProperty( "java.version" ) ) );
 	}
 
-	@Test( expected = EvalException.class )
+	@Test( expected = ConfigParseException.class )
 	public void run1Def()
 	{
 		final String x = this.root.getValue( "prop:default" );

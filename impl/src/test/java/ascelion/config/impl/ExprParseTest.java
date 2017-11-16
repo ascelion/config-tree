@@ -9,6 +9,8 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.stream.Stream;
 
+import ascelion.config.api.ConfigParseException;
+
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
@@ -58,7 +60,7 @@ public class ExprParseTest
 	public void setUp()
 	{
 		if( this.errors > 0 ) {
-			this.exRule.expect( EvalException.class );
+			this.exRule.expect( ConfigParseException.class );
 		}
 	}
 
@@ -69,9 +71,9 @@ public class ExprParseTest
 		System.out.printf( "'%s'\n", this.content );
 
 		try {
-			System.out.println( Eval.parse( this.content ) );
+			System.out.println( EvalTool.parse( this.content ) );
 		}
-		catch( final EvalException e ) {
+		catch( final ConfigParseException e ) {
 			e.getErrors().forEach( System.err::println );
 
 			assertThat( e.getErrors(), hasSize( this.errors ) );
@@ -91,7 +93,7 @@ public class ExprParseTest
 
 			node.setValue( null, this.content );
 		}
-		catch( final EvalException e ) {
+		catch( final ConfigParseException e ) {
 			e.getErrors().forEach( System.err::println );
 
 			assertThat( e.getErrors(), hasSize( this.errors ) );
@@ -109,7 +111,7 @@ public class ExprParseTest
 		try {
 			System.out.println( EvalLex.parse( this.content ) );
 		}
-		catch( final EvalException e ) {
+		catch( final ConfigParseException e ) {
 			e.getErrors().forEach( System.err::println );
 
 			assertThat( e.getErrors(), hasSize( this.errors ) );

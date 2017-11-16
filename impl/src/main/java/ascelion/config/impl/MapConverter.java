@@ -4,12 +4,12 @@ package ascelion.config.impl;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
-import java.util.function.Function;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 
 import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.toMap;
 
 final class MapConverter<T> implements ConfigConverter<Map<String, T>>
 {
@@ -28,25 +28,17 @@ final class MapConverter<T> implements ConfigConverter<Map<String, T>>
 	@Override
 	public Map<String, T> create( Type t, String u )
 	{
-		final String eval = Eval.eval( u, this.root );
+		final String eval = this.root.getValue( u );
 		final ConfigNode node = this.root.getNode( eval != null ? eval : u );
 
 		if( node == null ) {
 			return emptyMap();
 		}
 
-		final Function<String, T> fun = x -> {
-			if( x.contains( ItemTokenizer.Token.S_BEG ) ) {
-				final EvalConverter<T> e = new EvalConverter<>( this.root, this.conv );
-
-				return e.create( t, x );
-			}
-			else {
-				return this.conv.create( t, x );
-			}
-		};
-
-		return node.asMap( this.unwrap, fun );
+		return node.asMap( this.unwrap )
+			.entrySet()
+			.stream()
+			.collect( toMap( e -> e.getKey(), e -> this.conv.create( t, e.getValue() ) ) );
 	}
 
 	@Override

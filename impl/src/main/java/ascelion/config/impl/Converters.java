@@ -30,6 +30,7 @@ import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.common.primitives.Primitives;
 
@@ -114,14 +115,6 @@ public class Converters implements ConfigConverter<Object>
 		add( Class.class, ExtraConverters::createClass );
 		add( String.class, u -> u );
 
-		add( boolean.class, ExtraConverters::createBoolean );
-		add( byte.class, Byte::parseByte );
-		add( short.class, Short::parseShort );
-		add( int.class, Integer::parseInt );
-		add( long.class, Long::parseLong );
-		add( float.class, Float::parseFloat );
-		add( double.class, Double::parseDouble );
-
 		add( Duration.class, Duration::parse );
 		add( Instant.class, Instant::parse );
 		add( LocalDate.class, LocalDate::parse );
@@ -183,6 +176,18 @@ public class Converters implements ConfigConverter<Object>
 	@Override
 	public Object create( Type t, String u )
 	{
+		if( t instanceof Class ) {
+			final Class<?> c = (Class<?>) t;
+
+			if( c.isPrimitive() ) {
+				t = Primitives.wrap( c );
+
+				if( isBlank( u ) ) {
+					u = "0";
+				}
+			}
+		}
+
 		return get( t ).create( t, u );
 	}
 

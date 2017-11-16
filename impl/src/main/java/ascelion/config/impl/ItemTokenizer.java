@@ -7,13 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ascelion.config.api.ConfigException;
+import ascelion.config.api.ConfigParsePosition;
 
 import static java.lang.String.format;
 
-class ItemTokenizer
+final class ItemTokenizer
 {
 
-	static class Token
+	static final class Token
 	{
 
 		static final char C_ESC = '\\';
@@ -75,7 +76,7 @@ class ItemTokenizer
 
 	private final Reader rd;
 	private final StringBuilder sb = new StringBuilder();
-	private final List<EvalError> errors = new ArrayList<>();
+	private final List<ConfigParsePosition> errors = new ArrayList<>();
 
 	private int position;
 	private boolean escape;
@@ -177,7 +178,7 @@ class ItemTokenizer
 		return new Token( this.position, Token.Type.STR, this.sb );
 	}
 
-	public List<EvalError> getErrors()
+	public List<ConfigParsePosition> getErrors()
 	{
 		return this.errors;
 	}
@@ -188,7 +189,7 @@ class ItemTokenizer
 			final char c = this.sb.charAt( k );
 
 			if( c == '$' || c == '{' ) {
-				this.errors.add( new EvalError( format( "unknown char '%c' (\\u%04d)", c, (int) c ), k ) );
+				this.errors.add( new ConfigParsePosition( format( "unknown char '%c' (\\u%04d)", c, (int) c ), k ) );
 			}
 		}
 	}

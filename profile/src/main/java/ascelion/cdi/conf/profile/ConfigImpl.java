@@ -33,7 +33,7 @@ public class ConfigImpl implements Config
 	@Override
 	public Iterable<String> getPropertyNames()
 	{
-		return this.root.asMap( x -> null ).keySet();
+		return this.root.asMap().keySet();
 	}
 
 	@Override

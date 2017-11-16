@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import ascelion.config.api.ConfigParseException;
+import ascelion.config.api.ConfigParsePosition;
 import ascelion.config.impl.ItemTokenizer.Token;
 
 import static java.lang.String.format;
@@ -15,11 +17,21 @@ import static java.lang.String.format;
 final class ItemParser
 {
 
+	interface Listener<T>
+	{
+
+		void start();
+
+		void seen( Token tok );
+
+		T finish();
+	}
+
 	private final Deque<ItemTokenizer.Token> begTokens = new LinkedList<>();
 
 	private final String content;
 
-	private final List<EvalError> errors = new ArrayList<>();
+	private final List<ConfigParsePosition> errors = new ArrayList<>();
 
 	ItemParser( String content )
 	{
@@ -27,7 +39,7 @@ final class ItemParser
 	}
 
 	@SuppressWarnings( "incomplete-switch" )
-	<T> T parse( ItemParserListener<T> listener )
+	<T> T parse( Listener<T> listener )
 	{
 		final StringReader rd = new StringReader( this.content );
 		final ItemTokenizer tkz = new ItemTokenizer( rd );
@@ -47,7 +59,7 @@ final class ItemParser
 
 				case DEF:
 					if( this.begTokens.isEmpty() ) {
-						this.errors.add( new EvalError( format( "unexpected token '%s'", tok.type.value ), tok.position ) );
+						this.errors.add( new ConfigParsePosition( format( "unexpected token '%s'", tok.type.value ), tok.position ) );
 					}
 				break;
 
@@ -56,7 +68,7 @@ final class ItemParser
 						this.begTokens.pop();
 					}
 					catch( final NoSuchElementException e ) {
-						this.errors.add( new EvalError( format( "unbalanced token '%s'", tok.type.value ), tok.position ) );
+						this.errors.add( new ConfigParsePosition( format( "unbalanced token '%s'", tok.type.value ), tok.position ) );
 					}
 				break;
 			}
@@ -67,12 +79,12 @@ final class ItemParser
 		this.errors.addAll( tkz.getErrors() );
 
 		if( this.begTokens.size() > 0 ) {
-			this.errors.add( new EvalError( "unbalanced '${'", this.begTokens.peek().position ) );
+			this.errors.add( new ConfigParsePosition( "unbalanced '${'", this.begTokens.peek().position ) );
 		}
 
 		if( this.errors.size() > 0 ) {
 			try {
-				throw new EvalException( this.content, this.errors );
+				throw new ConfigParseException( this.content, this.errors );
 			}
 			finally {
 				this.errors.clear();

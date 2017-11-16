@@ -87,9 +87,7 @@ public final class ConfigJava
 			}
 		}
 
-		final ConfigConverter<T> cv = new EvalConverter<>( root(), this.cvs.self() );
-
-		return cv.create( type, prop );
+		return (T) this.cvs.create( type, root().getValue( prop ) );
 	}
 
 	private <T> Map<String, T> getValueAsMap( Type type, String prop )

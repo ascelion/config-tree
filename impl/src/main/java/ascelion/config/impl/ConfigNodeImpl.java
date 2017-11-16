@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.impl.ItemTokenizer.Token;
 
 import static ascelion.config.impl.Utils.keys;
@@ -171,13 +171,6 @@ final class ConfigNodeImpl implements ConfigNode
 
 				try {
 					item = root.value( path );
-
-					if( item == null ) {
-						item = System.getenv( path );
-					}
-					if( item == null ) {
-						item = System.getProperty( path );
-					}
 				}
 				finally {
 					CHAIN.get().pop();
@@ -196,11 +189,21 @@ final class ConfigNodeImpl implements ConfigNode
 
 		final String eval( List<Eval> elements, ConfigNodeImpl root )
 		{
-			if( elements.isEmpty() ) {
-				return null;
-			}
+			switch( elements.size() ) {
+				case 0:
+					return null;
 
-			return elements.stream().map( rule -> rule.eval( root ) ).collect( Collectors.joining() );
+				case 1:
+					return elements.get( 0 ).eval( root );
+
+				default:
+					return elements.stream().map( rule -> rule.eval( root ) ).collect( Collectors.joining() );
+			}
+		}
+
+		boolean isExpression()
+		{
+			return this.children.stream().anyMatch( Type.class::isInstance );
 		}
 
 		@Override
@@ -242,25 +245,25 @@ final class ConfigNodeImpl implements ConfigNode
 		}
 	}
 
-	static class Listener extends ItemParserListener<Eval>
+	static class Listener implements ItemParser.Listener<Expr>
 	{
 
 		private Expr expr;
 
 		@Override
-		void start()
+		public void start()
 		{
 			this.expr = new Expr();
 		}
 
 		@Override
-		void seen( Token tok )
+		public void seen( Token tok )
 		{
 			this.expr = this.expr.seen( tok );
 		}
 
 		@Override
-		Eval finish()
+		public Expr finish()
 		{
 			return this.expr;
 		}
@@ -271,7 +274,7 @@ final class ConfigNodeImpl implements ConfigNode
 	private final ConfigNodeImpl root;
 
 	private Map<String, ConfigNodeImpl> tree;
-	private Eval expr;
+	private Expr expr;
 
 	public ConfigNodeImpl()
 	{
@@ -312,6 +315,14 @@ final class ConfigNodeImpl implements ConfigNode
 	public String getValue()
 	{
 		return this.expr != null ? this.expr.eval( this.root ) : null;
+	}
+
+	@Override
+	public String getValue( String path )
+	{
+		final ConfigNode node = getNode( path );
+
+		return node != null ? node.getValue() : null;
 	}
 
 	@Override
@@ -377,11 +388,11 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public <T> Map<String, T> asMap( int unwrap, Function<String, T> fun )
+	public Map<String, String> asMap( int unwrap )
 	{
-		final TreeMap<String, T> m = new TreeMap<>();
+		final TreeMap<String, String> m = new TreeMap<>();
 
-		fillMap( unwrap, m, fun );
+		fillMap( unwrap, m );
 
 		return m;
 	}
@@ -445,8 +456,8 @@ final class ConfigNodeImpl implements ConfigNode
 		ConfigNodeImpl node = this;
 
 		for( final String key : keys ) {
-			if( node == null ) {
-				return null;
+			if( node == null && !create ) {
+				throw new ConfigNotFoundException( path );
 			}
 
 			node = node.child( key, create );
@@ -476,7 +487,7 @@ final class ConfigNodeImpl implements ConfigNode
 		return this.tree != null ? this.tree : emptyMap();
 	}
 
-	private <T> void fillMap( int unwrap, TreeMap<String, T> m, Function<String, T> f )
+	private void fillMap( int unwrap, Map<String, String> m )
 	{
 		if( this.tree == null || this.tree.isEmpty() ) {
 			String p = getPath();
@@ -497,10 +508,10 @@ final class ConfigNodeImpl implements ConfigNode
 				p = p.substring( x + 1 );
 			}
 
-			m.put( p, f.apply( getValue() ) );
+			m.put( p, getValue() );
 		}
 		else {
-			this.tree.forEach( ( k, v ) -> v.fillMap( unwrap, m, f ) );
+			this.tree.forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
 		}
 	}
 }
