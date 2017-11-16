@@ -77,7 +77,7 @@ public class EvalLex
 			errors.add( new EvalError( "unbalanced '${'", lx.getCharPositionInLine() ) );
 		}
 		if( errors.size() > 0 ) {
-			throw new EvalException( errors );
+			throw new EvalException( content, errors );
 		}
 
 		if( root.val.stream().allMatch( Text.class::isInstance ) ) {

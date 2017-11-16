@@ -1,9 +1,6 @@
 
 package ascelion.config.impl;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javax.enterprise.util.AnnotationLiteral;
 
 import ascelion.config.api.ConfigConverter;
@@ -21,11 +18,6 @@ final class ConfigValueLiteral extends AnnotationLiteral<ConfigValue> implements
 		this.value = value;
 		this.converter = converter;
 		this.unwrap = unwrap;
-	}
-
-	ConfigValueLiteral( String[] values, Class<? extends ConfigConverter> converter, int unwrap )
-	{
-		this( Stream.of( values ).collect( Collectors.joining( Eval.Token.S_DEF ) ), converter, unwrap );
 	}
 
 	ConfigValueLiteral( String value )

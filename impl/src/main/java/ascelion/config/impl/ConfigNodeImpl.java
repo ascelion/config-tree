@@ -1,7 +1,11 @@
 
 package ascelion.config.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -9,42 +13,265 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
+import ascelion.config.impl.ItemTokenizer.Token;
 
 import static ascelion.config.impl.Utils.keys;
 import static ascelion.config.impl.Utils.path;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.joining;;
 
 final class ConfigNodeImpl implements ConfigNode
 {
 
+	static class Item
+	{
+
+		Expr parent;
+
+		@Override
+		public boolean equals( Object obj )
+		{
+			if( obj == this ) {
+				return true;
+			}
+			if( obj == null ) {
+				return false;
+			}
+
+			if( getClass() != obj.getClass() ) {
+				return false;
+			}
+
+			final Item that = (Item) obj;
+
+			return Objects.equals( toString(), that.toString() );
+		}
+	}
+
+	static class Type extends Item
+	{
+
+		final Token.Type type;
+
+		Type( ascelion.config.impl.ItemTokenizer.Token.Type type )
+		{
+			this.type = type;
+		}
+
+		@Override
+		public String toString()
+		{
+			return this.type.value;
+		}
+	}
+
+	static abstract class Eval extends Item
+	{
+
+		abstract String eval( ConfigNode root );
+
+		abstract boolean follow();
+	}
+
+	static class Text extends Eval
+	{
+
+		final String text;
+
+		Text( String text )
+		{
+			this.text = text;
+		}
+
+		@Override
+		public String toString()
+		{
+			return this.text;
+		}
+
+		@Override
+		String eval( ConfigNode root )
+		{
+			return this.text;
+		}
+
+		@Override
+		boolean follow()
+		{
+			return false;
+		}
+	}
+
+	static class Expr extends Eval
+	{
+
+		static private final ThreadLocal<Deque<Expr>> CHAIN = new ThreadLocal<Deque<Expr>>()
+		{
+
+			@Override
+			protected Deque<Expr> initialValue()
+			{
+				return new LinkedList<>();
+			};
+		};
+
+		final List<Item> children = new ArrayList<>();
+		final List<Eval> val = new ArrayList<>();
+		final List<Eval> def = new ArrayList<>();
+		List<Eval> add = this.val;
+		Expr chain;
+
+		@Override
+		public String toString()
+		{
+			return this.children.stream().map( Object::toString ).collect( joining() );
+		}
+
+		<T extends Item> T addChild( T child )
+		{
+			child.parent = this;
+
+			this.children.add( child );
+
+			if( child instanceof Eval ) {
+				this.add.add( (Eval) child );
+			}
+
+			return child;
+		}
+
+		@Override
+		String eval( ConfigNode root )
+		{
+			final StringBuilder b = new StringBuilder();
+
+			b.insert( 0, this );
+
+			CHAIN.get().forEach( x -> {
+				b.insert( 0, "->" );
+				b.insert( 0, x );
+				if( Objects.equals( this, x ) ) {
+					throw new ConfigException( format( "recursive definition: %s", b ) );
+				}
+			} );
+
+			String value = eval( this.val, root );
+
+			if( follow() ) {
+				CHAIN.get().push( this );
+
+				try {
+					value = root.getValue( value );
+				}
+				finally {
+					CHAIN.get().pop();
+				}
+			}
+
+			if( value == null ) {
+				value = eval( this.def, root );
+			}
+
+			return value;
+		}
+
+		final String eval( List<Eval> elements, ConfigNode root )
+		{
+			if( elements.isEmpty() ) {
+				return null;
+			}
+
+			return elements.stream().map( rule -> rule.eval( root ) ).collect( Collectors.joining() );
+		}
+
+		@Override
+		boolean follow()
+		{
+			return this.val.size() == 1 && this.children.size() > 2;
+		}
+
+		Expr seen( Token tok )
+		{
+			switch( tok.type ) {
+				case BEG: {
+					final Expr expr = addChild( new Expr() );
+
+					expr.addChild( new Type( Token.Type.BEG ) );
+
+					return expr;
+				}
+
+				case END:
+					addChild( new Type( tok.type ) );
+
+					return this.parent;
+
+				case DEF:
+					addChild( new Type( tok.type ) );
+
+					this.add = this.def;
+					;
+				break;
+
+				case STR: {
+					addChild( new Text( tok.text ) );
+				}
+				break;
+			}
+
+			return this;
+		}
+	}
+
+	static class Listener extends ItemParserListener<Eval>
+	{
+
+		private Expr expr;
+
+		@Override
+		void start()
+		{
+			this.expr = new Expr();
+		}
+
+		@Override
+		void seen( Token tok )
+		{
+			this.expr = this.expr.seen( tok );
+		}
+
+		@Override
+		Eval finish()
+		{
+			return this.expr;
+		}
+	}
+
 	private final String name;
 	private final String path;
-	private String item;
+	private final ConfigNode root;
+
 	private Map<String, ConfigNodeImpl> tree;
+	private Eval expr;
 
 	public ConfigNodeImpl()
 	{
 		this.name = null;
 		this.path = null;
+		this.root = this;
 	}
 
-	public ConfigNodeImpl( String name )
-	{
-		this.name = name;
-		this.path = null;
-	}
-
-	public ConfigNodeImpl( String name, ConfigNodeImpl parent )
+	private ConfigNodeImpl( String name, ConfigNodeImpl parent )
 	{
 		this.name = name;
 		this.path = path( path( parent ), name );
+		this.root = parent.root;
 
-		if( parent != null ) {
-			parent.tree( true ).put( this.path, this );
-		}
+		parent.tree( true ).put( this.path, this );
 	}
 
 	@Override
@@ -62,7 +289,7 @@ final class ConfigNodeImpl implements ConfigNode
 	@Override
 	public String getValue()
 	{
-		return this.item;
+		return this.expr != null ? this.expr.eval( this.root ) : null;
 	}
 
 	@Override
@@ -82,24 +309,24 @@ final class ConfigNodeImpl implements ConfigNode
 	{
 		final StringBuilder sb = new StringBuilder();
 
-		if( this.item != null ) {
+		if( this.expr != null ) {
 			if( this.path != null ) {
-				sb.append( "{" );
+				sb.append( "[" );
 			}
-			sb.append( this.item );
+			sb.append( this.expr );
 		}
 		if( this.tree != null ) {
 			if( sb.length() > 0 ) {
 				sb.append( ", " );
 			}
 			else if( this.path != null ) {
-				sb.append( "{" );
+				sb.append( "[" );
 			}
 
 			sb.append( this.tree.entrySet().stream().map( Object::toString ).collect( Collectors.joining( ", " ) ) );
 		}
 		if( this.path != null && sb.length() > 0 ) {
-			sb.append( "}" );
+			sb.append( "]" );
 		}
 
 		return sb.toString();
@@ -134,19 +361,24 @@ final class ConfigNodeImpl implements ConfigNode
 		if( payload instanceof Collection ) {
 			final Collection<?> c = (Collection<?>) payload;
 
-			this.item = c.stream().map( Object::toString ).collect( Collectors.joining( "," ) );
+			set( c.stream().map( Object::toString ).collect( Collectors.joining( "," ) ) );
 
 			return;
 		}
 		if( payload instanceof Object[] ) {
 			final Object[] v = (Object[]) payload;
 
-			this.item = Stream.of( v ).map( Object::toString ).collect( Collectors.joining( "," ) );
+			set( Stream.of( v ).map( Object::toString ).collect( Collectors.joining( "," ) ) );
 
 			return;
 		}
 
-		this.item = Objects.toString( payload, null );
+		if( payload != null ) {
+			this.expr = new ItemParser( payload.toString() ).parse( new Listener() );
+		}
+		else {
+			this.expr = null;
+		}
 	}
 
 	private ConfigNodeImpl findNode( String path, boolean create )
@@ -207,7 +439,7 @@ final class ConfigNodeImpl implements ConfigNode
 				p = p.substring( x + 1 );
 			}
 
-			m.put( p, f.apply( this.item ) );
+			m.put( p, f.apply( getValue() ) );
 		}
 		else {
 			this.tree.forEach( ( k, v ) -> v.fillMap( unwrap, m, f ) );

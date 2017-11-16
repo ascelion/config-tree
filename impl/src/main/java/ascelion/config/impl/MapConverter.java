@@ -36,7 +36,7 @@ final class MapConverter<T> implements ConfigConverter<Map<String, T>>
 		}
 
 		final Function<String, T> fun = x -> {
-			if( x.contains( Eval.Token.S_BEG ) ) {
+			if( x.contains( ItemTokenizer.Token.S_BEG ) ) {
 				final EvalConverter<T> e = new EvalConverter<>( this.root, this.conv );
 
 				return e.create( t, x );

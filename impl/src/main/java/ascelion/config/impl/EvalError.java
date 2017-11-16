@@ -17,7 +17,7 @@ public final class EvalError
 
 	public String toMessage()
 	{
-		return format( "At %d: %s", this.position, this.message );
+		return format( "at %d: %s", this.position, this.message );
 	}
 
 	@Override

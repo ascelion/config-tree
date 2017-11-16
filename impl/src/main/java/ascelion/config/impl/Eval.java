@@ -1,9 +1,6 @@
 
 package ascelion.config.impl;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -12,164 +9,12 @@ import java.util.stream.Collectors;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
+import ascelion.config.impl.ItemTokenizer.Token;
 
 import static java.lang.String.format;
 
 public final class Eval
 {
-
-	static class Token
-	{
-
-		static final char C_ESC = '\\';
-		static final String S_BEG = "${";
-		static final String S_DEF = ":";
-		static final String S_END = "}";
-
-		enum Type
-		{
-			EOF,
-			BEG,
-			DEF,
-			END,
-			STR,
-		}
-
-		final Type type;
-		final String text;
-
-		Token( Type type, StringBuilder b )
-		{
-			this( type, b, b.length() );
-		}
-
-		Token( Type type, StringBuilder b, int count )
-		{
-			this.type = type;
-			this.text = b.substring( 0, count ).toString();
-
-			b.delete( 0, count );
-		}
-	}
-
-	static class Tokenizer
-	{
-
-		final Reader rd;
-		final StringBuilder sb = new StringBuilder();
-		final List<EvalError> errors = new ArrayList<>();
-
-		int position;
-		private boolean escape;
-
-		Tokenizer( Reader rd )
-		{
-			this.rd = rd;
-		}
-
-		Token next()
-		{
-			if( this.sb.length() > 0 ) {
-				final String tx = this.sb.toString();
-
-				switch( tx ) {
-					case Token.S_BEG:
-						return new Token( Token.Type.BEG, this.sb );
-					case Token.S_DEF:
-						return new Token( Token.Type.DEF, this.sb );
-					case Token.S_END:
-						return new Token( Token.Type.END, this.sb );
-				}
-			}
-
-			while( true ) {
-				final char c;
-
-				try {
-					final int n = this.rd.read();
-					if( n == -1 ) {
-						break;
-					}
-
-					c = (char) n;
-				}
-				catch( final IOException e ) {
-					throw new ConfigException( e.getMessage() );
-				}
-
-				this.position++;
-
-				switch( c ) {
-					case Token.C_ESC:
-						if( this.escape ) {
-							this.escape = false;
-						}
-						else {
-							this.escape = true;
-
-							continue;
-						}
-
-					default:
-						this.sb.append( c );
-				}
-
-				final String tx = this.sb.toString();
-
-				if( tx.endsWith( Token.S_BEG ) && !this.escape ) {
-					if( this.sb.length() > 2 ) {
-						check( this.sb.length() - 2 );
-
-						return new Token( Token.Type.STR, this.sb, this.sb.length() - 2 );
-					}
-					else {
-						return new Token( Token.Type.BEG, this.sb );
-					}
-				}
-				if( tx.endsWith( Token.S_DEF ) && !this.escape ) {
-					if( this.sb.length() > 1 ) {
-						check( this.sb.length() - 1 );
-
-						return new Token( Token.Type.STR, this.sb, this.sb.length() - 1 );
-					}
-					else {
-						return new Token( Token.Type.DEF, this.sb );
-					}
-				}
-				if( tx.endsWith( Token.S_END ) && !this.escape ) {
-					if( this.sb.length() > 1 ) {
-						check( this.sb.length() - 1 );
-
-						return new Token( Token.Type.STR, this.sb, this.sb.length() - 1 );
-					}
-					else {
-						return new Token( Token.Type.END, this.sb );
-					}
-				}
-
-				this.escape = false;
-			}
-
-			if( this.sb.length() == 0 ) {
-				return new Token( Token.Type.EOF, this.sb );
-			}
-
-			check( this.sb.length() );
-
-			return new Token( Token.Type.STR, this.sb );
-		}
-
-		void check( int size )
-		{
-			for( int k = 0; k < size; k++ ) {
-				final char c = this.sb.charAt( k );
-
-				if( c == '$' || c == '{' ) {
-					this.errors.add( new EvalError( format( "unknown char '%c' (\\u%04d)", c, (int) c ), k ) );
-				}
-			}
-		}
-	}
 
 	static abstract class Rule
 	{
@@ -384,62 +229,59 @@ public final class Eval
 		}
 	}
 
-	static Rule parse( String content )
+	static class Listener extends ItemParserListener<Expr>
 	{
-		final StringReader rd = new StringReader( content );
-		final Tokenizer tkz = new Tokenizer( rd );
-		Token tk = null;
-		boolean eof = false;
-		Expr root = new Expr();
 
-		while( !eof ) {
-			tk = tkz.next();
+		Expr root;
 
-			switch( tk.type ) {
-				case EOF:
-					eof = true;
-				break;
+		@Override
+		void start()
+		{
+			this.root = new Expr();
+		}
 
+		@SuppressWarnings( "incomplete-switch" )
+		@Override
+		void seen( ItemTokenizer.Token tok )
+		{
+			switch( tok.type ) {
 				case BEG:
-					root = root.push( new Expr() );
+					this.root = this.root.push( new Expr() );
 				break;
 
 				case END:
-					if( root.parent == null ) {
-						tkz.errors.add( new EvalError( "unbalanced '}'", tkz.position ) );
-
-						eof = true;
-
-						break;
-					}
-
-					root = root.pop();
+					this.root = this.root.pop();
 				break;
 
 				case DEF:
-					root.toDefault();
+					this.root.toDefault();
 				break;
 
 				case STR:
-					root.push( new Text( tk.text ) );
+					this.root.push( new Text( tok.text ) );
 				break;
+
 			}
 		}
-		if( root.parent != null ) {
-			tkz.errors.add( new EvalError( "unbalanced '${'", tkz.position ) );
-		}
-		if( tkz.errors.size() > 0 ) {
-			throw new EvalException( tkz.errors );
-		}
-		if( root.val.stream().allMatch( Text.class::isInstance ) ) {
-			final Expr expr = new Expr();
 
-			expr.push( root );
+		@Override
+		Expr finish()
+		{
+			if( this.root != null && this.root.val.stream().allMatch( Text.class::isInstance ) ) {
+				final Expr expr = new Expr();
 
-			root = expr;
+				expr.push( this.root );
+
+				this.root = expr;
+			}
+
+			return this.root;
 		}
+	}
 
-		return root;
+	static Expr parse( String content )
+	{
+		return new ItemParser( content ).parse( new Listener() );
 	}
 
 	public static String eval( String value, ConfigNode root )
