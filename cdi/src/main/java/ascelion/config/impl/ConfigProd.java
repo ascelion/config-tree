@@ -39,7 +39,7 @@ class ConfigProd
 	@Inject
 	private ConfigExtension ext;
 	@Inject
-	private Converters cvs;
+	private Converters conv;
 	@Inject
 	@Any
 	private Instance<ConfigReader> rdi;
@@ -57,24 +57,16 @@ class ConfigProd
 
 		final ConfigValue a = ip.getAnnotated().getAnnotation( ConfigValue.class );
 		final Type t = ip.getType();
-		final TypedValue v = new TypedValue( this.root );
 
-		registerIfNeeded( t, a );
+		if( t instanceof Class ) {
+			final Class<?> c = (Class<?>) t;
 
-		return v.getValue( t, a.value(), a.unwrap() );
-	}
-
-	private void registerIfNeeded( Type t, ConfigValue a )
-	{
-		if( !( t instanceof Class ) ) {
-			return;
+			if( c.isInterface() ) {
+				this.conv.register( t, () -> new InterfaceConverter<>( this.conv, this.root ) );
+			}
 		}
 
-		final Class<?> c = (Class<?>) t;
-
-		if( c.isInterface() ) {
-			this.cvs.register( t, () -> new InterfaceConverter( this.root ) );
-		}
+		return this.conv.getValue( this.root, t, a.value(), a.unwrap() );
 	}
 
 	@PostConstruct
@@ -96,7 +88,7 @@ class ConfigProd
 				}
 			}
 
-			this.cvs.register( info.instance );
+			this.conv.register( info.instance );
 
 			this.converters.put( c, info );
 		} );

@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -113,6 +114,7 @@ public class ConfigMapTest
 	}
 
 	@Test
+	@Ignore
 	public void run2()
 	{
 		final Object o = CJ.getValue( this.type, PROP2, 1 );

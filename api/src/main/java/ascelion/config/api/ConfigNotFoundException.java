@@ -8,6 +8,6 @@ public class ConfigNotFoundException extends ConfigException
 
 	public ConfigNotFoundException( String path )
 	{
-		super( format( "Configuration item not found: %s", path ) );
+		super( format( "Configuration node not found: %s", path ) );
 	}
 }

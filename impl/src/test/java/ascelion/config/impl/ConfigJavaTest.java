@@ -14,6 +14,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -49,27 +50,34 @@ public class ConfigJavaTest
 
 			asArray( "file.prop6", parameterizedClass( List.class, String.class ), asList( "1", "2", "3" ) ),
 			asArray( "file.prop6", parameterizedClass( List.class, Integer.class ), asList( 1, 2, 3 ) ),
+
+			asArray( "file.version1", String.class, System.getProperty( "java.version" ) ),
+			asArray( "file.version2", String.class, System.getProperty( "java.version" ) ),
 		};
 	}
 
+	static private final ConfigJava CJ = new ConfigJava();
 	private final String prop;
 	private final Type type;
 	private final Object expected;
-	private final ConfigJava cj = new ConfigJava();
 
 	public ConfigJavaTest( String prop, Type type, Object expected )
 	{
 		this.prop = prop;
 		this.type = type;
 		this.expected = expected;
+	}
 
-		this.cj.add( s -> s.value().startsWith( "file" ) );
+	@BeforeClass
+	static public void setUpClass()
+	{
+		CJ.add( s -> s.value().startsWith( "file" ) || "SYS".equals( s.type() ) );
 	}
 
 	@Test
 	public void run()
 	{
-		final Object o = this.cj.getValue( this.type, this.prop, 0 );
+		final Object o = CJ.getValue( this.type, this.prop, 0 );
 
 		assertThat( o, is( this.expected ) );
 	}

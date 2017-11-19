@@ -2,15 +2,15 @@
 package ascelion.config.impl;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 
 import static java.util.Collections.unmodifiableSet;
@@ -39,6 +39,7 @@ public class ConfigScanner
 	private final FastClasspathScanner cs;
 	private final List<Predicate<Class<?>>> filters = new ArrayList<>();
 	private final Set<ConfigSource> sources = new LinkedHashSet<>();
+	private final Set<Class<? extends ConfigReader>> readers = new LinkedHashSet<>();
 
 	public ConfigScanner()
 	{
@@ -64,6 +65,13 @@ public class ConfigScanner
 		return unmodifiableSet( this.sources );
 	}
 
+	public Set<Class<? extends ConfigReader>> getReaders()
+	{
+		scan();
+
+		return unmodifiableSet( this.readers );
+	}
+
 	public void addFilter( Predicate<Class<?>> filter )
 	{
 		this.filters.add( filter );
@@ -71,19 +79,17 @@ public class ConfigScanner
 
 	private void scan()
 	{
-		if( this.sources.isEmpty() ) {
-			this.cs.scan()
-				.getNamesOfAllClasses()
-				.forEach( n -> {
-					try {
-						processClass( Thread.currentThread().getContextClassLoader().loadClass( n ) );
-					}
-					catch( final ClassNotFoundException e ) {
-					}
-					catch( final NoClassDefFoundError e ) {
-					}
-				} );
-		}
+		this.cs.scan()
+			.getNamesOfAllClasses()
+			.forEach( n -> {
+				try {
+					processClass( Thread.currentThread().getContextClassLoader().loadClass( n ) );
+				}
+				catch( final ClassNotFoundException e ) {
+				}
+				catch( final NoClassDefFoundError e ) {
+				}
+			} );
 	}
 
 	private void processClass( Class<?> cls )
@@ -104,13 +110,14 @@ public class ConfigScanner
 			}
 		}
 
-		processAnnotation( ConfigSource.class, cls, this.sources::add );
+		processAnnotation( ConfigSource.class, cls, ( a, c ) -> this.sources.add( a ) );
+		processAnnotation( ConfigReader.Type.class, cls, ( a, c ) -> this.readers.add( (Class<? extends ConfigReader>) c ) );
 	}
 
-	private <A extends Annotation> void processAnnotation( Class<A> annotation, AnnotatedElement element, Consumer<A> action )
+	private <A extends Annotation> void processAnnotation( Class<A> type, Class<?> cls, BiConsumer<A, Class<?>> action )
 	{
 		try {
-			Stream.of( element.getAnnotationsByType( annotation ) ).forEach( action );
+			Stream.of( cls.getAnnotationsByType( type ) ).forEach( a -> action.accept( a, cls ) );
 		}
 		catch( final Exception e ) {
 			;

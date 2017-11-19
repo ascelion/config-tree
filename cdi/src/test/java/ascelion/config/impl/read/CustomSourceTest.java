@@ -2,6 +2,7 @@
 package ascelion.config.impl.read;
 
 import java.util.Map;
+import java.util.Set;
 
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
@@ -31,7 +32,7 @@ public class CustomSourceTest
 	{
 
 		@Override
-		public Map<String, ?> readConfiguration( ConfigSource source )
+		public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys )
 		{
 			return new Gson().fromJson( source.value(), Map.class );
 		}

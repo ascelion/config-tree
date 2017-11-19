@@ -24,7 +24,7 @@ public @interface ConfigSource
 
 	String value() default "";
 
-	int priority() default 0;
+	int priority() default 100;
 
 	String type() default "";
 }

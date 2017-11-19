@@ -34,9 +34,9 @@ import org.junit.runner.RunWith;
 public class ConfigValueTest
 {
 
-	@ConfigSource( "file4.yml" )
-	@ConfigSource( "file1.properties" )
-	@ConfigSource( "file2.conf" )
+	@ConfigSource( "file.yml" )
+	@ConfigSource( "file.properties" )
+	@ConfigSource( "file.conf" )
 	static class Bean1
 	{
 
@@ -64,7 +64,7 @@ public class ConfigValueTest
 		}
 	}
 
-	@ConfigSource( "file3.ini" )
+	@ConfigSource( "file.ini" )
 	static class Bean2
 	{
 
@@ -110,19 +110,19 @@ public class ConfigValueTest
 	@ConfigValue( "log.categories:2,3,4,5" )
 	private Set<Integer> logCategories2;
 
-	@ConfigValue( value = "log1.mappings" )
+	@ConfigValue( value = "file.map1.values" )
 	private Map<String, String> map11;
 
-	@ConfigValue( value = "log1.mappings", unwrap = 1 )
+	@ConfigValue( value = "file.map1.values", unwrap = 1 )
 	private Map<String, Integer[]> map12;
 
-	@ConfigValue( value = "log1.mappings", unwrap = 2 )
+	@ConfigValue( value = "file.map1.values", unwrap = 2 )
 	private Map<String, String[]> map13;
 
-	@ConfigValue( value = "log1.mappings", unwrap = 1 )
+	@ConfigValue( value = "file.map1.values", unwrap = 1 )
 	private Map<String, Set<Integer>> map14;
 
-	@ConfigValue( value = "log1.mappings", unwrap = 2 )
+	@ConfigValue( value = "file.map1.values", unwrap = 2 )
 	private Map<String, List<String>> map15;
 
 	@Test
@@ -143,9 +143,9 @@ public class ConfigValueTest
 		assertThat( "logFile1", this.logFile1, is( notNullValue() ) );
 		assertThat( "logFile2", this.logFile2, is( notNullValue() ) );
 
-		this.map11.keySet().forEach( k -> assertThat( k, k, startsWith( "log1." ) ) );
-		this.map12.keySet().forEach( k -> assertThat( k, k, startsWith( "mappings." ) ) );
-		this.map13.keySet().forEach( k -> assertThat( k, k, not( startsWith( "log1.mappings." ) ) ) );
+		this.map11.keySet().forEach( k -> assertThat( k, k, startsWith( "file." ) ) );
+		this.map12.keySet().forEach( k -> assertThat( k, k, startsWith( "map1." ) ) );
+		this.map13.keySet().forEach( k -> assertThat( k, k, not( startsWith( "file.map1.values." ) ) ) );
 	}
 
 }

@@ -282,7 +282,7 @@ public final class EvalTool
 
 	static Expr parse( String content )
 	{
-		return new ItemParser( content ).parse( new Listener() );
+		return ItemParser.parse( content, Listener::new );
 	}
 
 	public static String eval( String value, ConfigNode root )

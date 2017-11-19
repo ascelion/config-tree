@@ -9,12 +9,14 @@ import ascelion.config.api.ConfigNode;
 class InterfaceConverter<T> implements ConfigConverter<T>
 {
 
-	InterfaceConverter( ConfigNode root )
+	private final ConfigNode root;
+	private final Converters conv;
+
+	InterfaceConverter( Converters conv, ConfigNode root )
 	{
 		this.root = root;
+		this.conv = conv;
 	}
-
-	private final ConfigNode root;
 
 	@Override
 	public T create( Class<? super T> t, String u )
@@ -22,7 +24,7 @@ class InterfaceConverter<T> implements ConfigConverter<T>
 		final Class[] types = new Class[] { t };
 		final ClassLoader cld = Thread.currentThread().getContextClassLoader();
 
-		return (T) Proxy.newProxyInstance( cld, types, new InterfaceValue( this.root, u, t ) );
+		return (T) Proxy.newProxyInstance( cld, types, new InterfaceValue( t, this.root, u, this.conv ) );
 	}
 
 }

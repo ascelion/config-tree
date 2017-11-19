@@ -2,8 +2,11 @@
 package ascelion.config.impl;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Typed;
@@ -19,14 +22,19 @@ import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigValue;
 
 import static java.util.Collections.unmodifiableSet;
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 
 @Typed
 final class ConfigType<X> extends AnnotatedTypeW<X>
 {
 
+	static private final Pattern SHORTCUT = Pattern.compile( "^([^${}:]*)(:(.+)$)?" );
+
 	private boolean modified;
 
 	private final Set<Class<? extends ConfigConverter<?>>> converters = new TreeSet<>( new TypeCMP<>() );
+
+	private final Set<ConfigValue> values = new HashSet<>();
 
 	ConfigType( AnnotatedType<X> delegate )
 	{
@@ -70,40 +78,58 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 		}
 	}
 
-	private void updateAnnotation( Annotated m, String name )
+	private void updateAnnotation( Annotated am, String name )
 	{
-		ConfigValue a = m.getAnnotation( ConfigValue.class );
-		final ConfigPrefix p = getAnnotation( ConfigPrefix.class );
+		ConfigValue cv = am.getAnnotation( ConfigValue.class );
 
-		if( a != null ) {
-			boolean transform = false;
-			String v = a.value();
+		if( cv == null ) {
+			return;
+		}
 
-			if( v.isEmpty() ) {
-				v = name;
+		final ConfigPrefix cp = getAnnotation( ConfigPrefix.class );
+		boolean transform = false;
+		String val = cv.value();
+		String def = null;
 
-				transform = true;
+		final Matcher mat = SHORTCUT.matcher( val );
+
+		if( mat.matches() ) {
+			val = mat.group( 1 );
+			def = trimToEmpty( mat.group( 2 ) );
+
+			transform = true;
+		}
+
+		if( val.isEmpty() ) {
+			val = name;
+
+			transform = true;
+		}
+		if( cp != null && cp.value().length() > 0 ) {
+			val = cp + "." + val;
+
+			transform = true;
+		}
+		if( transform ) {
+			am.getAnnotations().remove( cv );
+
+			if( mat.matches() ) {
+				val = "${" + val + def + "}";
 			}
-			if( p != null && p.value().length() > 0 ) {
-				v = p + "." + v;
 
-				transform = true;
-			}
-			if( transform ) {
-				m.getAnnotations().remove( a );
+			cv = new ConfigValueLiteral( val, cv.converter(), cv.unwrap() );
 
-				a = new ConfigValueLiteral( v, a.converter(), a.unwrap() );
+			am.getAnnotations().add( cv );
 
-				m.getAnnotations().add( a );
+			this.modified = true;
+		}
 
-				this.modified = true;
-			}
+		this.values.add( cv );
 
-			final Class<? extends ConfigConverter<?>> c = (Class<? extends ConfigConverter<?>>) a.converter();
+		final Class<? extends ConfigConverter<?>> c = (Class<? extends ConfigConverter<?>>) cv.converter();
 
-			if( c != ConfigConverter.class ) {
-				this.converters.add( c );
-			}
+		if( c != ConfigConverter.class ) {
+			this.converters.add( c );
 		}
 	}
 
@@ -115,5 +141,10 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 	Collection<Class<? extends ConfigConverter<?>>> converters()
 	{
 		return unmodifiableSet( this.converters );
+	}
+
+	Set<ConfigValue> values()
+	{
+		return unmodifiableSet( this.values );
 	}
 }

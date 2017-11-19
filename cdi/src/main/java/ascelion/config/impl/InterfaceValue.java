@@ -23,18 +23,19 @@ final class InterfaceValue implements InvocationHandler
 
 	static final Set<Method> O_METHODS = methodsOf( Object.class );
 
-	private final String name;
 	private final Map<Method, ConfigValue> names = new HashMap<>();
 
-	private final TypedValue tv;
-
 	private final Class<?> type;
+	private final String name;
+	private final ConfigNode root;
+	private final Converters conv;
 
-	InterfaceValue( ConfigNode root, String name, Class<?> type )
+	InterfaceValue( Class<?> type, ConfigNode root, String name, Converters conv )
 	{
-		this.tv = new TypedValue( root );
-		this.name = name;
 		this.type = type;
+		this.name = name;
+		this.root = root;
+		this.conv = conv;
 
 		Stream.of( type.getMethods() )
 			.filter( m -> m.getParameterTypes().length == 0 )
@@ -53,7 +54,7 @@ final class InterfaceValue implements InvocationHandler
 		if( this.names.containsKey( method ) ) {
 			final ConfigValue a = this.names.get( method );
 
-			return this.tv.getValue( method.getGenericReturnType(), a.value(), a.unwrap() );
+			return this.conv.getValue( this.root, method.getGenericReturnType(), a.value(), a.unwrap() );
 		}
 
 		throw new NoSuchMethodError( format( "%s#%s", this.type.getName(), method.getName() ) );

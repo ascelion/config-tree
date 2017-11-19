@@ -4,6 +4,7 @@ package ascelion.config.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
@@ -18,7 +19,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.array;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
 
 import org.jglue.cdiunit.AdditionalClasses;
@@ -43,7 +43,7 @@ public class GenericTest
 	{
 
 		@Override
-		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
+		public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys ) throws ConfigException
 		{
 			final Map<String, String> map = new HashMap<>();
 
@@ -138,15 +138,6 @@ public class GenericTest
 	@ConfigValue( "props" )
 	private Integer[] nValues;
 
-	@ConfigValue( "props" )
-	private Map<String, Integer[]> mnValues;
-
-	@ConfigValue( "props" )
-	private Map<String, String[]> msValues;
-
-	@ConfigValue( "props" )
-	private Map<String, String> msValue;
-
 	@Test
 	public void run()
 	{
@@ -175,9 +166,5 @@ public class GenericTest
 		assertThat( this.sBean.value2, is( "20" ) );
 		assertThat( this.sBean.valuev, is( array( equalTo( "10" ), equalTo( "20" ), equalTo( "30" ) ) ) );
 		assertThat( this.sBean.xValue1, is( 10 ) );
-
-		assertThat( this.mnValues, hasEntry( "props", new Integer[] { 10, 20, 30 } ) );
-		assertThat( this.msValues, hasEntry( "props", new String[] { "10", "20", "30" } ) );
-		assertThat( this.nValues, is( array( equalTo( 10 ), equalTo( 20 ), equalTo( 30 ) ) ) );
 	}
 }

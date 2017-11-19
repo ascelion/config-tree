@@ -28,8 +28,10 @@ import ascelion.cdi.type.AnnotatedTypeW;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
+import ascelion.config.impl.read.ENVConfigReader;
 import ascelion.config.impl.read.INIConfigReader;
 import ascelion.config.impl.read.PRPConfigReader;
+import ascelion.config.impl.read.SYSConfigReader;
 import ascelion.config.impl.read.XMLConfigReader;
 import ascelion.config.impl.read.YMLConfigReader;
 
@@ -48,6 +50,7 @@ public class ConfigExtension implements Extension
 
 	private final Set<ConfigSource> sources = new HashSet<>();
 	private final Set<Class<? extends ConfigConverter<?>>> converters = new TreeSet<>( new TypeCMP<>() );
+	private final Set<ConfigValue> values = new HashSet<>();
 	private final Set<Type> types = new TreeSet<>( new TypeCMP<>() );
 	private final Set<Type> producedTypes = new TreeSet<>( new TypeCMP<>() );
 	private Bean<ConfigProd> producer;
@@ -55,9 +58,12 @@ public class ConfigExtension implements Extension
 	void beforeBeanDiscovery( BeanManager bm, @Observes BeforeBeanDiscovery event )
 	{
 		addType( Converters.class, bm, event );
+		addType( ENVConfigReader.class, bm, event );
 		addType( INIConfigReader.class, bm, event );
 //		addType( JMXConfigReader.class, bm, event );
 		addType( PRPConfigReader.class, bm, event );
+		addType( SYSConfigReader.class, bm, event );
+		addType( VALConfigReader.class, bm, event );
 		addType( XMLConfigReader.class, bm, event );
 		addType( YMLConfigReader.class, bm, event );
 	}
@@ -111,6 +117,8 @@ public class ConfigExtension implements Extension
 
 			this.converters.addAll( type.converters() );
 		}
+
+		this.values.addAll( type.values() );
 	}
 
 	<T, X> void processInjectionPoint( @Observes ProcessInjectionPoint<T, X> event )
@@ -165,6 +173,11 @@ public class ConfigExtension implements Extension
 	Collection<Class<? extends ConfigConverter<?>>> converters()
 	{
 		return unmodifiableSet( this.converters );
+	}
+
+	Set<ConfigValue> values()
+	{
+		return unmodifiableSet( this.values );
 	}
 
 	Type wrap( Type t )

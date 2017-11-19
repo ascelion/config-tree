@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
@@ -92,7 +93,7 @@ public class ConfigLoad
 		sources.stream()
 			.sorted( ( s1, s2 ) -> Integer.compare( s1.priority(), s2.priority() ) )
 			.forEach( s -> {
-				root.add( (ConfigNodeImpl) load( s ) );
+				load( s, root );
 			} );
 
 		if( L.isTraceEnabled() ) {
@@ -108,20 +109,27 @@ public class ConfigLoad
 		return root;
 	}
 
-	public ConfigNode load( ConfigSource source )
+	public void load( ConfigSource source, ConfigNode root )
 	{
-		final ConfigNodeImpl root = new ConfigNodeImpl();
-		final String t = getType( source );
-		final ConfigReader r = getReader( t );
+		final ConfigNodeImpl impl = (ConfigNodeImpl) root;
+		final String type = getType( source );
+		final ConfigReader rd = getReader( type );
 
-		if( r.enabled() ) {
+		if( rd.enabled() ) {
+			final Set<String> keys = impl.getKeys();
+
 			try {
-				L.trace( "Reading: type {} from '{}'", t, source.value() );
+				L.trace( "Reading: type {} from '{}'", type, source.value() );
 
-				root.setValue( r.readConfiguration( source ) );
+				final Map<String, ?> m = rd.readConfiguration( source, keys );
+				final ConfigNodeImpl n = new ConfigNodeImpl();
+
+				n.set( m );
+
+				impl.add( n );
 			}
 			catch( final UnsupportedOperationException x ) {
-				readFromURL( source, t, r, root );
+				readFromURL( source, type, rd, keys, impl );
 			}
 			catch( final ConfigException e ) {
 				L.error( "Cannot read config source: " + source.value() );
@@ -129,11 +137,9 @@ public class ConfigLoad
 				throw e;
 			}
 		}
-
-		return root;
 	}
 
-	private void readFromURL( ConfigSource source, String type, ConfigReader rd, ConfigNodeImpl root )
+	private void readFromURL( ConfigSource source, String type, ConfigReader rd, Set<String> keys, ConfigNodeImpl root )
 	{
 		final List<URL> all = ConfigReader.getResources( source.value() );
 
@@ -141,18 +147,29 @@ public class ConfigLoad
 			L.warn( "Cannot find configuration source {}", source.value() );
 		}
 		else {
-			all.forEach( u -> {
+			for( final URL u : all ) {
 				L.trace( "Reading: type {} from '{}'", type, u );
 
 				try {
-					root.setValue( rd.readConfiguration( source, u ) );
+					final Map<String, ?> m = rd.readConfiguration( source, keys, u );
+
+					if( m.size() > 0 ) {
+						final ConfigNodeImpl n = new ConfigNodeImpl();
+
+						n.set( m );
+
+						root.add( n );
+
+						keys = root.getKeys();
+					}
 				}
 				catch( final ConfigException e ) {
 					L.error( "Cannot read config source: " + source.value() );
 
 					throw e;
 				}
-			} );
+			}
+			;
 		}
 	}
 

@@ -3,7 +3,9 @@ package ascelion.config.impl;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -13,6 +15,7 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 public final class ConfigJava
@@ -55,18 +58,36 @@ public final class ConfigJava
 		}
 	}
 
+	public Collection<ConfigReader> getReaders()
+	{
+		return this.sc.getReaders().stream()
+			.map( this::create )
+			.filter( Objects::nonNull )
+			.collect( toList() );
+	}
+
 	public ConfigNode root()
 	{
 		if( this.root == null ) {
-			ServiceLoader.load( ConfigReader.class )
-				.forEach( this.ld::addReader );
 			ServiceLoader.load( ConfigConverter.class )
 				.forEach( this.cvs::register );
+
+			this.ld.addReaders( getReaders() );
 
 			this.root = this.ld.load( getSources() );
 		}
 
 		return this.root;
+	}
+
+	private ConfigReader create( Class<? extends ConfigReader> t )
+	{
+		try {
+			return t.newInstance();
+		}
+		catch( InstantiationException | IllegalAccessException e ) {
+			return null;
+		}
 	}
 
 	private boolean accept( ConfigSource src )
@@ -80,6 +101,6 @@ public final class ConfigJava
 
 	public <T> T getValue( Type type, String prop, int unwrap )
 	{
-		return new TypedValue( root() ).getValue( type, prop, unwrap );
+		return this.cvs.getValue( root(), type, prop, unwrap );
 	}
 }

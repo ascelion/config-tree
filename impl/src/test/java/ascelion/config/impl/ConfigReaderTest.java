@@ -4,6 +4,7 @@ package ascelion.config.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Set;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
@@ -62,10 +63,10 @@ public class ConfigReaderTest
 		}
 
 		@Override
-		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
+		public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys ) throws ConfigException
 		{
 			try {
-				return this.delegate.readConfiguration( source, this.stream );
+				return this.delegate.readConfiguration( source, keys, this.stream );
 			}
 			catch( final IOException e ) {
 				throw new ConfigException( e.getMessage() );
