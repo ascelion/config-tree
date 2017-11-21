@@ -1,13 +1,10 @@
 
 package ascelion.config.impl;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -15,305 +12,69 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
-import ascelion.config.impl.ItemTokenizer.Token;
 
 import static ascelion.config.impl.Utils.keys;
 import static ascelion.config.impl.Utils.path;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
-import static org.apache.commons.lang3.StringUtils.isBlank;;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;;
 
 final class ConfigNodeImpl implements ConfigNode
 {
 
+	static class ConfigNodeTA extends TypeAdapter<ConfigNodeImpl>
+	{
+
+		@Override
+		public void write( JsonWriter out, ConfigNodeImpl node ) throws IOException
+		{
+			switch( node.item.kindNoEval() ) {
+				case NULL:
+					out.nullValue();
+				break;
+
+				case ITEM:
+				case LINK:
+					out.value( node.getExpression() );
+				break;
+
+				case NODE:
+					out.beginObject();
+					for( final ConfigNodeImpl child : node.tree( false ).values() ) {
+						out.name( child.getName() );
+						write( out, child );
+					}
+					out.endObject();
+			}
+		}
+
+		@Override
+		public ConfigNodeImpl read( JsonReader in ) throws IOException
+		{
+			throw new UnsupportedOperationException();
+		}
+	}
+
 	static private final Pattern SHORTCUT = Pattern.compile( "^([^${}:]*):(.+)$" );
 
-	static private class EvalResult
-	{
-
-		final String item;
-		final ConfigNode node;
-
-		EvalResult( String item )
-		{
-			this.item = item;
-			this.node = null;
-		}
-
-		EvalResult( ConfigNode node )
-		{
-			this.item = node.getValue();
-			this.node = node;
-		}
-	}
-
-	static private class Item
-	{
-
-		Expr parent;
-
-		@Override
-		public boolean equals( Object obj )
-		{
-			if( obj == this ) {
-				return true;
-			}
-			if( obj == null ) {
-				return false;
-			}
-
-			if( getClass() != obj.getClass() ) {
-				return false;
-			}
-
-			final Item that = (Item) obj;
-
-			return Objects.equals( toString(), that.toString() );
-		}
-	}
-
-	static private class Type extends Item
-	{
-
-		final Token.Type type;
-
-		Type( ascelion.config.impl.ItemTokenizer.Token.Type type )
-		{
-			this.type = type;
-		}
-
-		@Override
-		public String toString()
-		{
-			return this.type.value;
-		}
-	}
-
-	static private abstract class Eval extends Item
-	{
-
-		abstract EvalResult eval( ConfigNodeImpl root );
-
-		abstract boolean isEvaluable();
-	}
-
-	static private class Text extends Eval
-	{
-
-		final String text;
-
-		Text( String text )
-		{
-			this.text = text;
-		}
-
-		@Override
-		public String toString()
-		{
-			return this.text;
-		}
-
-		@Override
-		EvalResult eval( ConfigNodeImpl root )
-		{
-			return new EvalResult( this.text.replace( "\\:", ":" ) );
-		}
-
-		@Override
-		boolean isEvaluable()
-		{
-			return false;
-		}
-	}
-
-	static private class Expr extends Eval
-	{
-
-		static private final ThreadLocal<Deque<Expr>> CHAIN = new ThreadLocal<Deque<Expr>>()
-		{
-
-			@Override
-			protected Deque<Expr> initialValue()
-			{
-				return new LinkedList<>();
-			};
-		};
-
-		final List<Item> children = new ArrayList<>();
-		final List<Eval> val = new ArrayList<>();
-		final List<Eval> def = new ArrayList<>();
-		List<Eval> add = this.val;
-
-		@Override
-		public String toString()
-		{
-			return this.children.stream().map( Object::toString ).collect( joining() );
-		}
-
-		<T extends Item> T addChild( T child )
-		{
-			child.parent = this;
-
-			this.children.add( child );
-
-			if( child instanceof Eval ) {
-				this.add.add( (Eval) child );
-			}
-
-			return child;
-		}
-
-		@Override
-		EvalResult eval( ConfigNodeImpl root )
-		{
-			final StringBuilder b = new StringBuilder();
-
-			b.insert( 0, this );
-
-			CHAIN.get().forEach( x -> {
-				b.insert( 0, "->" );
-				b.insert( 0, x );
-				if( Objects.equals( this, x ) ) {
-					throw new ConfigLoopException( format( "recursive definition: %s", b ) );
-				}
-			} );
-
-			EvalResult result = eval( this.val, root );
-
-			if( isEvaluable() ) {
-				CHAIN.get().push( this );
-
-				try {
-					final ConfigNodeImpl node = root.findNode( result.item, false );
-
-					if( node != null ) {
-						result = new EvalResult( node );
-					}
-					else {
-						result = null;
-					}
-				}
-				finally {
-					CHAIN.get().pop();
-				}
-			}
-
-			if( result == null ) {
-				result = eval( this.def, root );
-			}
-
-			if( result == null && isEvaluable() ) {
-				throw new ConfigNotFoundException( toString() );
-			}
-
-			return result;
-		}
-
-		final EvalResult eval( List<Eval> elements, ConfigNodeImpl root )
-		{
-			switch( elements.size() ) {
-				case 0:
-					return null;
-
-				case 1:
-					return elements.get( 0 ).eval( root );
-
-				default:
-					return new EvalResult( elements.stream().map( rule -> rule.eval( root ).item ).collect( Collectors.joining() ) );
-			}
-		}
-
-		boolean isExpression()
-		{
-			return this.children.stream().anyMatch( c -> {
-				return Type.class.isInstance( c ) || Expr.class.isInstance( c );
-			} );
-		}
-
-		@Override
-		boolean isEvaluable()
-		{
-			return this.val.size() == 1 && this.children.size() > 2;
-		}
-
-		Expr seen( Token tok )
-		{
-			switch( tok.type ) {
-				case BEG: {
-					final Expr expr = addChild( new Expr() );
-
-					expr.addChild( new Type( Token.Type.BEG ) );
-
-					return expr;
-				}
-
-				case END:
-					addChild( new Type( tok.type ) );
-
-					return this.parent;
-
-				case DEF:
-					addChild( new Type( tok.type ) );
-
-					this.add = this.def;
-					;
-				break;
-
-				case STR: {
-					addChild( new Text( tok.text ) );
-				}
-				break;
-			}
-
-			return this;
-		}
-	}
-
-	static private class Listener implements ItemParser.Listener<Expr>
-	{
-
-		private Expr expr;
-
-		@Override
-		public void start()
-		{
-			this.expr = new Expr();
-		}
-
-		@Override
-		public void seen( Token tok )
-		{
-			this.expr = this.expr.seen( tok );
-		}
-
-		@Override
-		public Expr finish()
-		{
-			return this.expr;
-		}
-	}
-
-	private final String name;
-	private final String path;
-	private final ConfigNodeImpl root;
-	private Expr expr;
-	private Map<String, ConfigNodeImpl> tree;
+	final String path;
+	final ConfigNodeImpl root;
+	final String name;
+	private CachedItem item = new CachedItem( this );
 
 	public ConfigNodeImpl()
 	{
 		this.name = null;
 		this.path = null;
 		this.root = this;
-	}
-
-	private ConfigNodeImpl( ConfigNodeImpl root )
-	{
-		this.name = null;
-		this.path = null;
-		this.root = root;
 	}
 
 	private ConfigNodeImpl( String name, ConfigNodeImpl parent )
@@ -338,17 +99,19 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public String getValue()
+	public ConfigNode.Kind getKind()
 	{
-		if( this.expr == null ) {
-			return null;
-		}
-
-		return this.expr.eval( this.root ).item;
+		return this.item.kind();
 	}
 
 	@Override
-	public String getValue( String path )
+	public <T> T getValue()
+	{
+		return this.item.cached();
+	}
+
+	@Override
+	public <T> T getValue( String path )
 	{
 		if( isBlank( path ) ) {
 			throw new IllegalArgumentException( "Configuration path cannot be null or empty" );
@@ -359,13 +122,17 @@ final class ConfigNodeImpl implements ConfigNode
 			path = "${" + path + "}";
 		}
 
-		final ConfigNodeImpl node;
-		final Expr expr = ItemParser.parse( path, Listener::new );
+		final Expression expr = Expression.compile( this.root, path );
+		final ConfigNode node;
 
 		if( expr.isExpression() ) {
-			node = new ConfigNodeImpl( this.root );
+			final CachedItem val = expr.eval( this );
 
-			node.set( expr );
+			if( val.kind() != Kind.NODE ) {
+				return (T) val.cached();
+			}
+
+			node = (ConfigNode) val.cached();
 		}
 		else {
 			node = findNode( path, false );
@@ -390,11 +157,19 @@ final class ConfigNodeImpl implements ConfigNode
 			path = "${" + path + "}";
 		}
 
-		final Expr expr = ItemParser.parse( path, Listener::new );
+		final Expression expr = Expression.compile( this.root, path );
 		final ConfigNode node;
 
 		if( expr.isExpression() ) {
-			node = expr.eval( this.root ).node;
+			final CachedItem val = expr.eval( this );
+
+			if( val.kind() != Kind.NODE ) {
+				throw new ConfigNotFoundException( path );
+			}
+
+			val.cached();
+
+			node = val.node;
 		}
 		else {
 			node = findNode( path, false );
@@ -414,56 +189,78 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public Collection<? extends ConfigNode> getNodes()
-	{
-		return tree( false ).values();
-	}
-
-	@Override
 	public String toString()
 	{
 		final StringBuilder sb = new StringBuilder();
 
-		if( this.expr != null ) {
-			if( this.path != null ) {
-				sb.append( "[" );
-			}
-			sb.append( this.expr );
-		}
-		if( this.tree != null ) {
-			if( sb.length() > 0 ) {
-				sb.append( ", " );
-			}
-			else if( this.path != null ) {
-				sb.append( "[" );
-			}
+		switch( this.item.kindNoEval() ) {
+			case NULL:
+				sb.append( "<NULL>" );
+			break;
 
-			sb.append( this.tree.entrySet().stream().map( Object::toString ).collect( Collectors.joining( ", " ) ) );
-		}
-		if( this.path != null && sb.length() > 0 ) {
-			sb.append( "]" );
+			case ITEM:
+			case LINK:
+				sb.append( this.item.value().toString() );
+			break;
+
+			case NODE:
+				sb.append( tree( false ).entrySet().stream().map( Object::toString ).collect( joining( ", ", "{", "}" ) ) );
+			break;
 		}
 
 		return sb.toString();
 	}
 
-	String getLiteral()
+	String getExpression()
 	{
-		return Objects.toString( this.expr, null );
+		switch( this.item.kindNoEval() ) {
+			case ITEM:
+			case LINK:
+				return this.item.value().toString();
+
+			default:
+				return null;
+		}
+	}
+
+	CachedItem item()
+	{
+		return this.item;
 	}
 
 	Map<String, ConfigNodeImpl> tree( boolean create )
 	{
-		if( this.tree == null && create ) {
-			this.tree = new TreeMap<>();
+		final ConfigNode.Kind kind;
+
+		if( create ) {
+			switch( this.item.kind() ) {
+				case NULL:
+					this.item = new CachedItem( new TreeMap<>(), this );
+				case NODE:
+				break;
+
+				default:
+					throw new IllegalStateException();
+			}
+
+			kind = this.item.kind();
+		}
+		else {
+			kind = this.item.kindNoEval();
 		}
 
-		return this.tree != null ? this.tree : emptyMap();
+		switch( kind ) {
+			case NODE:
+				return this.item.cached();
+
+			default:
+				return emptyMap();
+		}
 	}
 
 	void set( String path, Object value )
 	{
-		final Expr expr = ItemParser.parse( path, Listener::new );
+		final Expression expr = Expression.compile( this.root, path );
 
 		if( expr != null && expr.isExpression() ) {
 			throw new IllegalArgumentException( path );
@@ -497,17 +294,15 @@ final class ConfigNodeImpl implements ConfigNode
 
 			return;
 		}
-		if( value instanceof Expr ) {
-			this.expr = (Expr) value;
-
-			return;
-		}
-
 		if( value != null ) {
-			this.expr = ItemParser.parse( Objects.toString( value, null ), Listener::new );
+			if( this.item.kind() == Kind.NODE ) {
+				throw new ConfigException( format( "Path: %s, cannot change value from NODE to ITEM", this.path ) );
+			}
+
+			this.item = new CachedItem( Expression.compile( this, value.toString() ), this );
 		}
 		else {
-			this.expr = null;
+			this.item = new CachedItem( this );
 		}
 	}
 
@@ -520,7 +315,7 @@ final class ConfigNodeImpl implements ConfigNode
 		return m;
 	}
 
-	private ConfigNodeImpl findNode( String path, boolean create )
+	ConfigNodeImpl findNode( String path, boolean create )
 	{
 		final String[] keys = keys( path );
 		ConfigNodeImpl node = this;
@@ -548,29 +343,34 @@ final class ConfigNodeImpl implements ConfigNode
 
 	private void fillMap( int unwrap, Map<String, String> m )
 	{
-		if( this.tree == null || this.tree.isEmpty() ) {
-			String p = getPath();
+		switch( this.item.kind() ) {
+			case NULL:
+			break;
 
-			if( isBlank( p ) ) {
-				return;
-			}
+			case ITEM: {
+				String p = this.path;
+				int u = unwrap;
 
-			int u = unwrap;
+				while( u-- > 0 ) {
+					final int x = p.indexOf( '.' );
 
-			while( u-- > 0 ) {
-				final int x = p.indexOf( '.' );
+					if( x < 0 ) {
+						throw new ConfigException( format( "Cannot unwrap %s from %s", p, getPath() ) );
+					}
 
-				if( x < 0 ) {
-					throw new IllegalStateException( format( "Cannot unwrap %s from %s", p, getPath() ) );
+					p = p.substring( x + 1 );
 				}
 
-				p = p.substring( x + 1 );
+				m.put( p, this.item.cached() );
 			}
+			break;
 
-			m.put( p, getValue() );
-		}
-		else {
-			this.tree.forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
+			case LINK:
+				( (ConfigNodeImpl) this.item.cached() ).tree( false ).forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
+			break;
+
+			case NODE:
+				tree( false ).forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
 		}
 	}
 
@@ -579,40 +379,82 @@ final class ConfigNodeImpl implements ConfigNode
 	{
 		final Set<String> set = new TreeSet<>();
 
-		fillEvaluables( this, set );
+		fillKeys( this, set );
 
 		return set;
 	}
 
-	static void fillEvaluables( ConfigNodeImpl node, Set<String> set )
+	static void fillKeys( ConfigNodeImpl node, Set<String> set )
 	{
-		if( node.expr != null ) {
-			if( node.path != null ) {
-				set.add( node.path );
-			}
+		switch( node.item.kindNoEval() ) {
+			case NULL:
+				if( node.path != null ) {
+					set.add( node.path );
+				}
+			break;
 
-			addKeys( set, node.expr.val );
-			addKeys( set, node.expr.def );
+			case ITEM:
+				if( node.path != null ) {
+					set.add( node.path );
+				}
+
+			case LINK:
+				addKeys( set, ( (Expression) node.item.value() ).val );
+				addKeys( set, ( (Expression) node.item.value() ).def );
+			break;
+
+			case NODE:
+				node.tree( false ).forEach( ( k, v ) -> fillKeys( v, set ) );
+			break;
 		}
-
-		node.tree( false ).forEach( ( k, v ) -> fillEvaluables( v, set ) );
 	}
 
-	static void addKeys( Set<String> set, List<Eval> evals )
+	static void addKeys( Set<String> set, List<Evaluable> evals )
 	{
 		evals.stream()
-			.filter( Expr.class::isInstance )
-			.map( Expr.class::cast )
+			.filter( Expression.class::isInstance )
+			.map( Expression.class::cast )
 			.filter( e -> e.isEvaluable() ).forEach( e -> set.add( e.val.get( 0 ).toString() ) );
 	}
 
 	void add( ConfigNodeImpl node )
 	{
-		this.expr = node.expr;
+		switch( node.item.kindNoEval() ) {
+			case NODE:
+				switch( this.item.kindNoEval() ) {
+					case NULL:
+					case NODE:
+						node.tree( false )
+							.forEach( ( k, v ) -> {
+								child( k, true ).add( v );
+							} );
+					break;
 
-		node.tree( false )
-			.forEach( ( k, v ) -> {
-				child( k, true ).add( v );
-			} );
+					case LINK:
+					case ITEM:
+						throw new ConfigException( format( "Path: %s, cannot change value from %s to NODE", this.path, this.item.kind() ) );
+				}
+			break;
+
+			default:
+				if( node.item.kindNoEval() == Kind.NODE ) {
+					throw new ConfigException( format( "Path: %s, cannot change value from NODE to ITEM", this.path ) );
+				}
+
+				this.item = new CachedItem( node.item.value(), this );
+		}
+//		if( this.value.kind == Kind.NODE ) {
+//			if( this.value.kind != Kind.NODE ) {
+//				this.cached = null;
+//			}
+//
+//			node.tree( false )
+//				.forEach( ( k, v ) -> {
+//					child( k, true ).add( v );
+//				} );
+//		}
+//		else {
+//			this.value = node.value;
+//		}
 	}
 }

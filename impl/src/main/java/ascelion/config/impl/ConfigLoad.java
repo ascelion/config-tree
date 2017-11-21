@@ -1,7 +1,6 @@
 
 package ascelion.config.impl;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -19,9 +18,6 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,40 +26,6 @@ public class ConfigLoad
 {
 
 	static private final Logger L = LoggerFactory.getLogger( ConfigLoad.class );
-
-	static class ConfigNodeTA extends TypeAdapter<ConfigNodeImpl>
-	{
-
-		@Override
-		public void write( JsonWriter out, ConfigNodeImpl root ) throws IOException
-		{
-			final String value = root.getLiteral();
-			final Map<String, ConfigNodeImpl> nodes = root.tree( false );
-
-			if( nodes != null ) {
-				out.beginObject();
-
-				if( value != null ) {
-					out.name( "@" ).value( value );
-				}
-				for( final ConfigNodeImpl node : nodes.values() ) {
-					out.name( node.getName() );
-					write( out, node );
-				}
-
-				out.endObject();
-			}
-			else {
-				out.value( value );
-			}
-		}
-
-		@Override
-		public ConfigNodeImpl read( JsonReader in ) throws IOException
-		{
-			throw new UnsupportedOperationException();
-		}
-	}
 
 	private final Map<String, ConfigReader> readers = new TreeMap<>();
 
@@ -99,7 +61,7 @@ public class ConfigLoad
 		if( L.isTraceEnabled() ) {
 			final String s = new GsonBuilder()
 				.setPrettyPrinting()
-				.registerTypeHierarchyAdapter( ConfigNode.class, new ConfigNodeTA() )
+				.registerTypeHierarchyAdapter( ConfigNode.class, new ConfigNodeImpl.ConfigNodeTA() )
 				.create()
 				.toJson( root );
 

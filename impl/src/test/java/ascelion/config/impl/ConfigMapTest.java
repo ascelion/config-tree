@@ -19,7 +19,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -33,7 +32,7 @@ public class ConfigMapTest
 {
 
 	static private final String PROP1 = "file.map1.values";
-	static private final String PROP2 = "file.map2.values";
+	static private final String PROP2 = "${file.map2.values}";
 
 	static <V> Object[] set( Type type, V... values )
 	{
@@ -114,7 +113,6 @@ public class ConfigMapTest
 	}
 
 	@Test
-	@Ignore
 	public void run2()
 	{
 		final Object o = CJ.getValue( this.type, PROP2, 1 );

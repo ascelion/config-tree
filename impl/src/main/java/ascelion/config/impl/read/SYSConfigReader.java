@@ -9,8 +9,6 @@ import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 
-import static org.apache.commons.lang3.StringUtils.trimToNull;
-
 @ConfigReader.Type( value = "SYS" )
 @ConfigSource( type = "SYS", priority = 400 )
 public class SYSConfigReader implements ConfigReader
@@ -22,7 +20,7 @@ public class SYSConfigReader implements ConfigReader
 		final Map<String, String> map = new HashMap<>();
 
 		keys.forEach( k -> {
-			final String v = trimToNull( System.getProperty( k ) );
+			final String v = System.getProperty( k );
 
 			if( v != null ) {
 				map.put( k, v );

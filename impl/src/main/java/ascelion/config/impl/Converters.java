@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
-import ascelion.config.api.ConfigNotFoundException;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -253,19 +252,7 @@ public class Converters implements ConfigConverter<Object>
 
 	private <T> Map<String, T> getMap( ConfigNode root, Type type, String prop, int unwrap )
 	{
-		ConfigNode node = root.getNode( prop );
-
-		try {
-			final String v = node.getValue();
-
-			if( v != null ) {
-				node = root.getNode( v );
-			}
-		}
-		catch( final ConfigNotFoundException e ) {
-			;
-		}
-
+		final ConfigNode node = root.getNode( prop );
 		final Map<String, T> m = new TreeMap<>();
 
 		node.asMap().forEach( ( k, v ) -> m.put( k, (T) create( type, v ) ) );

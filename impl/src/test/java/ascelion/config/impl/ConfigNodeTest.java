@@ -1,13 +1,17 @@
 
 package ascelion.config.impl;
 
+import java.util.Optional;
+
+import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
 
 import static java.util.Collections.singletonMap;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -41,10 +45,13 @@ public class ConfigNodeTest
 		assertThat( this.root.getValue( "a.b.c1.d1" ), is( "abcd11" ) );
 		assertThat( this.root.getValue( "a.b.c2.d2" ), is( "abcd22" ) );
 
-		this.root.set( "a.b", "ab" );
-		System.out.println( this.root );
-
-		assertThat( this.root.getValue( "a.b" ), is( "ab" ) );
+		try {
+			this.root.set( "a.b", "ab" );
+			fail();
+		}
+		catch( final ConfigException e ) {
+			;
+		}
 
 		final ConfigNode m = this.root.getNode( "a.b" );
 
@@ -91,20 +98,41 @@ public class ConfigNodeTest
 	}
 
 	@Test
+	public void keys()
+	{
+		this.root.set( "prop", null );
+
+		assertThat( this.root.getKeys(), contains( "prop" ) );
+	}
+
+	@Test
 	public void sys()
 	{
 		System.getProperties().forEach( ( k, v ) -> {
-			this.root.set( (String) k, ( (String) v ).replace( ":", "\\:" ) );
+			try {
+				try {
+					this.root.getNode( (String) k );
+					this.root.set( (String) k, ( (String) v ).replace( ":", "\\:" ) );
+				}
+				catch( final ConfigNotFoundException x ) {
+				}
+			}
+			catch( final UnsupportedOperationException e ) {
+				;
+			}
 		} );
 
-		System.getProperties().keySet().stream()
+		this.root.getKeys().stream()
 			.sorted()
 			.forEach( k -> {
-				final String p = (String) k;
-				final String v = trimToNull( System.getProperty( p ) );
-				final String o = this.root.getValue( p );
+				final String o = this.root.getValue( k );
+				String v = Optional.ofNullable( System.getProperty( k ) ).map( x -> x.replace( ":", "\\:" ) ).orElse( null );
 
-				assertThat( p, o, is( (Object) v ) );
+				if( v.isEmpty() ) {
+					v = null;
+				}
+
+				assertEquals( k, v, o );
 			} );
 	}
 

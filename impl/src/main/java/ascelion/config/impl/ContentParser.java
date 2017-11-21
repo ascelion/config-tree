@@ -14,20 +14,17 @@ import ascelion.config.api.ConfigParsePosition;
 import ascelion.config.impl.ItemTokenizer.Token;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
 
-final class ItemParser
+final class ContentParser
 {
 
 	static <T> T parse( String content, Supplier<Listener<T>> sup )
 	{
-		content = trimToNull( content );
-
 		if( content == null ) {
 			return null;
 		}
 
-		return new ItemParser( content ).parse( sup.get() );
+		return new ContentParser( content ).parse( sup.get() );
 	}
 
 	interface Listener<T>
@@ -42,7 +39,7 @@ final class ItemParser
 
 	private final String content;
 
-	private ItemParser( String content )
+	private ContentParser( String content )
 	{
 		this.content = content;
 	}

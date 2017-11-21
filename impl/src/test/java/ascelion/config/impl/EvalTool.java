@@ -230,7 +230,7 @@ public final class EvalTool
 		}
 	}
 
-	static class Listener implements ItemParser.Listener<Expr>
+	static class Listener implements ContentParser.Listener<Expr>
 	{
 
 		Expr root;
@@ -282,7 +282,7 @@ public final class EvalTool
 
 	static Expr parse( String content )
 	{
-		return ItemParser.parse( content, Listener::new );
+		return ContentParser.parse( content, Listener::new );
 	}
 
 	public static String eval( String value, ConfigNode root )
