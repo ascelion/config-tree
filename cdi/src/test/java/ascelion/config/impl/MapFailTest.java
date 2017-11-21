@@ -8,18 +8,17 @@ import java.util.Set;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
+import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
 import ascelion.tests.cdi.CdiUnit;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
 @UseConfigExtension
 @ConfigSource( "maps.yml" )
-@Ignore
 public class MapFailTest
 {
 
@@ -33,7 +32,7 @@ public class MapFailTest
 	@Inject
 	Instance<Bean> bean;
 
-	@Test( expected = UnsupportedOperationException.class )
+	@Test( expected = ConfigException.class )
 	public void run()
 	{
 		this.bean.get();

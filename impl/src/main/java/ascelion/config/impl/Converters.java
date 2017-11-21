@@ -255,7 +255,7 @@ public class Converters implements ConfigConverter<Object>
 		final ConfigNode node = root.getNode( prop );
 		final Map<String, T> m = new TreeMap<>();
 
-		node.asMap().forEach( ( k, v ) -> m.put( k, (T) create( type, v ) ) );
+		node.asMap( unwrap ).forEach( ( k, v ) -> m.put( k, (T) create( type, v ) ) );
 
 		return m;
 	}

@@ -106,7 +106,7 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 			transform = true;
 		}
 		if( cp != null && cp.value().length() > 0 ) {
-			val = cp + "." + val;
+			val = cp.value() + "." + val;
 
 			transform = true;
 		}

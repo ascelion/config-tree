@@ -16,14 +16,12 @@ import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
 @UseConfigExtension
 @ConfigSource( "maps.yml" )
-@Ignore
 public class MapTest
 {
 

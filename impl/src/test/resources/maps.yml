@@ -28,7 +28,7 @@ db2:
   pass: testtest
   escaped1: val1\\val2
   escaped2: val1\:val2
-  escaped3: \${xxx
+#  escaped3: \\${xxx
   javax:
     persistence:
       jdbc:

@@ -3,7 +3,6 @@ package ascelion.config.impl;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -122,7 +121,7 @@ final class ConfigNodeImpl implements ConfigNode
 			path = "${" + path + "}";
 		}
 
-		final Expression expr = Expression.compile( this.root, path );
+		final Expression expr = Expression.compile( path );
 		final ConfigNode node;
 
 		if( expr.isExpression() ) {
@@ -157,7 +156,7 @@ final class ConfigNodeImpl implements ConfigNode
 			path = "${" + path + "}";
 		}
 
-		final Expression expr = Expression.compile( this.root, path );
+		final Expression expr = Expression.compile( path );
 		final ConfigNode node;
 
 		if( expr.isExpression() ) {
@@ -183,9 +182,13 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public Map<String, String> asMap()
+	public Map<String, String> asMap( int unwrap )
 	{
-		return asMap( 0 );
+		final TreeMap<String, String> m = new TreeMap<>();
+
+		fillMap( unwrap, m );
+
+		return m;
 	}
 
 	@Override
@@ -260,7 +263,7 @@ final class ConfigNodeImpl implements ConfigNode
 
 	void set( String path, Object value )
 	{
-		final Expression expr = Expression.compile( this.root, path );
+		final Expression expr = Expression.compile( path );
 
 		if( expr != null && expr.isExpression() ) {
 			throw new IllegalArgumentException( path );
@@ -299,20 +302,11 @@ final class ConfigNodeImpl implements ConfigNode
 				throw new ConfigException( format( "Path: %s, cannot change value from NODE to ITEM", this.path ) );
 			}
 
-			this.item = new CachedItem( Expression.compile( this, value.toString() ), this );
+			this.item = new CachedItem( Expression.compile( value.toString() ), this );
 		}
 		else {
 			this.item = new CachedItem( this );
 		}
-	}
-
-	private Map<String, String> asMap( int unwrap )
-	{
-		final TreeMap<String, String> m = new TreeMap<>();
-
-		fillMap( unwrap, m );
-
-		return m;
 	}
 
 	ConfigNodeImpl findNode( String path, boolean create )
@@ -399,22 +393,13 @@ final class ConfigNodeImpl implements ConfigNode
 				}
 
 			case LINK:
-				addKeys( set, ( (Expression) node.item.value() ).val );
-				addKeys( set, ( (Expression) node.item.value() ).def );
+				set.addAll( ( (Expression) node.item.value() ).evaluables() );
 			break;
 
 			case NODE:
 				node.tree( false ).forEach( ( k, v ) -> fillKeys( v, set ) );
 			break;
 		}
-	}
-
-	static void addKeys( Set<String> set, List<Evaluable> evals )
-	{
-		evals.stream()
-			.filter( Expression.class::isInstance )
-			.map( Expression.class::cast )
-			.filter( e -> e.isEvaluable() ).forEach( e -> set.add( e.val.get( 0 ).toString() ) );
 	}
 
 	void add( ConfigNodeImpl node )
@@ -436,8 +421,11 @@ final class ConfigNodeImpl implements ConfigNode
 				}
 			break;
 
+			case NULL:
+			break;
+
 			default:
-				if( node.item.kindNoEval() == Kind.NODE ) {
+				if( this.item.kindNoEval() == Kind.NODE ) {
 					throw new ConfigException( format( "Path: %s, cannot change value from NODE to ITEM", this.path ) );
 				}
 

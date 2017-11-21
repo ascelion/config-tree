@@ -43,7 +43,7 @@ public class ConfigValueTest
 		@ConfigValue( "value1:20" )
 		Integer value1;
 
-		@ConfigValue( "value2" )
+		@ConfigValue( "${file.prop2}" )
 		int value2;
 
 		final String value3;
@@ -52,12 +52,12 @@ public class ConfigValueTest
 
 		String value5;
 
-		Bean1( @ConfigValue( "value3" ) String value3 )
+		Bean1( @ConfigValue( "value3:def_value3" ) String value3 )
 		{
 			this.value3 = value3;
 		}
 
-		void setValues( @ConfigValue( "value4" ) String value4, @ConfigValue( "value5" ) String value5 )
+		void setValues( @ConfigValue( "value4:${value5:def_value4}" ) String value4, @ConfigValue( "value5:def_value5" ) String value5 )
 		{
 			this.value4 = value4;
 			this.value5 = value5;
@@ -125,15 +125,30 @@ public class ConfigValueTest
 	@ConfigValue( value = "file.map1.values", unwrap = 2 )
 	private Map<String, List<String>> map15;
 
+	@ConfigValue( value = "${file.map2.values}" )
+	private Map<String, String> map21;
+
+	@ConfigValue( value = "${file.map2.values}", unwrap = 1 )
+	private Map<String, Integer[]> map22;
+
+	@ConfigValue( value = "${file.map2.values}", unwrap = 2 )
+	private Map<String, String[]> map23;
+
+	@ConfigValue( value = "${file.map2.values}", unwrap = 1 )
+	private Map<String, Set<Integer>> map24;
+
+	@ConfigValue( value = "${file.map2.values}", unwrap = 2 )
+	private Map<String, List<String>> map25;
+
 	@Test
 	public void run()
 	{
 		assertThat( this.bean1, is( notNullValue() ) );
 		assertThat( this.bean1.value1, is( 20 ) );
 		assertThat( this.bean1.value2, is( 314 ) );
-		assertThat( this.bean1.value3, is( "value3" ) );
-		assertThat( this.bean1.value4, is( "value4" ) );
-		assertThat( this.bean1.value5, is( "value5" ) );
+		assertThat( this.bean1.value3, is( "def_value3" ) );
+		assertThat( this.bean1.value4, is( "def_value4" ) );
+		assertThat( this.bean1.value5, is( "def_value5" ) );
 
 		assertThat( this.bean2, is( notNullValue() ) );
 

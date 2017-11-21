@@ -24,15 +24,17 @@ class VALConfigReader implements ConfigReader
 	{
 		final Map<String, String> map = new HashMap<>();
 
+		addAll( map, keys );
+
 		this.ext.values().forEach( a -> {
-			final ConfigNodeImpl node = new ConfigNodeImpl();
-			final String v = a.value();
-
-			node.set( v );
-
-			node.getKeys().forEach( k -> map.put( k, null ) );
+			addAll( map, Expression.compile( a.value() ).evaluables() );
 		} );
 
 		return map;
+	}
+
+	private void addAll( Map<String, String> map, Set<String> evaluables )
+	{
+		evaluables.forEach( e -> map.put( e, null ) );
 	}
 }

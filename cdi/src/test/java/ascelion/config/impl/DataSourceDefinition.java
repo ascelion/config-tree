@@ -23,8 +23,8 @@ public interface DataSourceDefinition
 
 	String getPassword();
 
-	// TODO
-	//int[] values();
+	int[] intValues();
+
 	Integer[] values();
 
 	String url();

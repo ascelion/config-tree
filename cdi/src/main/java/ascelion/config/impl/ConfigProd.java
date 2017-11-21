@@ -20,9 +20,12 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
 import ascelion.config.api.ConfigConverter;
+import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigValue;
+
+import static java.lang.String.format;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +69,14 @@ class ConfigProd
 			}
 		}
 
-		return this.conv.getValue( this.root, t, a.value(), a.unwrap() );
+		try {
+			return this.conv.getValue( this.root, t, a.value(), a.unwrap() );
+		}
+		catch( final ConfigException e ) {
+			L.error( format( "%s ", ip.getAnnotated() ), e );
+
+			throw e;
+		}
 	}
 
 	@PostConstruct

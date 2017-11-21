@@ -3,9 +3,12 @@ package ascelion.config.impl;
 
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigNode.Kind;
 import ascelion.config.api.ConfigNotFoundException;
@@ -17,7 +20,7 @@ import static java.util.stream.Collectors.joining;
 final class Expression extends Evaluable
 {
 
-	static Expression compile( ConfigNodeImpl node, String content )
+	static Expression compile( String content )
 	{
 		return ContentParser.parse( content, Expression.Listener::new );
 	}
@@ -129,6 +132,44 @@ final class Expression extends Evaluable
 		return item;
 	}
 
+	boolean isExpression()
+	{
+		return this.children.stream().anyMatch( c -> {
+			return TypeItem.class.isInstance( c ) || Expression.class.isInstance( c );
+		} );
+	}
+
+	@Override
+	boolean isEvaluable()
+	{
+		return this.val.size() == 1 && this.children.size() > 2;
+	}
+
+	Set<String> evaluables()
+	{
+		final Set<String> set = new HashSet<>();
+
+		evaluables( Stream.of( this ), set );
+
+		return set;
+	}
+
+	private void evaluables( Stream<? extends Evaluable> stm, Set<String> set )
+	{
+		stm.filter( Expression.class::isInstance )
+			.map( Expression.class::cast )
+			.forEach( e -> {
+				if( e.isEvaluable() ) {
+					set.add( e.val.get( 0 ).toString() );
+				}
+				else {
+					evaluables( e.val.stream(), set );
+				}
+
+				evaluables( e.def.stream(), set );
+			} );
+	}
+
 	private CachedItem eval( List<Evaluable> elements, ConfigNodeImpl node )
 	{
 		switch( elements.size() ) {
@@ -155,20 +196,7 @@ final class Expression extends Evaluable
 		}
 	}
 
-	boolean isExpression()
-	{
-		return this.children.stream().anyMatch( c -> {
-			return TypeItem.class.isInstance( c ) || Expression.class.isInstance( c );
-		} );
-	}
-
-	@Override
-	boolean isEvaluable()
-	{
-		return this.val.size() == 1 && this.children.size() > 2;
-	}
-
-	Expression seen( Token tok )
+	private Expression seen( Token tok )
 	{
 		switch( tok.type ) {
 			case BEG: {
