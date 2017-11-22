@@ -162,12 +162,11 @@ final class ConfigNodeImpl implements ConfigNode
 		if( expr.isExpression() ) {
 			final CachedItem val = expr.eval( this );
 
-			if( val.kind() == Kind.LINK ) {
-				node = val.cached();
+			if( val.isDefault() ) {
+				throw new ConfigNotFoundException( path );
 			}
-			else {
-				node = val.node;
-			}
+
+			node = val.node();
 		}
 		else {
 			node = findNode( path, false );

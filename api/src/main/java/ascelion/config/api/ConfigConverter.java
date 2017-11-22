@@ -6,6 +6,11 @@ import java.lang.reflect.Type;
 public interface ConfigConverter<T>
 {
 
+	default boolean isNullHandled()
+	{
+		return false;
+	}
+
 	default T create( Type t, ConfigNode u, int unwrap )
 	{
 		return create( t, (String) u.getValue(), unwrap );

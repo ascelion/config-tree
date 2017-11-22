@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.api.ConfigValue;
 
 import static ascelion.config.impl.Utils.methodsOf;
@@ -52,7 +53,12 @@ final class InterfaceValue implements InvocationHandler
 		if( this.names.containsKey( method ) ) {
 			final ConfigValue a = this.names.get( method );
 
-			return this.conv.getValue( method.getGenericReturnType(), this.node.apply( a.value() ), a.unwrap() );
+			try {
+				return this.conv.getValue( method.getGenericReturnType(), this.node.apply( a.value() ), a.unwrap() );
+			}
+			catch( final ConfigNotFoundException e ) {
+				return this.conv.getValue( method.getGenericReturnType(), (String) null, a.unwrap() );
+			}
 		}
 
 		throw new NoSuchMethodError( format( "%s#%s", this.type.getName(), method.getName() ) );

@@ -76,4 +76,9 @@ class ArrayConverter<T> implements ConfigConverter<T[]>
 			.toArray( n -> (T[]) Array.newInstance( this.type, n ) );
 	}
 
+	@Override
+	public boolean isNullHandled()
+	{
+		return true;
+	}
 }

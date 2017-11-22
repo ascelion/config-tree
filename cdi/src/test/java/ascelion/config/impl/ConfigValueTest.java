@@ -44,7 +44,7 @@ public class ConfigValueTest
 		@ConfigValue( "value1:20" )
 		Integer value1;
 
-		@ConfigValue( "${file.prop2}" )
+		@ConfigValue( "value2:314" )
 		int value2;
 
 		final String value3;

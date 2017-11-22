@@ -61,7 +61,7 @@ public class ConfigNodeTest
 	}
 
 	@Test
-	public void expr()
+	public void values()
 	{
 		this.root.set( "item1", "${item2}" );
 		this.root.set( "item2", "value" );
@@ -89,6 +89,49 @@ public class ConfigNodeTest
 		assertThat( d1, is( "def_val" ) );
 		assertThat( d2, is( "def_val" ) );
 		assertThat( d3, is( "def_val_2" ) );
+	}
+
+	@Test
+	public void nodes()
+	{
+		this.root.set( "item1", "${item2}" );
+		this.root.set( "item2", "value" );
+		this.root.set( "item12", "${item1}-${item2}" );
+		this.root.set( "def1", "${undefined:def_val}" );
+		this.root.set( "def2", "${undefined:${def1}}" );
+
+		final ConfigNode v1 = this.root.getNode( "item1" );
+		final ConfigNode v2 = this.root.getNode( "${item2}" );
+		final ConfigNode v12 = this.root.getNode( "item12" );
+		final ConfigNode d1 = this.root.getNode( "def1" );
+		final ConfigNode d2 = this.root.getNode( "def2" );
+
+		try {
+			this.root.getNode( "undefined:def_val_2" );
+			fail( "expecting not found" );
+		}
+		catch( final ConfigNotFoundException e ) {
+			;
+		}
+		try {
+			this.root.getNode( "${undefined:def_val_2}" );
+			fail( "expecting not found" );
+		}
+		catch( final ConfigNotFoundException e ) {
+			;
+		}
+
+		System.out.printf( "item1 = %s\n", v1 );
+		System.out.printf( "item2 = %s\n", v2 );
+		System.out.printf( "item12 = %s\n", v12 );
+		System.out.printf( "def1 = %s\n", d1 );
+		System.out.printf( "def2 = %s\n", d2 );
+
+		assertThat( v1.getValue(), is( "value" ) );
+		assertThat( v2.getValue(), is( "value" ) );
+		assertThat( v12.getValue(), is( "value-value" ) );
+		assertThat( d1.getValue(), is( "def_val" ) );
+		assertThat( d2.getValue(), is( "def_val" ) );
 	}
 
 	@Test( expected = IllegalArgumentException.class )

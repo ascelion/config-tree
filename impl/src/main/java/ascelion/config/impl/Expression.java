@@ -107,7 +107,7 @@ final class Expression extends Evaluable
 				final ConfigNodeImpl found = node.root.findNode( (String) item.cached(), false );
 
 				if( found == null ) {
-					item = new CachedItem();
+					item = new CachedItem( node );
 				}
 				else {
 					item = found.item();
@@ -123,6 +123,7 @@ final class Expression extends Evaluable
 
 		if( item.kind() == Kind.NULL ) {
 			item = eval( this.def, node );
+			item = new CachedItem( item.value(), item.node(), true );
 		}
 
 		if( isEvaluable() && item.kind() == Kind.NULL ) {

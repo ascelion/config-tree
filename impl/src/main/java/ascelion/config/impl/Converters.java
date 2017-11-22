@@ -93,13 +93,13 @@ public final class Converters
 		add( Float.class, Float::parseFloat );
 		add( Double.class, Double::parseDouble );
 
-		add( boolean.class, ExtraConverters.wrap( ExtraConverters::createBoolean ) );
-		add( byte.class, ExtraConverters.wrap( Byte::parseByte ) );
-		add( short.class, ExtraConverters.wrap( Short::parseShort ) );
-		add( int.class, ExtraConverters.wrap( Integer::parseInt ) );
-		add( long.class, ExtraConverters.wrap( Long::parseLong ) );
-		add( float.class, ExtraConverters.wrap( Float::parseFloat ) );
-		add( double.class, ExtraConverters.wrap( Double::parseDouble ) );
+		add( boolean.class, ExtraConverters::createBoolean );
+		add( byte.class, Byte::parseByte );
+		add( short.class, Short::parseShort );
+		add( int.class, Integer::parseInt );
+		add( long.class, Long::parseLong );
+		add( float.class, Float::parseFloat );
+		add( double.class, Double::parseDouble );
 
 		add( String.class, u -> u );
 
@@ -154,7 +154,7 @@ public final class Converters
 		wrLock.lock();
 
 		try {
-			this.cached.put( t, c );
+			put( t, c );
 		}
 		finally {
 			wrLock.unlock();
@@ -180,7 +180,7 @@ public final class Converters
 				wrLock.lock();
 
 				try {
-					this.cached.put( t, s.get() );
+					put( t, s.get() );
 				}
 				finally {
 					wrLock.unlock();
@@ -245,14 +245,14 @@ public final class Converters
 						.orElse( null );
 
 					if( c != null ) {
-						this.cached.put( type, c );
+						put( type, c );
 
 						return c;
 					}
 
 					c = inferConverter( type );
 
-					this.cached.put( type, c );
+					put( type, c );
 
 					return c;
 				}
@@ -330,14 +330,22 @@ public final class Converters
 		throw new ConfigException( format( "NO WAY to construct a %s", type.getTypeName() ) );
 	}
 
-	private void add( Class<?> type, Function<String, ?> func )
+	private void add( Type type, Function<String, ?> func )
 	{
 		put( type, ( t, u, x ) -> func.apply( u ) );
 	}
 
-	private void put( Class<?> type, ConfigConverter<?> conv )
+	private void put( Type type, ConfigConverter<?> conv )
 	{
-		this.cached.put( type, conv );
+		if( type instanceof Class<?> && ( (Class) type ).isPrimitive() ) {
+			this.cached.put( type, PrimitiveConverter.wrap( conv ) );
+		}
+		else if( conv.isNullHandled() ) {
+			this.cached.put( type, conv );
+		}
+		else {
+			this.cached.put( type, NullableConverter.wrap( conv ) );
+		}
 	}
 
 	private <T> void add( ConfigConverter<T> c )
@@ -349,7 +357,6 @@ public final class Converters
 			throw new IllegalArgumentException( format( "No type information for converter %s", cls.getName() ) );
 		}
 
-		this.cached.put( t, c );
+		put( t, c );
 	}
-
 }

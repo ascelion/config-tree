@@ -8,14 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigException;
 
 import static ascelion.config.impl.Utils.values;
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 class ExtraConverters
 {
@@ -57,17 +55,6 @@ class ExtraConverters
 		catch( final ClassNotFoundException e ) {
 			throw new ConfigException( x, e );
 		}
-	}
-
-	static <T> Function<String, T> wrap( Function<String, T> conv )
-	{
-		return x -> {
-			if( isBlank( x ) ) {
-				x = "0";
-			}
-
-			return conv.apply( x );
-		};
 	}
 
 	static Boolean createBoolean( String x )

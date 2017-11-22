@@ -77,4 +77,10 @@ abstract class ListConverter<T> implements ConfigConverter<List<T>>
 			.collect( toList() );
 	}
 
+	@Override
+	public boolean isNullHandled()
+	{
+		return true;
+	}
+
 }

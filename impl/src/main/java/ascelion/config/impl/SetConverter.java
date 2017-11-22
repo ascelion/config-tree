@@ -76,4 +76,10 @@ class SetConverter<T> implements ConfigConverter<Set<T>>
 			.map( x -> this.conv.create( this.type, x ) )
 			.collect( toSet() );
 	}
+
+	@Override
+	public boolean isNullHandled()
+	{
+		return true;
+	}
 }

@@ -9,26 +9,26 @@ import ascelion.config.api.ConfigNode.Kind;
 final class CachedItem
 {
 
-	ConfigNodeImpl node;
+	private ConfigNodeImpl node;
 	private Kind kind;
 	private final Object value;
 	private Object cached = null;
-
-	CachedItem()
-	{
-		this.node = null;
-		this.kind = Kind.NULL;
-		this.value = null;
-	}
+	private final boolean def;
 
 	CachedItem( ConfigNodeImpl node )
 	{
 		this.node = node;
 		this.kind = Kind.NULL;
 		this.value = null;
+		this.def = false;
 	}
 
 	CachedItem( Object item, ConfigNodeImpl node )
+	{
+		this( item, node, false );
+	}
+
+	CachedItem( Object item, ConfigNodeImpl node, boolean def )
 	{
 		this.node = node;
 
@@ -55,6 +55,7 @@ final class CachedItem
 		}
 
 		this.value = item;
+		this.def = def;
 	}
 
 	@Override
@@ -83,7 +84,7 @@ final class CachedItem
 		return sb.toString();
 	}
 
-	public Kind kindNoEval()
+	Kind kindNoEval()
 	{
 		return this.kind;
 	}
@@ -93,6 +94,16 @@ final class CachedItem
 		cached();
 
 		return this.kind;
+	}
+
+	boolean isDefault()
+	{
+		return this.def;
+	}
+
+	ConfigNodeImpl node()
+	{
+		return this.node;
 	}
 
 	<T> T value()

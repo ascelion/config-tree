@@ -80,6 +80,12 @@ public class ConvertersTest
 
 			throw new UnsupportedOperationException();
 		}
+
+		@Override
+		public boolean isNullHandled()
+		{
+			return true;
+		}
 	}
 
 	static class Derived1CVT implements ConfigConverter<Derived1>
@@ -90,6 +96,12 @@ public class ConvertersTest
 		{
 			return new Derived1( this );
 		}
+
+		@Override
+		public boolean isNullHandled()
+		{
+			return true;
+		}
 	}
 
 	static class Derived2CVT implements ConfigConverter<Derived2>
@@ -99,6 +111,12 @@ public class ConvertersTest
 		public Derived2 create( Type t, String u, int unwrap )
 		{
 			return new Derived2( this );
+		}
+
+		@Override
+		public boolean isNullHandled()
+		{
+			return true;
 		}
 	}
 

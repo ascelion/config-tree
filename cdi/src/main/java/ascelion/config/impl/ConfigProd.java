@@ -20,8 +20,8 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
 import ascelion.config.api.ConfigConverter;
-import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigValue;
 
@@ -69,15 +69,13 @@ class ConfigProd
 			}
 		}
 
+		L.trace( format( "%s -> %s ", a.value(), ip.getAnnotated() ) );
+
 		try {
-			final ConfigNode node = this.root.getNode( a.value() );
-
-			return this.conv.getValue( t, node, a.unwrap() );
+			return this.conv.getValue( t, this.root.getNode( a.value() ), a.unwrap() );
 		}
-		catch( final ConfigException e ) {
-			L.error( format( "%s ", ip.getAnnotated() ), e );
-
-			throw e;
+		catch( final ConfigNotFoundException e ) {
+			return this.conv.getValue( t, (String) this.root.getValue( a.value() ), a.unwrap() );
 		}
 	}
 
