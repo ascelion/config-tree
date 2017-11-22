@@ -2,7 +2,6 @@
 package ascelion.config.impl;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -24,19 +23,16 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static java.util.Collections.emptyMap;
+import static ru.vyarus.java.generics.resolver.util.TypeToStringUtils.toStringType;
 
-import com.google.common.primitives.Primitives;
-
-public class Converters implements ConfigConverter<Object>
+public final class Converters
 {
 
 	static final TypeVariable<? extends Class<?>> CV_TYPE = ConfigConverter.class.getTypeParameters()[0];
@@ -46,33 +42,6 @@ public class Converters implements ConfigConverter<Object>
 	private final Map<Type, ConfigConverter<?>> cached = new TreeMap<>( Converters::compare );
 
 	private final ReadWriteLock RW_LOCK = new ReentrantReadWriteLock();
-
-	static private String toString( Type type )
-	{
-		if( type instanceof Class<?> ) {
-			return ( (Class) type ).getName();
-		}
-		if( type instanceof ParameterizedType ) {
-			final StringBuilder b = new StringBuilder();
-			final ParameterizedType t = (ParameterizedType) type;
-
-			b.append( toString( t.getRawType() ) );
-			b.append( Stream.of( t.getActualTypeArguments() ).map( Converters::toString ).collect( Collectors.joining( ", ", "<", ">" ) ) );
-
-			return b.toString();
-		}
-		if( type instanceof GenericArrayType ) {
-			final StringBuilder b = new StringBuilder();
-			final GenericArrayType t = (GenericArrayType) type;
-
-			b.append( toString( t.getGenericComponentType() ) );
-			b.append( "[]" );
-
-			return b.toString();
-		}
-
-		throw new UnsupportedOperationException( type.getClass().getName() );
-	}
 
 	static private int compare( Type t1, Type t2 )
 	{
@@ -95,7 +64,7 @@ public class Converters implements ConfigConverter<Object>
 			return +1;
 		}
 
-		return toString( t1 ).compareTo( toString( t2 ) );
+		return toStringType( t1, emptyMap() ).compareTo( toStringType( t2, emptyMap() ) );
 	}
 
 	static private boolean isBaseOf( Type t1, Type t2 )
@@ -112,9 +81,26 @@ public class Converters implements ConfigConverter<Object>
 
 	public Converters()
 	{
-		put( Enum.class, ( t, u ) -> Enum.valueOf( (Class) t, u ) );
+		put( Enum.class, ( t, u, x ) -> Enum.valueOf( (Class) t, u ) );
 
 		add( Class.class, ExtraConverters::createClass );
+
+		add( Boolean.class, ExtraConverters::createBoolean );
+		add( Byte.class, Byte::parseByte );
+		add( Short.class, Short::parseShort );
+		add( Integer.class, Integer::parseInt );
+		add( Long.class, Long::parseLong );
+		add( Float.class, Float::parseFloat );
+		add( Double.class, Double::parseDouble );
+
+		add( boolean.class, ExtraConverters.wrap( ExtraConverters::createBoolean ) );
+		add( byte.class, ExtraConverters.wrap( Byte::parseByte ) );
+		add( short.class, ExtraConverters.wrap( Short::parseShort ) );
+		add( int.class, ExtraConverters.wrap( Integer::parseInt ) );
+		add( long.class, ExtraConverters.wrap( Long::parseLong ) );
+		add( float.class, ExtraConverters.wrap( Float::parseFloat ) );
+		add( double.class, ExtraConverters.wrap( Double::parseDouble ) );
+
 		add( String.class, u -> u );
 
 		add( Duration.class, Duration::parse );
@@ -131,20 +117,20 @@ public class Converters implements ConfigConverter<Object>
 		add( long[].class, ExtraConverters::createLongA );
 		add( double[].class, ExtraConverters::createDoubleA );
 
-		add( new ArrayConverter.IntArray( self() ) );
-		add( new ArrayConverter.LongArray( self() ) );
-		add( new ArrayConverter.DoubleArray( self() ) );
-		add( new ArrayConverter.StringArray( self() ) );
+		add( new ArrayConverter.IntArray( this::getValue ) );
+		add( new ArrayConverter.LongArray( this::getValue ) );
+		add( new ArrayConverter.DoubleArray( this::getValue ) );
+		add( new ArrayConverter.StringArray( this::getValue ) );
 
-		add( new ListConverter.IntList( self() ) );
-		add( new ListConverter.LongList( self() ) );
-		add( new ListConverter.DoubleList( self() ) );
-		add( new ListConverter.StringList( self() ) );
+		add( new ListConverter.IntList( this::getValue ) );
+		add( new ListConverter.LongList( this::getValue ) );
+		add( new ListConverter.DoubleList( this::getValue ) );
+		add( new ListConverter.StringList( this::getValue ) );
 
-		add( new SetConverter.IntSet( self() ) );
-		add( new SetConverter.LongSet( self() ) );
-		add( new SetConverter.DoubleSet( self() ) );
-		add( new SetConverter.StringSet( self() ) );
+		add( new SetConverter.IntSet( this::getValue ) );
+		add( new SetConverter.LongSet( this::getValue ) );
+		add( new SetConverter.DoubleSet( this::getValue ) );
+		add( new SetConverter.StringSet( this::getValue ) );
 	}
 
 	public void register( ConfigConverter<?> c )
@@ -209,63 +195,27 @@ public class Converters implements ConfigConverter<Object>
 		}
 	}
 
-	@Override
-	public Object create( Type t, String u )
+	public <T> T getValue( Type t, ConfigNode u )
 	{
-		if( t instanceof Class ) {
-			final Class<?> c = (Class<?>) t;
-
-			if( c.isPrimitive() ) {
-				t = Primitives.wrap( c );
-
-				if( isBlank( u ) ) {
-					u = "0";
-				}
-			}
-		}
-		if( u == null ) {
-			return null;
-		}
-
-		return getConverter( t ).create( t, u );
+		return getValue( t, u, 0 );
 	}
 
-	@Override
-	public Object create( Class<? super Object> t, String u )
+	public <T> T getValue( Type t, ConfigNode u, int unwrap )
 	{
-		return getConverter( t ).create( t, u );
+		return (T) getConverter( t ).create( t, u, unwrap );
 	}
 
-	public <T> T getValue( ConfigNode root, Type type, String prop, int unwrap )
+	public <T> T getValue( Type t, String u )
 	{
-		if( type instanceof ParameterizedType ) {
-			final ParameterizedType pt = (ParameterizedType) type;
-			final Type raw = pt.getRawType();
-
-			if( raw.equals( Map.class ) ) {
-				return (T) getMap( root, pt.getActualTypeArguments()[1], prop, unwrap );
-			}
-		}
-
-		return (T) create( type, root.getValue( prop ) );
+		return getValue( t, u, 0 );
 	}
 
-	private <T> Map<String, T> getMap( ConfigNode root, Type type, String prop, int unwrap )
+	public <T> T getValue( Type t, String u, int unwrap )
 	{
-		final ConfigNode node = root.getNode( prop );
-		final Map<String, T> m = new TreeMap<>();
-
-		node.asMap( unwrap ).forEach( ( k, v ) -> m.put( k, (T) create( type, v ) ) );
-
-		return m;
+		return (T) getConverter( t ).create( t, u, unwrap );
 	}
 
-	<X> ConfigConverter<X> self()
-	{
-		return (ConfigConverter<X>) this;
-	}
-
-	private ConfigConverter<Object> getConverter( Type type )
+	private <T> ConfigConverter<T> getConverter( Type type )
 	{
 		final Lock rdLock = this.RW_LOCK.readLock();
 
@@ -273,7 +223,7 @@ public class Converters implements ConfigConverter<Object>
 
 		try {
 			if( this.cached.containsKey( type ) ) {
-				return (ConfigConverter<Object>) this.cached.get( type );
+				return (ConfigConverter<T>) this.cached.get( type );
 			}
 
 			rdLock.unlock();
@@ -285,12 +235,12 @@ public class Converters implements ConfigConverter<Object>
 
 				try {
 					if( this.cached.containsKey( type ) ) {
-						return (ConfigConverter<Object>) this.cached.get( type );
+						return (ConfigConverter<T>) this.cached.get( type );
 					}
 
-					ConfigConverter<Object> c = this.cached.entrySet().stream()
+					ConfigConverter<T> c = this.cached.entrySet().stream()
 						.filter( e -> isBaseOf( e.getKey(), type ) )
-						.map( e -> (ConfigConverter<Object>) e.getValue() )
+						.map( e -> (ConfigConverter<T>) e.getValue() )
 						.findFirst()
 						.orElse( null );
 
@@ -319,7 +269,7 @@ public class Converters implements ConfigConverter<Object>
 		}
 	}
 
-	private ConfigConverter<Object> inferConverter( Type type )
+	private <T> ConfigConverter<T> inferConverter( Type type )
 	{
 		if( type instanceof Class ) {
 			final Class<?> cls = (Class<?>) type;
@@ -327,9 +277,9 @@ public class Converters implements ConfigConverter<Object>
 			try {
 				final Constructor<?> c = cls.getConstructor( String.class );
 
-				return ( t, u ) -> {
+				return ( t, u, x ) -> {
 					try {
-						return (Object) c.newInstance( u );
+						return (T) c.newInstance( u );
 					}
 					catch( InstantiationException | IllegalAccessException e ) {
 						throw new ConfigException( u, e.getCause() );
@@ -350,9 +300,9 @@ public class Converters implements ConfigConverter<Object>
 						continue;
 					}
 
-					return ( t, u ) -> {
+					return ( t, u, x ) -> {
 						try {
-							return m.invoke( null, u );
+							return (T) m.invoke( null, u );
 						}
 						catch( final IllegalAccessException e ) {
 							throw new ConfigException( u, e );
@@ -366,27 +316,31 @@ public class Converters implements ConfigConverter<Object>
 				}
 			}
 		}
+		if( type instanceof ParameterizedType ) {
+			final ParameterizedType pt = (ParameterizedType) type;
+			final Type rt = pt.getRawType();
 
-		throw new ConfigException( format( "NO WAY to construct a %s from a string", type.getTypeName() ) );
-	}
+			if( rt.equals( Map.class ) ) {
+				return new MapConverter( pt.getActualTypeArguments()[1], ( t, u, x ) -> getValue( t, u, x ) );
+			}
 
-	private <X> void add( Class<X> type, Function<String, X> func )
-	{
-		put( type, ( t, u ) -> func.apply( u ) );
-	}
-
-	private <X> void put( Class<X> type, ConfigConverter<X> conv )
-	{
-		final Class<X> wrap = Primitives.wrap( type );
-
-		if( wrap != type ) {
-			this.cached.put( wrap, conv );
+			return getConverter( rt );
 		}
 
+		throw new ConfigException( format( "NO WAY to construct a %s", type.getTypeName() ) );
+	}
+
+	private void add( Class<?> type, Function<String, ?> func )
+	{
+		put( type, ( t, u, x ) -> func.apply( u ) );
+	}
+
+	private void put( Class<?> type, ConfigConverter<?> conv )
+	{
 		this.cached.put( type, conv );
 	}
 
-	private void add( ConfigConverter<?> c )
+	private <T> void add( ConfigConverter<T> c )
 	{
 		final Class<? extends ConfigConverter> cls = c.getClass();
 		final Type t = Utils.converterType( cls );

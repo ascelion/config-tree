@@ -27,3 +27,7 @@ databases:
     user: test2
     password: test2test2
     url: jdbc\:postgresql\:test2
+    properties:
+
+  db3: ${databases.db1}
+  db4: ${databases.db2}

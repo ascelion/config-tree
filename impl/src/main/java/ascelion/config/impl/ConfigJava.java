@@ -80,6 +80,11 @@ public final class ConfigJava
 		return this.root;
 	}
 
+	public Converters getConverter()
+	{
+		return this.cvs;
+	}
+
 	private ConfigReader create( Class<? extends ConfigReader> t )
 	{
 		try {
@@ -97,10 +102,5 @@ public final class ConfigJava
 		}
 
 		return this.filters.stream().anyMatch( p -> p.test( src ) );
-	}
-
-	public <T> T getValue( Type type, String prop, int unwrap )
-	{
-		return this.cvs.getValue( root(), type, prop, unwrap );
 	}
 }

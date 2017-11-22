@@ -23,6 +23,7 @@ public interface DataSourceDefinition
 
 	String getPassword();
 
+	@ConfigValue( "values" )
 	int[] intValues();
 
 	Integer[] values();

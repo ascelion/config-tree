@@ -128,7 +128,7 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 
 		final Class<? extends ConfigConverter<?>> c = (Class<? extends ConfigConverter<?>>) cv.converter();
 
-		if( c != ConfigConverter.class ) {
+		if( !ConfigConverter.class.equals( c ) ) {
 			this.converters.add( c );
 		}
 	}

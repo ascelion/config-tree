@@ -29,6 +29,8 @@ dependencies {
 	testRuntime 'org.slf4j:jcl-over-slf4j'
 	testRuntime 'org.slf4j:log4j-over-slf4j'
 	testRuntime 'ch.qos.logback:logback-classic'
+
+	testRuntime 'org.postgresql:postgresql'
 }
 
 configurations {

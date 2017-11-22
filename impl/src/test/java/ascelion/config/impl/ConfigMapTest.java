@@ -31,15 +31,16 @@ import org.junit.runners.Parameterized;
 public class ConfigMapTest
 {
 
-	static private final String PROP1 = "file.map1.values";
-	static private final String PROP2 = "${file.map2.values}";
+	static private final String PREFIX = "file";
+	static private final String PROP1 = PREFIX + ".map1.values";
+	static private final String PROP2 = "${" + PREFIX + ".map2.values}";
 
 	static <V> Object[] set( Type type, V... values )
 	{
 		final Map<String, V> m = new HashMap<>();
 
 		for( final V v : values ) {
-			m.put( format( "%s.VAL%d", PROP1, m.size() ), v );
+			m.put( format( "%s.VAL%d", PROP1.substring( PREFIX.length() + 1 ), m.size() ), v );
 		}
 
 		return asArray( parameterizedClass( Map.class, String.class, type ), m );
@@ -91,7 +92,7 @@ public class ConfigMapTest
 	@Test
 	public void run1()
 	{
-		final Object o = CJ.getValue( this.type, PROP1, 1 );
+		final Object o = CJ.getConverter().getValue( this.type, CJ.root().getNode( PROP1 ), 1 );
 
 		System.out.printf( "Type: %s\n", this.type.getTypeName() );
 
@@ -115,7 +116,7 @@ public class ConfigMapTest
 	@Test
 	public void run2()
 	{
-		final Object o = CJ.getValue( this.type, PROP2, 1 );
+		final Object o = CJ.getConverter().getValue( this.type, CJ.root().getNode( PROP2 ), 1 );
 
 		assertThat( o, is( instanceOf( Map.class ) ) );
 

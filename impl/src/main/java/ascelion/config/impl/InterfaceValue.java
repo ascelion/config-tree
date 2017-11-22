@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
@@ -14,7 +15,6 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigValue;
 
 import static ascelion.config.impl.Utils.methodsOf;
-import static ascelion.config.impl.Utils.path;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -26,15 +26,13 @@ final class InterfaceValue implements InvocationHandler
 	private final Map<Method, ConfigValue> names = new HashMap<>();
 
 	private final Class<?> type;
-	private final String name;
-	private final ConfigNode root;
+	private final Function<String, ConfigNode> node;
 	private final Converters conv;
 
-	InterfaceValue( Class<?> type, ConfigNode root, String name, Converters conv )
+	InterfaceValue( Class<?> type, Converters conv, Function<String, ConfigNode> node )
 	{
 		this.type = type;
-		this.name = name;
-		this.root = root;
+		this.node = node;
 		this.conv = conv;
 
 		Stream.of( type.getMethods() )
@@ -54,7 +52,7 @@ final class InterfaceValue implements InvocationHandler
 		if( this.names.containsKey( method ) ) {
 			final ConfigValue a = this.names.get( method );
 
-			return this.conv.getValue( this.root, method.getGenericReturnType(), a.value(), a.unwrap() );
+			return this.conv.getValue( method.getGenericReturnType(), this.node.apply( a.value() ), a.unwrap() );
 		}
 
 		throw new NoSuchMethodError( format( "%s#%s", this.type.getName(), method.getName() ) );
@@ -76,7 +74,7 @@ final class InterfaceValue implements InvocationHandler
 			unwrap = anno.unwrap();
 		}
 
-		anno = new ConfigValueLiteral( path( this.name, name ), conv, unwrap );
+		anno = new ConfigValueLiteral( name, conv, unwrap );
 
 		this.names.put( m, anno );
 	}
@@ -84,6 +82,6 @@ final class InterfaceValue implements InvocationHandler
 	@Override
 	public String toString()
 	{
-		return format( "%s[%s]", this.type.getSimpleName(), this.name );
+		return format( "%s[%s]", this.type.getSimpleName(), this.node.apply( null ).getPath() );
 	}
 }

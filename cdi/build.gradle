@@ -13,7 +13,7 @@ dependencies {
 	testCompile 'ascelion.shared:cdi-unit-ext'
 	testCompile 'ascelion.shared:cdi-unit-weld'
 
-	testRuntime project( path: ':impl', configuration: 'testArtifacts' )
+	testCompile project( path: ':impl', configuration: 'testArtifacts' )
 
 	testRuntime 'javax.el:javax.el-api'
 	testRuntime 'org.jboss.weld.se:weld-se-core'

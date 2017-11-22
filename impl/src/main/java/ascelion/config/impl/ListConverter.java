@@ -68,19 +68,13 @@ abstract class ListConverter<T> implements ConfigConverter<List<T>>
 	}
 
 	@Override
-	public List<T> create( Type t, String u )
+	public List<T> create( Type t, String u, int unwrap )
 	{
 		final String[] v = values( u );
 
 		return Stream.of( v )
 			.map( x -> this.conv.create( this.type, x ) )
 			.collect( toList() );
-	}
-
-	@Override
-	public List<T> create( Class<? super List<T>> t, String u )
-	{
-		return create( (Type) t, u );
 	}
 
 }

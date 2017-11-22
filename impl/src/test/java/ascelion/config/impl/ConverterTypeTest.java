@@ -18,7 +18,7 @@ public class ConverterTypeTest
 	{
 
 		@Override
-		public B create( Class<? super B> t, String u )
+		public B create( Type t, String u, int unwrap )
 		{
 			return null;
 		}

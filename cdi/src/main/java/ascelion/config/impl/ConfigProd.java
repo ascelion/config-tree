@@ -65,12 +65,14 @@ class ConfigProd
 			final Class<?> c = (Class<?>) t;
 
 			if( c.isInterface() ) {
-				this.conv.register( t, () -> new InterfaceConverter<>( this.conv, this.root ) );
+				this.conv.register( t, () -> new InterfaceConverter<>( this.conv, this.root::getNode ) );
 			}
 		}
 
 		try {
-			return this.conv.getValue( this.root, t, a.value(), a.unwrap() );
+			final ConfigNode node = this.root.getNode( a.value() );
+
+			return this.conv.getValue( t, node, a.unwrap() );
 		}
 		catch( final ConfigException e ) {
 			L.error( format( "%s ", ip.getAnnotated() ), e );

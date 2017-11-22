@@ -67,19 +67,13 @@ class ArrayConverter<T> implements ConfigConverter<T[]>
 	}
 
 	@Override
-	public T[] create( Type t, String u )
+	public T[] create( Type t, String u, int unwrap )
 	{
 		final String[] v = values( u );
 
 		return Stream.of( v )
 			.map( x -> this.conv.create( this.type, x ) )
 			.toArray( n -> (T[]) Array.newInstance( this.type, n ) );
-	}
-
-	@Override
-	public T[] create( Class<? super T[]> t, String u )
-	{
-		return create( (Type) t, u );
 	}
 
 }

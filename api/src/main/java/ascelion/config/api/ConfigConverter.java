@@ -6,10 +6,20 @@ import java.lang.reflect.Type;
 public interface ConfigConverter<T>
 {
 
-	default T create( Type t, String u )
+	default T create( Type t, ConfigNode u, int unwrap )
 	{
-		return create( (Class<? super T>) t, u );
+		return create( t, (String) u.getValue(), unwrap );
 	}
 
-	T create( Class<? super T> t, String u );
+	default T create( Type t, ConfigNode u )
+	{
+		return create( t, u, 0 );
+	}
+
+	default T create( Type t, String u )
+	{
+		return create( t, u, 0 );
+	}
+
+	T create( Type t, String u, int unwrap );
 }

@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
 import ascelion.tests.cdi.CdiUnit;
@@ -65,6 +66,7 @@ public class ConfigValueTest
 	}
 
 	@ConfigSource( "file.ini" )
+	@ConfigPrefix( "file" )
 	static class Bean2
 	{
 

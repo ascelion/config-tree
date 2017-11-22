@@ -68,13 +68,7 @@ class SetConverter<T> implements ConfigConverter<Set<T>>
 	}
 
 	@Override
-	public Set<T> create( Class<? super Set<T>> t, String u )
-	{
-		return create( (Type) t, u );
-	}
-
-	@Override
-	public Set<T> create( Type t, String u )
+	public Set<T> create( Type t, String u, int unwrap )
 	{
 		final String[] v = values( u );
 

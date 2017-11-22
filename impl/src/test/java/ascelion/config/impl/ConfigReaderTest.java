@@ -15,6 +15,7 @@ import ascelion.config.impl.read.PRPConfigReader;
 import ascelion.config.impl.read.XMLConfigReader;
 import ascelion.config.impl.read.YMLConfigReader;
 
+import static ascelion.config.impl.Utils.asArray;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
@@ -33,10 +34,10 @@ public class ConfigReaderTest
 	static public Object data()
 	{
 		return new Object[] {
-			new Object[] { INIConfigReader.class },
-			new Object[] { PRPConfigReader.class },
-			new Object[] { XMLConfigReader.class, },
-			new Object[] { YMLConfigReader.class },
+			asArray( INIConfigReader.class ),
+			asArray( PRPConfigReader.class ),
+			asArray( XMLConfigReader.class ),
+			asArray( YMLConfigReader.class ),
 		};
 	}
 

@@ -2,6 +2,7 @@
 package ascelion.config.impl;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -62,18 +63,18 @@ public class ConvertersTest
 	{
 
 		@Override
-		public Base create( Class<? super Base> t, String u )
+		public Base create( Type t, String u, int unwrap )
 		{
 			if( t == Base.class ) {
 				return new Base( this );
 			}
-			if( (Class) t == Derived1.class ) {
+			if( t == Derived1.class ) {
 				return new Derived1( this );
 			}
-			if( (Class) t == Derived2.class ) {
+			if( t == Derived2.class ) {
 				return new Derived2( this );
 			}
-			if( (Class) t == Derived21.class ) {
+			if( t == Derived21.class ) {
 				return new Derived21( this );
 			}
 
@@ -85,7 +86,7 @@ public class ConvertersTest
 	{
 
 		@Override
-		public Derived1 create( Class<? super Derived1> t, String u )
+		public Derived1 create( Type t, String u, int unwrap )
 		{
 			return new Derived1( this );
 		}
@@ -95,7 +96,7 @@ public class ConvertersTest
 	{
 
 		@Override
-		public Derived2 create( Class<? super Derived2> t, String u )
+		public Derived2 create( Type t, String u, int unwrap )
 		{
 			return new Derived2( this );
 		}
@@ -131,10 +132,10 @@ public class ConvertersTest
 
 		assertThat( this.cached.size(), is( count + 1 ) );
 
-		final Base ob = (Base) this.cvs.create( Base.class, "" );
-		final Base o1 = (Base) this.cvs.create( Derived1.class, "" );
-		final Base o2 = (Base) this.cvs.create( Derived2.class, "" );
-		final Base o21 = (Base) this.cvs.create( Derived21.class, "" );
+		final Base ob = (Base) this.cvs.getValue( Base.class, "" );
+		final Base o1 = (Base) this.cvs.getValue( Derived1.class, "" );
+		final Base o2 = (Base) this.cvs.getValue( Derived2.class, "" );
+		final Base o21 = (Base) this.cvs.getValue( Derived21.class, "" );
 
 		assertThat( this.cached.size(), is( count + 4 ) );
 
@@ -164,10 +165,10 @@ public class ConvertersTest
 
 		assertThat( this.cached.size(), is( count + 3 ) );
 
-		final Base ob = (Base) this.cvs.create( Base.class, "" );
-		final Base o1 = (Base) this.cvs.create( Derived1.class, "" );
-		final Base o2 = (Base) this.cvs.create( Derived2.class, "" );
-		final Base o21 = (Base) this.cvs.create( Derived21.class, "" );
+		final Base ob = (Base) this.cvs.getValue( Base.class, "" );
+		final Base o1 = (Base) this.cvs.getValue( Derived1.class, "" );
+		final Base o2 = (Base) this.cvs.getValue( Derived2.class, "" );
+		final Base o21 = (Base) this.cvs.getValue( Derived21.class, "" );
 
 		assertThat( this.cached.size(), is( count + 4 ) );
 
@@ -185,7 +186,7 @@ public class ConvertersTest
 	@Test
 	public void intA()
 	{
-		final int[] values = (int[]) this.cvs.create( int[].class, "1, 2, 3, 4" );
+		final int[] values = (int[]) this.cvs.getValue( int[].class, "1, 2, 3, 4" );
 
 		assertThat( values, is( new int[] { 1, 2, 3, 4 } ) );
 	}
@@ -193,7 +194,7 @@ public class ConvertersTest
 	@Test
 	public void longA()
 	{
-		final long[] values = (long[]) this.cvs.create( long[].class, "1, 2, 3, 4" );
+		final long[] values = (long[]) this.cvs.getValue( long[].class, "1, 2, 3, 4" );
 
 		assertThat( values, is( new long[] { 1, 2, 3, 4 } ) );
 	}
@@ -201,7 +202,7 @@ public class ConvertersTest
 	@Test
 	public void doubleA()
 	{
-		final double[] values = (double[]) this.cvs.create( double[].class, "1, 2, 3, 4" );
+		final double[] values = (double[]) this.cvs.getValue( double[].class, "1, 2, 3, 4" );
 
 		assertThat( values, is( new double[] { 1, 2, 3, 4 } ) );
 	}
@@ -213,7 +214,7 @@ public class ConvertersTest
 		{
 		};
 
-		final Object values = this.cvs.create( ref.type(), "1, 2, 3, 4" );
+		final Object values = this.cvs.getValue( ref.type(), "1, 2, 3, 4" );
 
 		assertThat( values, is( asList( 1, 2, 3, 4 ) ) );
 	}
@@ -225,7 +226,7 @@ public class ConvertersTest
 		{
 		};
 
-		final Object values = this.cvs.create( ref.type(), "1, 2, 3, 4" );
+		final Object values = this.cvs.getValue( ref.type(), "1, 2, 3, 4" );
 
 		assertThat( values, is( asList( 1L, 2L, 3L, 4L ) ) );
 	}
@@ -233,7 +234,7 @@ public class ConvertersTest
 	@Test
 	public void intArray()
 	{
-		final Object values = this.cvs.create( Integer[].class, "1, 2, 3, 4" );
+		final Object values = this.cvs.getValue( Integer[].class, "1, 2, 3, 4" );
 
 		assertThat( values, is( new Integer[] { 1, 2, 3, 4 } ) );
 	}

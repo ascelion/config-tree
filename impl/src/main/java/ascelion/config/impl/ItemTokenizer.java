@@ -57,7 +57,7 @@ final class ItemTokenizer
 		{
 			this.position = position;
 			this.type = type;
-			this.text = b.substring( 0, count ).toString();
+			this.text = b.substring( 0, count ).toString().replace( "\\:", ":" );
 
 			b.delete( 0, count );
 		}
