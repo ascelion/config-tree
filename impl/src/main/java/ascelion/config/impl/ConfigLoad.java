@@ -22,7 +22,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfigLoad
+public final class ConfigLoad
 {
 
 	static private final Logger L = LoggerFactory.getLogger( ConfigLoad.class );

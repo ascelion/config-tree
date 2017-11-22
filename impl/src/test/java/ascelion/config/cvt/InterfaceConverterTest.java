@@ -1,11 +1,14 @@
 
-package ascelion.config.impl;
+package ascelion.config.cvt;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigSource;
+import ascelion.config.cvt.Converters;
+import ascelion.config.cvt.InterfaceConverter;
+import ascelion.config.impl.ConfigJava;
 
 import static ascelion.config.impl.Utils.asArray;
 import static org.hamcrest.CoreMatchers.instanceOf;

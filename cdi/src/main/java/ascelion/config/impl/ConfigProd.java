@@ -24,6 +24,8 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigValue;
+import ascelion.config.cvt.Converters;
+import ascelion.config.cvt.InterfaceConverter;
 
 import static java.lang.String.format;
 

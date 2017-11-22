@@ -1,5 +1,5 @@
 
-package ascelion.config.impl;
+package ascelion.config.cvt;
 
 import java.beans.Introspector;
 import java.lang.reflect.InvocationHandler;
@@ -14,6 +14,7 @@ import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.api.ConfigValue;
+import ascelion.config.impl.ConfigValueLiteral;
 
 import static ascelion.config.impl.Utils.methodsOf;
 import static java.lang.String.format;

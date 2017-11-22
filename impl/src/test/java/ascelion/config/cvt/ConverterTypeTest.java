@@ -1,10 +1,12 @@
 
-package ascelion.config.impl;
+package ascelion.config.cvt;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
 import ascelion.config.api.ConfigConverter;
+import ascelion.config.cvt.ListConverter;
+import ascelion.config.impl.Utils;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;

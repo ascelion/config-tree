@@ -1,5 +1,5 @@
 
-package ascelion.config.impl;
+package ascelion.config.cvt;
 
 import java.net.MalformedURLException;
 import java.net.URL;

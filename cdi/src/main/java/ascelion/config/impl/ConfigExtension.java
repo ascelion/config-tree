@@ -28,6 +28,7 @@ import ascelion.cdi.type.AnnotatedTypeW;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
+import ascelion.config.cvt.Converters;
 import ascelion.config.impl.read.ENVConfigReader;
 import ascelion.config.impl.read.INIConfigReader;
 import ascelion.config.impl.read.PRPConfigReader;

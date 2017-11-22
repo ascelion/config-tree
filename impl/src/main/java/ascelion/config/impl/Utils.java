@@ -77,7 +77,7 @@ public final class Utils
 		return findAnnotation( annotation, cls.getSuperclass() );
 	}
 
-	static Type converterType( final Class<? extends ConfigConverter> cls )
+	public static Type converterType( final Class<? extends ConfigConverter> cls )
 	{
 		final GenericsContext c1 = GenericsResolver.resolve( cls );
 		final GenericsContext c2 = c1.type( ConfigConverter.class );

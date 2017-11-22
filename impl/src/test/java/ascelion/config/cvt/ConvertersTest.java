@@ -1,5 +1,5 @@
 
-package ascelion.config.impl;
+package ascelion.config.cvt;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import ascelion.config.api.ConfigConverter;
+import ascelion.config.cvt.Converters;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.instanceOf;

@@ -1,5 +1,5 @@
 
-package ascelion.config.impl;
+package ascelion.config.cvt;
 
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
@@ -10,13 +10,13 @@ import ascelion.config.api.ConfigNode;
 
 import static java.lang.String.format;
 
-final class InterfaceConverter<T> implements ConfigConverter<T>
+public final class InterfaceConverter<T> implements ConfigConverter<T>
 {
 
 	private final Function<String, ConfigNode> node;
 	private final Converters conv;
 
-	InterfaceConverter( Converters conv, Function<String, ConfigNode> node )
+	public InterfaceConverter( Converters conv, Function<String, ConfigNode> node )
 	{
 		this.node = node;
 		this.conv = conv;

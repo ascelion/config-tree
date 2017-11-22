@@ -1,5 +1,5 @@
 
-package ascelion.config.impl;
+package ascelion.config.cvt;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
+import ascelion.config.impl.Utils;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;

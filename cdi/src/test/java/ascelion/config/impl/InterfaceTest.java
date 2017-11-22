@@ -8,6 +8,7 @@ import javax.enterprise.inject.spi.CDI;
 
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
+import ascelion.config.cvt.DataSourceDefinition;
 import ascelion.tests.cdi.CdiUnit;
 
 import static org.hamcrest.CoreMatchers.is;

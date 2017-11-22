@@ -1,50 +1,51 @@
 
-package ascelion.config.impl;
+package ascelion.config.cvt;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
+import ascelion.config.impl.Utils;
 
 import static ascelion.config.impl.Utils.values;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 
-class SetConverter<T> implements ConfigConverter<Set<T>>
+abstract class ListConverter<T> implements ConfigConverter<List<T>>
 {
 
-	static class IntSet extends SetConverter<Integer>
+	static class IntList extends ListConverter<Integer>
 	{
 
-		IntSet( ConfigConverter<Integer> conv )
+		IntList( ConfigConverter<Integer> conv )
 		{
 			super( conv );
 		}
 	}
 
-	static class LongSet extends SetConverter<Long>
+	static class LongList extends ListConverter<Long>
 	{
 
-		LongSet( ConfigConverter<Long> conv )
+		LongList( ConfigConverter<Long> conv )
 		{
 			super( conv );
 		}
 	}
 
-	static class DoubleSet extends SetConverter<Double>
+	static class DoubleList extends ListConverter<Double>
 	{
 
-		DoubleSet( ConfigConverter<Double> conv )
+		DoubleList( ConfigConverter<Double> conv )
 		{
 			super( conv );
 		}
 	}
 
-	static class StringSet extends SetConverter<String>
+	static class StringList extends ListConverter<String>
 	{
 
-		StringSet( ConfigConverter<String> conv )
+		StringList( ConfigConverter<String> conv )
 		{
 			super( conv );
 		}
@@ -53,7 +54,7 @@ class SetConverter<T> implements ConfigConverter<Set<T>>
 	private final Type type;
 	private final ConfigConverter<T> conv;
 
-	SetConverter( ConfigConverter<T> conv )
+	ListConverter( ConfigConverter<T> conv )
 	{
 		final Type ct = Utils.converterType( getClass() );
 
@@ -68,13 +69,13 @@ class SetConverter<T> implements ConfigConverter<Set<T>>
 	}
 
 	@Override
-	public Set<T> create( Type t, String u, int unwrap )
+	public List<T> create( Type t, String u, int unwrap )
 	{
 		final String[] v = values( u );
 
 		return Stream.of( v )
 			.map( x -> this.conv.create( this.type, x ) )
-			.collect( toSet() );
+			.collect( toList() );
 	}
 
 	@Override
@@ -82,4 +83,5 @@ class SetConverter<T> implements ConfigConverter<Set<T>>
 	{
 		return true;
 	}
+
 }

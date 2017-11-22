@@ -1,11 +1,12 @@
 
-package ascelion.config.impl;
+package ascelion.config.cvt;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
+import ascelion.config.impl.Utils;
 
 import static ascelion.config.impl.Utils.values;
 import static java.lang.String.format;
