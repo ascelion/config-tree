@@ -17,6 +17,7 @@ import ascelion.config.api.ConfigNotFoundException;
 
 import static ascelion.config.impl.Utils.keys;
 import static ascelion.config.impl.Utils.path;
+import static ascelion.config.impl.Utils.unwrap;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
@@ -24,7 +25,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;;
+import com.google.gson.stream.JsonWriter;
 
 final class ConfigNodeImpl implements ConfigNode
 {
@@ -106,7 +107,13 @@ final class ConfigNodeImpl implements ConfigNode
 	@Override
 	public <T> T getValue()
 	{
-		return this.item.cached();
+		switch( this.item.kind() ) {
+			case NODE:
+				return (T) ( (Map) this.item.cached() ).values();
+
+			default:
+				return this.item.cached();
+		}
 	}
 
 	@Override
@@ -179,15 +186,15 @@ final class ConfigNodeImpl implements ConfigNode
 		return node;
 	}
 
-	@Override
-	public Map<String, String> asMap( int unwrap )
-	{
-		final TreeMap<String, String> m = new TreeMap<>();
-
-		fillMap( unwrap, m );
-
-		return m;
-	}
+//	@Override
+//	public Map<String, String> asMap( int unwrap )
+//	{
+//		final TreeMap<String, String> m = new TreeMap<>();
+//
+//		fillMap( unwrap, m );
+//
+//		return m;
+//	}
 
 	@Override
 	public String toString()
@@ -333,38 +340,25 @@ final class ConfigNodeImpl implements ConfigNode
 		}
 	}
 
-	private void fillMap( int unwrap, Map<String, String> m )
-	{
-		switch( this.item.kind() ) {
-			case NULL:
-			break;
-
-			case ITEM: {
-				String p = this.path;
-				int u = unwrap;
-
-				while( u-- > 0 ) {
-					final int x = p.indexOf( '.' );
-
-					if( x < 0 ) {
-						throw new ConfigException( format( "Cannot unwrap %s from %s", p, getPath() ) );
-					}
-
-					p = p.substring( x + 1 );
-				}
-
-				m.put( p, this.item.cached() );
-			}
-			break;
-
-			case LINK:
-				( (ConfigNodeImpl) this.item.cached() ).tree( false ).forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
-			break;
-
-			case NODE:
-				tree( false ).forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
-		}
-	}
+//	private void fillMap( int unwrap, Map<String, String> m )
+//	{
+//		switch( this.item.kind() ) {
+//			case NULL:
+//			break;
+//
+//			case ITEM: {
+//				m.put( unwrap( this.path, unwrap ), this.item.cached() );
+//			}
+//			break;
+//
+//			case LINK:
+//				( (ConfigNodeImpl) this.item.cached() ).tree( false ).forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
+//			break;
+//
+//			case NODE:
+//				tree( false ).forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
+//		}
+//	}
 
 	@Override
 	public Set<String> getKeys()

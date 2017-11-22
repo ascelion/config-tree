@@ -6,8 +6,6 @@ import java.lang.reflect.Method;
 
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.cvt.Converters;
-import ascelion.config.cvt.InterfaceConverter;
 import ascelion.config.impl.ConfigJava;
 
 import static ascelion.config.impl.Utils.asArray;
@@ -44,7 +42,6 @@ public class InterfaceConverterTest
 	static public void setUpClass()
 	{
 		CJ.add( s -> s.value().startsWith( "interface" ) || "SYS".equals( s.type() ) );
-		CV.register( DataSourceDefinition.class, new InterfaceConverter<>( CV, CJ.root()::getNode ) );
 	}
 
 	private final String path;
@@ -78,4 +75,16 @@ public class InterfaceConverterTest
 			}
 		}
 	}
+
+//	@AfterClass
+//	static public void testMap()
+//	{
+//		final TypeRef<Map<String, DataSourceDefinition>> ref = new TypeRef<Map<String, DataSourceDefinition>>()
+//		{
+//		};
+//
+//		final Object o = CV.getValue( ref.type(), "databases", 0 );
+//
+//		assertThat( o, is( notNullValue() ) );
+//	}
 }

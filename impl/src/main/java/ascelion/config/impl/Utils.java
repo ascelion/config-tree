@@ -5,15 +5,20 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
+import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -64,6 +69,24 @@ public final class Utils
 		return Stream.of( names ).filter( StringUtils::isNotBlank ).collect( Collectors.joining( "." ) );
 	}
 
+	static public String unwrap( String path, int count )
+	{
+		final StringBuilder b = new StringBuilder( path );
+		int u = count;
+
+		while( u-- > 0 ) {
+			final int x = b.indexOf( "." );
+
+			if( x < 0 ) {
+				throw new ConfigException( format( "Cannot unwrap %d items from %s", count, path ) );
+			}
+
+			b.delete( 0, x + 1 );
+		}
+
+		return b.toString();
+	}
+
 	static public <A extends Annotation> Optional<A> findAnnotation( Class<A> annotation, Class<?> cls )
 	{
 		if( cls == Object.class ) {
@@ -93,6 +116,25 @@ public final class Utils
 		}
 
 		return t;
+	}
+
+	static public boolean isContainer( Type t )
+	{
+		if( t instanceof Class ) {
+			final Class<?> c = (Class<?>) t;
+
+			return c.isInterface();
+		}
+		if( t instanceof GenericArrayType ) {
+			return true;
+		}
+		if( t instanceof ParameterizedType ) {
+			t = ( (ParameterizedType) t ).getRawType();
+
+			return t == Map.class || t == List.class || t == Set.class;
+		}
+
+		throw new IllegalArgumentException( format( "Cannot handle %s", t ) );
 	}
 
 	private Utils()

@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
@@ -28,10 +27,10 @@ final class InterfaceValue implements InvocationHandler
 	private final Map<Method, ConfigValue> names = new HashMap<>();
 
 	private final Class<?> type;
-	private final Function<String, ConfigNode> node;
+	private final ConfigNode node;
 	private final Converters conv;
 
-	InterfaceValue( Class<?> type, Converters conv, Function<String, ConfigNode> node )
+	InterfaceValue( Class<?> type, Converters conv, ConfigNode node )
 	{
 		this.type = type;
 		this.node = node;
@@ -55,7 +54,7 @@ final class InterfaceValue implements InvocationHandler
 			final ConfigValue a = this.names.get( method );
 
 			try {
-				return this.conv.getValue( method.getGenericReturnType(), this.node.apply( a.value() ), a.unwrap() );
+				return this.conv.getValue( method.getGenericReturnType(), this.node.getNode( a.value() ), a.unwrap() );
 			}
 			catch( final ConfigNotFoundException e ) {
 				return this.conv.getValue( method.getGenericReturnType(), (String) null, a.unwrap() );
@@ -89,6 +88,6 @@ final class InterfaceValue implements InvocationHandler
 	@Override
 	public String toString()
 	{
-		return format( "%s[%s]", this.type.getSimpleName(), this.node.apply( null ).getPath() );
+		return format( "%s[%s]", this.type.getSimpleName(), this.node.getPath() );
 	}
 }

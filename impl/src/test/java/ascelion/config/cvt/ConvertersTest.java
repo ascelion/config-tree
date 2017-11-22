@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import ascelion.config.api.ConfigConverter;
-import ascelion.config.cvt.Converters;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -151,10 +150,10 @@ public class ConvertersTest
 
 		assertThat( this.cached.size(), is( count + 1 ) );
 
-		final Base ob = (Base) this.cvs.getValue( Base.class, "" );
-		final Base o1 = (Base) this.cvs.getValue( Derived1.class, "" );
-		final Base o2 = (Base) this.cvs.getValue( Derived2.class, "" );
-		final Base o21 = (Base) this.cvs.getValue( Derived21.class, "" );
+		final Base ob = (Base) this.cvs.getValue( Base.class, "", 0 );
+		final Base o1 = (Base) this.cvs.getValue( Derived1.class, "", 0 );
+		final Base o2 = (Base) this.cvs.getValue( Derived2.class, "", 0 );
+		final Base o21 = (Base) this.cvs.getValue( Derived21.class, "", 0 );
 
 		assertThat( this.cached.size(), is( count + 4 ) );
 
@@ -184,10 +183,10 @@ public class ConvertersTest
 
 		assertThat( this.cached.size(), is( count + 3 ) );
 
-		final Base ob = (Base) this.cvs.getValue( Base.class, "" );
-		final Base o1 = (Base) this.cvs.getValue( Derived1.class, "" );
-		final Base o2 = (Base) this.cvs.getValue( Derived2.class, "" );
-		final Base o21 = (Base) this.cvs.getValue( Derived21.class, "" );
+		final Base ob = (Base) this.cvs.getValue( Base.class, "", 0 );
+		final Base o1 = (Base) this.cvs.getValue( Derived1.class, "", 0 );
+		final Base o2 = (Base) this.cvs.getValue( Derived2.class, "", 0 );
+		final Base o21 = (Base) this.cvs.getValue( Derived21.class, "", 0 );
 
 		assertThat( this.cached.size(), is( count + 4 ) );
 
@@ -205,7 +204,7 @@ public class ConvertersTest
 	@Test
 	public void intA()
 	{
-		final int[] values = (int[]) this.cvs.getValue( int[].class, "1, 2, 3, 4" );
+		final int[] values = (int[]) this.cvs.getValue( int[].class, "1, 2, 3, 4", 0 );
 
 		assertThat( values, is( new int[] { 1, 2, 3, 4 } ) );
 	}
@@ -213,7 +212,7 @@ public class ConvertersTest
 	@Test
 	public void longA()
 	{
-		final long[] values = (long[]) this.cvs.getValue( long[].class, "1, 2, 3, 4" );
+		final long[] values = (long[]) this.cvs.getValue( long[].class, "1, 2, 3, 4", 0 );
 
 		assertThat( values, is( new long[] { 1, 2, 3, 4 } ) );
 	}
@@ -221,7 +220,7 @@ public class ConvertersTest
 	@Test
 	public void doubleA()
 	{
-		final double[] values = (double[]) this.cvs.getValue( double[].class, "1, 2, 3, 4" );
+		final double[] values = (double[]) this.cvs.getValue( double[].class, "1, 2, 3, 4", 0 );
 
 		assertThat( values, is( new double[] { 1, 2, 3, 4 } ) );
 	}
@@ -233,7 +232,7 @@ public class ConvertersTest
 		{
 		};
 
-		final Object values = this.cvs.getValue( ref.type(), "1, 2, 3, 4" );
+		final Object values = this.cvs.getValue( ref.type(), "1, 2, 3, 4", 0 );
 
 		assertThat( values, is( asList( 1, 2, 3, 4 ) ) );
 	}
@@ -245,7 +244,7 @@ public class ConvertersTest
 		{
 		};
 
-		final Object values = this.cvs.getValue( ref.type(), "1, 2, 3, 4" );
+		final Object values = this.cvs.getValue( ref.type(), "1, 2, 3, 4", 0 );
 
 		assertThat( values, is( asList( 1L, 2L, 3L, 4L ) ) );
 	}
@@ -253,7 +252,7 @@ public class ConvertersTest
 	@Test
 	public void intArray()
 	{
-		final Object values = this.cvs.getValue( Integer[].class, "1, 2, 3, 4" );
+		final Object values = this.cvs.getValue( Integer[].class, "1, 2, 3, 4", 0 );
 
 		assertThat( values, is( new Integer[] { 1, 2, 3, 4 } ) );
 	}

@@ -29,6 +29,11 @@ public final class ConfigJava
 
 	private ConfigNode root;
 
+	public ConfigJava()
+	{
+		this.cvs.setRootNode( this::root );
+	}
+
 	public void add( ConfigReader rd )
 	{
 		this.ld.addReader( rd );

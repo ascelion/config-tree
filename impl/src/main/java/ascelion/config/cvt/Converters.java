@@ -80,6 +80,8 @@ public final class Converters
 		}
 	}
 
+	private Supplier<ConfigNode> root;
+
 	public Converters()
 	{
 		put( Enum.class, ( t, u, x ) -> Enum.valueOf( (Class) t, u ) );
@@ -132,6 +134,16 @@ public final class Converters
 		add( new SetConverter.LongSet( this::getValue ) );
 		add( new SetConverter.DoubleSet( this::getValue ) );
 		add( new SetConverter.StringSet( this::getValue ) );
+	}
+
+	public void setRootNode( ConfigNode root )
+	{
+		this.root = () -> root;
+	}
+
+	public void setRootNode( Supplier<ConfigNode> root )
+	{
+		this.root = root;
 	}
 
 	public void register( ConfigConverter<?> c )
@@ -214,6 +226,15 @@ public final class Converters
 	public <T> T getValue( Type t, String u, int unwrap )
 	{
 		return (T) getConverter( t ).create( t, u, unwrap );
+	}
+
+	ConfigNode node( String path )
+	{
+		if( this.root == null || this.root.get() == null ) {
+			throw new IllegalStateException( "No configuration provided to Converters" );
+		}
+
+		return this.root.get().getNode( path );
 	}
 
 	private <T> ConfigConverter<T> getConverter( Type type )
@@ -322,10 +343,13 @@ public final class Converters
 			final Type rt = pt.getRawType();
 
 			if( rt.equals( Map.class ) ) {
-				return new MapConverter( pt.getActualTypeArguments()[1], ( t, u, x ) -> getValue( t, u, x ) );
+				return new MapConverter( pt.getActualTypeArguments()[1], this );
 			}
 
 			return getConverter( rt );
+		}
+		if( type instanceof Class<?> && ( (Class) type ).isInterface() ) {
+			return new InterfaceConverter<>( this );
 		}
 
 		throw new ConfigException( format( "NO WAY to construct a %s", type.getTypeName() ) );

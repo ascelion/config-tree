@@ -25,7 +25,6 @@ import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.cvt.Converters;
-import ascelion.config.cvt.InterfaceConverter;
 
 import static java.lang.String.format;
 
@@ -63,14 +62,6 @@ class ConfigProd
 		final ConfigValue a = ip.getAnnotated().getAnnotation( ConfigValue.class );
 		final Type t = ip.getType();
 
-		if( t instanceof Class ) {
-			final Class<?> c = (Class<?>) t;
-
-			if( c.isInterface() ) {
-				this.conv.register( t, () -> new InterfaceConverter<>( this.conv, this.root::getNode ) );
-			}
-		}
-
 		L.trace( format( "%s -> %s ", a.value(), ip.getAnnotated() ) );
 
 		try {
@@ -84,6 +75,8 @@ class ConfigProd
 	@PostConstruct
 	private void postConstruct()
 	{
+		this.conv.setRootNode( () -> this.root );
+
 		this.ext.converters().forEach( c -> {
 			final InstanceInfo<ConfigConverter> info;
 			final Set<Bean<?>> beans = this.bm.getBeans( c );

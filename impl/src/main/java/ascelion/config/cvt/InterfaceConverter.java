@@ -3,22 +3,19 @@ package ascelion.config.cvt;
 
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.util.function.Function;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 
 import static java.lang.String.format;
 
-public final class InterfaceConverter<T> implements ConfigConverter<T>
+final class InterfaceConverter<T> implements ConfigConverter<T>
 {
 
-	private final Function<String, ConfigNode> node;
 	private final Converters conv;
 
-	public InterfaceConverter( Converters conv, Function<String, ConfigNode> node )
+	public InterfaceConverter( Converters conv )
 	{
-		this.node = node;
 		this.conv = conv;
 	}
 
@@ -33,17 +30,14 @@ public final class InterfaceConverter<T> implements ConfigConverter<T>
 		final Class<?>[] types = new Class[] { cls };
 		final ClassLoader cld = Thread.currentThread().getContextClassLoader();
 
-		return (T) Proxy.newProxyInstance( cld, types, new InterfaceValue( cls, this.conv, u::getNode ) );
+		return (T) Proxy.newProxyInstance( cld, types, new InterfaceValue( cls, this.conv, u ) );
 	}
 
 	@Override
 	public T create( Type t, String u, int unwrap )
 	{
-		if( this.node == null ) {
-			throw new UnsupportedOperationException();
-		}
-
-		return create( t, this.node.apply( u ), unwrap );
+//		return create( t, this.conv.node( u ), unwrap );
+		throw new UnsupportedOperationException();
 	}
 
 }

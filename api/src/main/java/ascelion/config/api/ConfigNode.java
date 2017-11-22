@@ -47,11 +47,4 @@ public interface ConfigNode
 	ConfigNode getNode( String path );
 
 	<T> T getValue( String path );
-
-	Map<String, String> asMap( int unwrap );
-
-	default Map<String, String> asMap()
-	{
-		return asMap( 0 );
-	}
 }
