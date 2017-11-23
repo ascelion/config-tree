@@ -1,7 +1,6 @@
 
 package ascelion.config.api;
 
-import java.util.Map;
 import java.util.Set;
 
 public interface ConfigNode

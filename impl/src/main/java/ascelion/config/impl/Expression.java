@@ -17,10 +17,10 @@ import ascelion.config.impl.ItemTokenizer.Token;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
-final class Expression extends Evaluable
+public final class Expression extends Evaluable
 {
 
-	static Expression compile( String content )
+	public static Expression compile( String content )
 	{
 		return ContentParser.parse( content, Expression.Listener::new );
 	}
@@ -146,7 +146,7 @@ final class Expression extends Evaluable
 		return this.val.size() == 1 && this.children.size() > 2;
 	}
 
-	Set<String> evaluables()
+	public Set<String> evaluables()
 	{
 		final Set<String> set = new HashSet<>();
 

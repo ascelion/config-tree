@@ -100,11 +100,11 @@ public final class Utils
 		return findAnnotation( annotation, cls.getSuperclass() );
 	}
 
-	public static Type converterType( final Class<? extends ConfigConverter> cls )
+	public static <T> Type paramType( final Class<? extends T> type, Class<T> base, int position )
 	{
-		final GenericsContext c1 = GenericsResolver.resolve( cls );
-		final GenericsContext c2 = c1.type( ConfigConverter.class );
-		Type t = c2.genericType( 0 );
+		final GenericsContext c1 = GenericsResolver.resolve( type );
+		final GenericsContext c2 = c1.type( base );
+		Type t = c2.genericType( position );
 
 		if( t instanceof GenericArrayType ) {
 			final GenericArrayType gat = (GenericArrayType) t;
@@ -112,6 +112,9 @@ public final class Utils
 
 			if( gct instanceof Class<?> ) {
 				t = Array.newInstance( (Class<?>) gct, 0 ).getClass();
+			}
+			else {
+				t = gct;
 			}
 		}
 

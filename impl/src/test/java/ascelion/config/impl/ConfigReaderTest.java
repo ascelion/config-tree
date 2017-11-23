@@ -10,10 +10,10 @@ import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.impl.read.INIConfigReader;
-import ascelion.config.impl.read.PRPConfigReader;
-import ascelion.config.impl.read.XMLConfigReader;
-import ascelion.config.impl.read.YMLConfigReader;
+import ascelion.config.read.INIConfigReader;
+import ascelion.config.read.PRPConfigReader;
+import ascelion.config.read.XMLConfigReader;
+import ascelion.config.read.YMLConfigReader;
 
 import static ascelion.config.impl.Utils.asArray;
 import static java.lang.String.format;

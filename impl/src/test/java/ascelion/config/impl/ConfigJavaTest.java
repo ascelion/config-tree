@@ -77,7 +77,7 @@ public class ConfigJavaTest
 	@Test
 	public void run()
 	{
-		final Object o = CJ.getConverter().getValue( this.type, CJ.root().getNode( this.prop ), 0 );
+		final Object o = CJ.getConverter().create( this.type, CJ.root().getNode( this.prop ), 0 );
 
 		assertThat( o, is( this.expected ) );
 	}

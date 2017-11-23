@@ -1,0 +1,52 @@
+
+package ascelion.config.cdi;
+
+import java.util.Map;
+import java.util.Set;
+
+import ascelion.config.api.ConfigReader;
+import ascelion.config.api.ConfigSource;
+import ascelion.config.api.ConfigValue;
+import ascelion.tests.cdi.CdiUnit;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+import com.google.gson.Gson;
+import org.jglue.cdiunit.AdditionalClasses;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith( CdiUnit.class )
+@AdditionalClasses( {
+	CustomSourceTest.CustomReader.class
+} )
+@UseConfigExtension
+@ConfigSource( type = "custom", value = "{ 'custom.prop1': 'value', 'custom.prop2': '314' }", priority = Integer.MAX_VALUE )
+public class CustomSourceTest
+{
+
+	@ConfigReader.Type( "custom" )
+	static class CustomReader implements ConfigReader
+	{
+
+		@Override
+		public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys )
+		{
+			return new Gson().fromJson( source.value(), Map.class );
+		}
+	}
+
+	@ConfigValue( "custom.prop1" )
+	private String sValue;
+
+	@ConfigValue( "custom.prop2" )
+	private int iValue;
+
+	@Test
+	public void run()
+	{
+		assertThat( this.sValue, is( "value" ) );
+		assertThat( this.iValue, is( 314 ) );
+	}
+}

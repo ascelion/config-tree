@@ -3,28 +3,20 @@ package ascelion.config.api;
 
 import java.lang.reflect.Type;
 
+import static java.util.Optional.ofNullable;
+
 public interface ConfigConverter<T>
 {
 
 	default boolean isNullHandled()
 	{
-		return false;
+		return true;
 	}
 
 	default T create( Type t, ConfigNode u, int unwrap )
 	{
-		return create( t, (String) u.getValue(), unwrap );
+		return create( t, ofNullable( u ).map( ConfigNode::<String> getValue ).orElse( null ) );
 	}
 
-	default T create( Type t, ConfigNode u )
-	{
-		return create( t, u, 0 );
-	}
-
-	default T create( Type t, String u )
-	{
-		return create( t, u, 0 );
-	}
-
-	T create( Type t, String u, int unwrap );
+	T create( Type t, String u );
 }
