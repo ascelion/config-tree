@@ -3,6 +3,8 @@ package ascelion.config.cvt;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Map;
 
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigSource;
@@ -14,6 +16,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,15 +59,20 @@ public class InterfaceConverterTest
 	@Test
 	public void run()
 	{
-		final ConfigNode node = CJ.root().getNode( "${" + this.path + "}" );
+		final ConfigNode node = CJ.root().getNode( this.path );
 		final Object o = CV.getValue( DataSourceDefinition.class, node );
 
+		final DataSourceDefinition dsd = verify( o );
+
+		assertThat( dsd.jndiName(), is( this.jndi ) );
+	}
+
+	static DataSourceDefinition verify( Object o )
+	{
 		assertThat( o, is( notNullValue() ) );
 		assertThat( o, is( instanceOf( DataSourceDefinition.class ) ) );
 
 		final DataSourceDefinition dsd = (DataSourceDefinition) o;
-
-		assertThat( dsd.jndiName(), is( this.jndi ) );
 
 		for( final Method m : DataSourceDefinition.class.getMethods() ) {
 			try {
@@ -74,17 +82,20 @@ public class InterfaceConverterTest
 				e.printStackTrace();
 			}
 		}
+		return dsd;
 	}
 
-//	@AfterClass
-//	static public void testMap()
-//	{
-//		final TypeRef<Map<String, DataSourceDefinition>> ref = new TypeRef<Map<String, DataSourceDefinition>>()
-//		{
-//		};
-//
-//		final Object o = CV.getValue( ref.type(), "databases", 0 );
-//
-//		assertThat( o, is( notNullValue() ) );
-//	}
+	@AfterClass
+	static public void testMap()
+	{
+		final TypeRef<Map<String, DataSourceDefinition>> ref = new TypeRef<Map<String, DataSourceDefinition>>()
+		{
+		};
+
+		final Collection<ConfigNode> nodes = CJ.root().getNode( "databases" ).getValue();
+
+		nodes.forEach( node -> {
+			verify( CV.getValue( DataSourceDefinition.class, node ) );
+		} );
+	}
 }
