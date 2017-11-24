@@ -1,7 +1,6 @@
 
 package ascelion.config.conv;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
@@ -12,6 +11,7 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.impl.Utils;
 
 import static ascelion.config.impl.Utils.unwrap;
+import static java.util.Collections.unmodifiableMap;
 
 class MapConverter<T> implements ConfigConverter<Map<String, T>>
 {
@@ -19,17 +19,9 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 	private final Type type;
 	private final ConfigConverter<T> conv;
 
-	MapConverter( ConfigConverter<T> conv )
+	MapConverter( Type type, ConfigConverter<T> conv )
 	{
-		final Type ct = Utils.paramType( getClass(), ConfigConverter.class, 0 );
-
-		if( !( ct instanceof ParameterizedType ) ) {
-			throw new IllegalArgumentException( "No type info" );
-		}
-
-		final ParameterizedType pt = (ParameterizedType) ct;
-
-		this.type = pt.getActualTypeArguments()[0];
+		this.type = type;
 		this.conv = conv;
 	}
 
@@ -39,14 +31,21 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 		final Map<String, T> m = new TreeMap<>();
 
 		switch( node.getKind() ) {
+			case NULL:
+			break;
+
 			case NODE:
 				if( Utils.isContainer( this.type ) ) {
-					m.put( unwrap( node.getPath(), unwrap ), this.conv.create( this.type, node, 0 ) );
+					node.<Collection<ConfigNode>> getValue()
+						.forEach( n -> {
+							m.put( unwrap( n.getPath(), unwrap ), this.conv.create( this.type, n, 0 ) );
+						} );
 				}
 				else {
-					asMap( node ).forEach( ( k, v ) -> {
-						m.put( unwrap( k, unwrap ), this.conv.create( this.type, v ) );
-					} );
+					asMap( node )
+						.forEach( ( k, v ) -> {
+							m.put( unwrap( k, unwrap ), this.conv.create( this.type, v ) );
+						} );
 				}
 			break;
 
@@ -54,7 +53,7 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 				throw new UnsupportedOperationException();
 		}
 
-		return m;
+		return unmodifiableMap( m );
 	}
 
 	@Override

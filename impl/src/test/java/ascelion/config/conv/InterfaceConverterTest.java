@@ -77,8 +77,11 @@ public class InterfaceConverterTest
 			try {
 				System.out.printf( "%s: %s\n", m.getName(), m.invoke( o ) );
 			}
-			catch( IllegalAccessException | IllegalArgumentException | InvocationTargetException e ) {
-				e.printStackTrace();
+			catch( final IllegalAccessException e ) {
+				throw new RuntimeException( m.getName(), e );
+			}
+			catch( final InvocationTargetException e ) {
+				throw new RuntimeException( m.getName(), e.getCause() );
 			}
 		}
 		return dsd;

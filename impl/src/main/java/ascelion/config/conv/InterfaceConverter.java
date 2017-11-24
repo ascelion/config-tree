@@ -28,6 +28,11 @@ final class InterfaceConverter<T> implements ConfigConverter<T>
 		}
 
 		final Class<?> cls = (Class<?>) t;
+
+		if( !cls.isInterface() ) {
+			throw new ConfigException( format( "Not a concrete interface: %s", t.getTypeName() ) );
+		}
+
 		final Class<?>[] types = new Class[] { cls };
 		final ClassLoader cld = Thread.currentThread().getContextClassLoader();
 

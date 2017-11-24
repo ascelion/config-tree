@@ -2,19 +2,17 @@
 package ascelion.config.conv;
 
 import java.lang.reflect.Type;
-import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNode.Kind;
 
-import static ascelion.config.impl.Utils.values;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 final class PrimitiveConverter<T> implements ConfigConverter<T>
 {
 
-	static <T> ConfigConverter<T> wrap( ConfigConverter<T> conv )
+	static <T> ConfigConverter<T> primitive( ConfigConverter<T> conv )
 	{
 		return new PrimitiveConverter<>( conv );
 	}

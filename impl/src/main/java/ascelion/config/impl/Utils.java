@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 
@@ -119,6 +118,21 @@ public final class Utils
 		}
 
 		return t;
+	}
+
+	static public boolean isPrimitive( Type t )
+	{
+		return t instanceof Class && ( (Class<?>) t ).isPrimitive();
+	}
+
+	static public boolean isArray( Type t )
+	{
+		return t instanceof Class && ( (Class<?>) t ).isArray();
+	}
+
+	static public boolean isInterface( Type t )
+	{
+		return t instanceof Class && ( (Class<?>) t ).isInterface();
 	}
 
 	static public boolean isContainer( Type t )

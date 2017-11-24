@@ -13,12 +13,14 @@ import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
 import ascelion.tests.cdi.CdiUnit;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
 @UseConfigExtension
 @ConfigSource( "maps.yml" )
+@Ignore( "we are going to support this" )
 public class MapFailTest
 {
 

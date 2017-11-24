@@ -32,6 +32,8 @@ import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.impl.Utils;
 
+import static ascelion.config.conv.NullableConverter.nullable;
+import static ascelion.config.conv.PrimitiveConverter.primitive;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static ru.vyarus.java.generics.resolver.util.TypeToStringUtils.toStringType;
@@ -89,56 +91,41 @@ public final class Converters implements ConfigConverter<Object>
 
 	public Converters()
 	{
-		put( Enum.class, ( t, u ) -> Enum.valueOf( (Class) t, u ) );
+		put( Enum.class, nullable( ( t, u ) -> Enum.valueOf( (Class) t, u ) ) );
 
-		add( Class.class, ExtraConverters::createClass );
+		addNullable( Class.class, ExtraConverters::createClass );
 
-		add( Boolean.class, ExtraConverters::createBoolean );
-		add( Byte.class, Byte::parseByte );
-		add( Short.class, Short::parseShort );
-		add( Integer.class, Integer::parseInt );
-		add( Long.class, Long::parseLong );
-		add( Float.class, Float::parseFloat );
-		add( Double.class, Double::parseDouble );
+		addNullable( Boolean.class, ExtraConverters::createBoolean );
+		addNullable( Byte.class, Byte::parseByte );
+		addNullable( Short.class, Short::parseShort );
+		addNullable( Integer.class, Integer::parseInt );
+		addNullable( Long.class, Long::parseLong );
+		addNullable( Float.class, Float::parseFloat );
+		addNullable( Double.class, Double::parseDouble );
 
-		add( boolean.class, ExtraConverters::createBoolean );
-		add( byte.class, Byte::parseByte );
-		add( short.class, Short::parseShort );
-		add( int.class, Integer::parseInt );
-		add( long.class, Long::parseLong );
-		add( float.class, Float::parseFloat );
-		add( double.class, Double::parseDouble );
+		addPrimitive( boolean.class, ExtraConverters::createBoolean );
+		addPrimitive( byte.class, Byte::parseByte );
+		addPrimitive( short.class, Short::parseShort );
+		addPrimitive( int.class, Integer::parseInt );
+		addPrimitive( long.class, Long::parseLong );
+		addPrimitive( float.class, Float::parseFloat );
+		addPrimitive( double.class, Double::parseDouble );
 
 		add( String.class, u -> u );
 
-		add( Duration.class, Duration::parse );
-		add( Instant.class, Instant::parse );
-		add( LocalDate.class, LocalDate::parse );
-		add( LocalDateTime.class, LocalDateTime::parse );
-		add( LocalTime.class, LocalTime::parse );
-		add( OffsetTime.class, OffsetTime::parse );
-		add( OffsetDateTime.class, OffsetDateTime::parse );
+		addNullable( Duration.class, Duration::parse );
+		addNullable( Instant.class, Instant::parse );
+		addNullable( LocalDate.class, LocalDate::parse );
+		addNullable( LocalDateTime.class, LocalDateTime::parse );
+		addNullable( LocalTime.class, LocalTime::parse );
+		addNullable( OffsetTime.class, OffsetTime::parse );
+		addNullable( OffsetDateTime.class, OffsetDateTime::parse );
 
-		add( URL.class, ExtraConverters::createURL );
+		addNullable( URL.class, ExtraConverters::createURL );
 
 		add( int[].class, ExtraConverters::createIntA );
 		add( long[].class, ExtraConverters::createLongA );
 		add( double[].class, ExtraConverters::createDoubleA );
-
-//		add( new ArrayConverter.IntArray( this::getValue ) );
-//		add( new ArrayConverter.LongArray( this::getValue ) );
-//		add( new ArrayConverter.DoubleArray( this::getValue ) );
-//		add( new ArrayConverter.StringArray( this::getValue ) );
-
-//		add( new ListConverter.IntList( this::getValue ) );
-//		add( new ListConverter.LongList( this::getValue ) );
-//		add( new ListConverter.DoubleList( this::getValue ) );
-//		add( new ListConverter.StringList( this::getValue ) );
-
-//		add( new SetConverter.IntSet( this::getValue ) );
-//		add( new SetConverter.LongSet( this::getValue ) );
-//		add( new SetConverter.DoubleSet( this::getValue ) );
-//		add( new SetConverter.StringSet( this::getValue ) );
 	}
 
 	public void setRootNode( Supplier<ConfigNode> root )
@@ -290,30 +277,36 @@ public final class Converters implements ConfigConverter<Object>
 			final Type rt = pt.getRawType();
 
 			if( rt.equals( Set.class ) ) {
-				return new SetConverter( getConverter( pt.getActualTypeArguments()[0] ) );
+				final Type ct = pt.getActualTypeArguments()[0];
+				return new SetConverter( ct, getConverter( ct ) );
 			}
 			if( rt.equals( List.class ) ) {
-				return new ListConverter( getConverter( pt.getActualTypeArguments()[0] ) );
+				final Type ct = pt.getActualTypeArguments()[0];
+				return new ListConverter( ct, getConverter( ct ) );
 			}
 			if( rt.equals( Map.class ) ) {
-				return new MapConverter( getConverter( pt.getActualTypeArguments()[1] ) );
+				final Type ct = pt.getActualTypeArguments()[1];
+				return new MapConverter( ct, getConverter( ct ) );
 			}
 
 			return getConverter( rt );
 		}
 		if( type instanceof GenericArrayType ) {
 			final GenericArrayType at = (GenericArrayType) type;
+			final Type ct = at.getGenericComponentType();
 
-			return new ArrayConverter( getConverter( at.getGenericComponentType() ) );
+			return new ArrayConverter( ct, getConverter( ct ) );
 		}
 		if( type instanceof Class ) {
 			final Class<?> cls = (Class<?>) type;
 
 			if( cls.isArray() ) {
-				return new ArrayConverter( getConverter( cls.getComponentType() ) );
+				final Class<?> ct = cls.getComponentType();
+
+				return new ArrayConverter( ct, getConverter( ct ) );
 			}
 			if( cls.isInterface() ) {
-				return new InterfaceConverter( this );
+				return new InterfaceConverter<>( this );
 			}
 
 			try {
@@ -367,16 +360,23 @@ public final class Converters implements ConfigConverter<Object>
 		put( type, ( t, u ) -> func.apply( u ) );
 	}
 
+	private void addNullable( Type type, Function<String, ?> func )
+	{
+		put( type, nullable( ( t, u ) -> func.apply( u ) ) );
+	}
+
+	private void addPrimitive( Type type, Function<String, ?> func )
+	{
+		put( type, primitive( ( t, u ) -> func.apply( u ) ) );
+	}
+
 	private void put( Type type, ConfigConverter<?> conv )
 	{
-		if( type instanceof Class<?> && ( (Class) type ).isPrimitive() ) {
-			this.cached.put( type, PrimitiveConverter.wrap( conv ) );
-		}
-		else if( conv.isNullHandled() ) {
+		if( conv.isNullHandled() ) {
 			this.cached.put( type, conv );
 		}
 		else {
-			this.cached.put( type, NullableConverter.wrap( conv ) );
+			this.cached.put( type, nullable( conv ) );
 		}
 	}
 

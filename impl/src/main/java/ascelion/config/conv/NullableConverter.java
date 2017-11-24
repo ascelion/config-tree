@@ -12,7 +12,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 final class NullableConverter<T> implements ConfigConverter<T>
 {
 
-	static <T> ConfigConverter<T> wrap( ConfigConverter<T> conv )
+	static <T> ConfigConverter<T> nullable( ConfigConverter<T> conv )
 	{
 		return new NullableConverter<>( conv );
 	}

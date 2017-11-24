@@ -17,7 +17,6 @@ import ascelion.config.api.ConfigNotFoundException;
 
 import static ascelion.config.impl.Utils.keys;
 import static ascelion.config.impl.Utils.path;
-import static ascelion.config.impl.Utils.unwrap;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
@@ -176,6 +175,8 @@ final class ConfigNodeImpl implements ConfigNode
 			node = val.node();
 		}
 		else {
+			this.item.cached();
+
 			node = findNode( path, false );
 		}
 
