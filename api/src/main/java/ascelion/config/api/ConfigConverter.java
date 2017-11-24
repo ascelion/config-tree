@@ -3,6 +3,7 @@ package ascelion.config.api;
 
 import java.lang.reflect.Type;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
 public interface ConfigConverter<T>
@@ -15,7 +16,13 @@ public interface ConfigConverter<T>
 
 	default T create( Type t, ConfigNode u, int unwrap )
 	{
-		return create( t, ofNullable( u ).map( ConfigNode::<String> getValue ).orElse( null ) );
+		switch( u.getKind() ) {
+			case ITEM:
+				return create( t, ofNullable( u ).map( ConfigNode::<String> getValue ).orElse( null ) );
+
+			default:
+				throw new ConfigException( format( "Cannot convert %s to string", u.getPath() ) );
+		}
 	}
 
 	T create( Type t, String u );

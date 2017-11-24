@@ -26,23 +26,23 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 	}
 
 	@Override
-	public Map<String, T> create( Type t, ConfigNode node, int unwrap )
+	public Map<String, T> create( Type t, ConfigNode u, int unwrap )
 	{
 		final Map<String, T> m = new TreeMap<>();
 
-		switch( node.getKind() ) {
+		switch( u.getKind() ) {
 			case NULL:
 			break;
 
 			case NODE:
 				if( Utils.isContainer( this.type ) ) {
-					node.<Collection<ConfigNode>> getValue()
+					u.<Collection<ConfigNode>> getValue()
 						.forEach( n -> {
 							m.put( unwrap( n.getPath(), unwrap ), this.conv.create( this.type, n, 0 ) );
 						} );
 				}
 				else {
-					asMap( node )
+					asMap( u )
 						.forEach( ( k, v ) -> {
 							m.put( unwrap( k, unwrap ), this.conv.create( this.type, v ) );
 						} );

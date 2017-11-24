@@ -4,6 +4,7 @@ package ascelion.config.conv;
 import java.beans.Introspector;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,8 @@ import ascelion.config.impl.ConfigValueLiteral;
 import static ascelion.config.impl.Utils.methodsOf;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+import io.leangen.geantyref.GenericTypeReflector;
 
 final class InterfaceValue implements InvocationHandler
 {
@@ -52,12 +55,15 @@ final class InterfaceValue implements InvocationHandler
 
 		if( this.names.containsKey( method ) ) {
 			final ConfigValue a = this.names.get( method );
+			final Type t = GenericTypeReflector.getExactReturnType( method, this.type );
 
 			try {
-				return this.conv.create( method.getGenericReturnType(), this.node.getNode( a.value() ), a.unwrap() );
+				final ConfigNode n = this.node.getNode( a.value() );
+
+				return this.conv.create( t, n, a.unwrap() );
 			}
 			catch( final ConfigNotFoundException e ) {
-				return this.conv.create( method.getGenericReturnType(), (ConfigNode) null, a.unwrap() );
+				return this.conv.create( t, null, a.unwrap() );
 			}
 		}
 

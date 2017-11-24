@@ -20,6 +20,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,12 +50,6 @@ public class ConfigLinkTest
 		return asArray( parameterizedClass( Map.class, String.class, type ), m );
 	}
 
-	static interface Interface1
-	{
-
-		int[] values();
-	}
-
 	@Parameterized.Parameters( name = "{0}" )
 	static public Object data()
 	{
@@ -78,13 +74,17 @@ public class ConfigLinkTest
 			map( parameterizedClass( Set.class, Integer.class ), asSet( 0 ), asSet( 1 ), asSet( 2, 3, 4 ), asSet( 5, 6, 7 ) ),
 			map( parameterizedClass( Set.class, Long.class ), asSet( 0L ), asSet( 1L ), asSet( 2L, 3L, 4L ), asSet( 5L, 6L, 7L ) ),
 			map( parameterizedClass( Set.class, Double.class ), asSet( 0D ), asSet( 1D ), asSet( 2D, 3D, 4D ), asSet( 5D, 6D, 7D ) ),
-
-			map( parameterizedClass( Interface1.class ), new int[] { 0 }, new int[] { 1 }, new int[] { 2, 3, 4 }, new int[] { 5, 6, 7 } ),
 		};
 	}
 
 	static private final ConfigJava CJ = new ConfigJava();
 	static private final ConfigConverter<?> CV = CJ.getConverter();
+
+	@BeforeClass
+	static public void setUpClass()
+	{
+		CJ.add( s -> s.value().startsWith( "file" ) );
+	}
 
 	private final Type type;
 	private final Map<String, ?> expected;
@@ -95,41 +95,32 @@ public class ConfigLinkTest
 		this.expected = expected;
 	}
 
-	@BeforeClass
-	static public void setUpClass()
+	@Before
+	public void setUp()
 	{
-		CJ.add( s -> s.value().startsWith( "file" ) );
+		System.out.printf( "Type: %s\n", this.type.getTypeName() );
+	}
+
+	@After
+	public void tearDown()
+	{
+		System.out.println();
 	}
 
 	@Test
 	public void run1()
 	{
-		final ConfigNode n = CJ.root().getNode( PROP1 );
-		final Object o = CV.create( this.type, n, 1 );
-
-		System.out.printf( "Type: %s\n", this.type.getTypeName() );
-
-		assertThat( o, is( instanceOf( Map.class ) ) );
-
-		final Map<String, ?> m = (Map<String, ?>) o;
-
-		assertThat( m.size(), is( this.expected.size() ) );
-
-		this.expected.forEach( ( k, ev ) -> {
-			final Object av = m.get( k );
-
-			System.out.printf( "%s=%s\n", k, av );
-
-			assertThat( k, av, is( ev ) );
-		} );
-
-		System.out.println();
+		verify( CJ.root().getNode( PROP1 ) );
 	}
 
 	@Test
 	public void run2()
 	{
-		final ConfigNode n = CJ.root().getNode( PROP2 );
+		verify( CJ.root().getNode( PROP2 ) );
+	}
+
+	public void verify( final ConfigNode n )
+	{
 		final Object o = CV.create( this.type, n, 1 );
 
 		assertThat( o, is( instanceOf( Map.class ) ) );
@@ -138,13 +129,11 @@ public class ConfigLinkTest
 
 		assertThat( m.size(), is( this.expected.size() ) );
 
-		this.expected.forEach( ( k, ev ) -> {
-			final Object av = m.get( k );
+		this.expected.forEach( ( k, v ) -> {
+			final Object t = m.get( k );
 
-			assertThat( k, av, is( ev ) );
+			assertThat( k, t, is( v ) );
 		} );
-
-		System.out.println();
 	}
 
 }

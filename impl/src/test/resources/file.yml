@@ -13,6 +13,17 @@ file:
       VAL3: [ 5, 6, 7 ]
   map2:
     values: ${file.map1.values}
+  interfaces.1:
+    VAL0:
+      values: ${file.map1.values.VAL0}
+    VAL1:
+      values: ${file.map1.values.VAL1}
+    VAL2:
+      values: ${file.map1.values.VAL2}
+    VAL3:
+      values: ${file.map1.values.VAL3}
+  interfaces.2: ${file.interfaces.1}
+
   version1: ${undefined:${java.version}}
   version2: ${java.version}
   limits:

@@ -19,12 +19,12 @@ dependencies {
 
 	compile 'io.github.lukehutch:fast-classpath-scanner'
 	compile 'ru.vyarus:generics-resolver:2.0.1'
+	compile 'io.leangen.geantyref:geantyref'
 
 	testCompile 'org.antlr:antlr4-runtime'
 	testCompile 'junit:junit'
 	testCompile 'org.mockito:mockito-core'
 	testCompile 'org.hamcrest:hamcrest-library'
-	testCompile 'io.leangen.geantyref:geantyref'
 
 	testRuntime 'org.slf4j:jul-to-slf4j'
 	testRuntime 'org.slf4j:jcl-over-slf4j'
