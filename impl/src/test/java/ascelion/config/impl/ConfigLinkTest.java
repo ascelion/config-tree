@@ -54,7 +54,7 @@ public class ConfigLinkTest
 		int[] values();
 	}
 
-	@Parameterized.Parameters( name = "{0} - {1} - {2}" )
+	@Parameterized.Parameters( name = "{0}" )
 	static public Object data()
 	{
 		return new Object[] {
