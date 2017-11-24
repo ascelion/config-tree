@@ -30,13 +30,12 @@ import java.util.function.Supplier;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
-import ascelion.config.impl.Utils;
 
 import static ascelion.config.conv.NullableConverter.nullable;
 import static ascelion.config.conv.PrimitiveConverter.primitive;
+import static io.leangen.geantyref.GenericTypeReflector.getTypeName;
+import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
 import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
-import static ru.vyarus.java.generics.resolver.util.TypeToStringUtils.toStringType;
 
 public final class Converters implements ConfigConverter<Object>
 {
@@ -72,7 +71,7 @@ public final class Converters implements ConfigConverter<Object>
 			return +1;
 		}
 
-		return toStringType( t1, emptyMap() ).compareTo( toStringType( t2, emptyMap() ) );
+		return getTypeName( t1 ).compareTo( getTypeName( t2 ) );
 	}
 
 	static private boolean isBaseOf( Type t1, Type t2 )
@@ -80,6 +79,7 @@ public final class Converters implements ConfigConverter<Object>
 		if( t1 instanceof Class && t2 instanceof Class ) {
 			final Class<?> c1 = (Class<?>) t1;
 			final Class<?> c2 = (Class<?>) t2;
+
 			return c1.isAssignableFrom( c2 );
 		}
 		else {
@@ -383,7 +383,7 @@ public final class Converters implements ConfigConverter<Object>
 	private <T> void add( ConfigConverter<T> c )
 	{
 		final Class<? extends ConfigConverter> cls = c.getClass();
-		final Type t = Utils.paramType( cls, ConfigConverter.class, 0 );
+		final Type t = getTypeParameter( cls, CV_TYPE );
 
 		if( t == null ) {
 			throw new IllegalArgumentException( format( "No type information for converter %s", cls.getName() ) );

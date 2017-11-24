@@ -8,6 +8,7 @@ import java.util.Map;
 
 import ascelion.config.api.ConfigConverter;
 
+import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -228,11 +229,9 @@ public class ConvertersTest
 	@Test
 	public void intList()
 	{
-		final TypeRef<List<Integer>> ref = new TypeRef<List<Integer>>()
-		{
-		};
+		final Type type = parameterizedClass( List.class, Integer.class );
 
-		final Object values = this.cvs.create( ref.type(), "1, 2, 3, 4" );
+		final Object values = this.cvs.create( type, "1, 2, 3, 4" );
 
 		assertThat( values, is( asList( 1, 2, 3, 4 ) ) );
 	}
@@ -240,11 +239,9 @@ public class ConvertersTest
 	@Test
 	public void longList()
 	{
-		final TypeRef<List<Long>> ref = new TypeRef<List<Long>>()
-		{
-		};
+		final Type type = parameterizedClass( List.class, Long.class );
 
-		final Object values = this.cvs.create( ref.type(), "1, 2, 3, 4" );
+		final Object values = this.cvs.create( type, "1, 2, 3, 4" );
 
 		assertThat( values, is( asList( 1L, 2L, 3L, 4L ) ) );
 	}

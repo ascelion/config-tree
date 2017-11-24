@@ -2,7 +2,6 @@
 package ascelion.config.impl;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -22,8 +21,6 @@ import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import org.apache.commons.lang3.StringUtils;
-import ru.vyarus.java.generics.resolver.GenericsResolver;
-import ru.vyarus.java.generics.resolver.context.GenericsContext;
 
 public final class Utils
 {
@@ -99,26 +96,26 @@ public final class Utils
 		return findAnnotation( annotation, cls.getSuperclass() );
 	}
 
-	public static <T> Type paramType( final Class<? extends T> type, Class<T> base, int position )
-	{
-		final GenericsContext c1 = GenericsResolver.resolve( type );
-		final GenericsContext c2 = c1.type( base );
-		Type t = c2.genericType( position );
-
-		if( t instanceof GenericArrayType ) {
-			final GenericArrayType gat = (GenericArrayType) t;
-			final Type gct = gat.getGenericComponentType();
-
-			if( gct instanceof Class<?> ) {
-				t = Array.newInstance( (Class<?>) gct, 0 ).getClass();
-			}
-			else {
-				t = gct;
-			}
-		}
-
-		return t;
-	}
+//	public static <T> Type paramType( final Class<? extends T> type, Class<T> base, int position )
+//	{
+//		final GenericsContext c1 = GenericsResolver.resolve( type );
+//		final GenericsContext c2 = c1.type( base );
+//		Type t = c2.genericType( position );
+//
+//		if( t instanceof GenericArrayType ) {
+//			final GenericArrayType gat = (GenericArrayType) t;
+//			final Type gct = gat.getGenericComponentType();
+//
+//			if( gct instanceof Class<?> ) {
+//				t = Array.newInstance( (Class<?>) gct, 0 ).getClass();
+//			}
+//			else {
+//				t = gct;
+//			}
+//		}
+//
+//		return t;
+//	}
 
 	static public boolean isPrimitive( Type t )
 	{

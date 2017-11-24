@@ -53,30 +53,6 @@ class ConfigProd
 	private ConfigNode root;
 	private final Map<Class<? extends ConfigConverter>, InstanceInfo<? extends ConfigConverter>> converters = new IdentityHashMap<>();
 
-//	@Produces
-//	@Default
-//	ConfigNode root()
-//	{
-//		return this.root;
-//	}
-
-//	@Produces
-//	@ConfigValue( "" )
-//	@Dependent
-//	ConfigNode node( InjectionPoint ip )
-//	{
-//		L.trace( "Value: {}", ip.getAnnotated() );
-//
-//		final ConfigValue a = ip.getAnnotated().getAnnotation( ConfigValue.class );
-//
-//		try {
-//			return this.root.getNode( a.value() );
-//		}
-//		catch( final ConfigNotFoundException e ) {
-//			return null;
-//		}
-//	}
-
 	@Produces
 	@Dependent
 	@ConfigValue( "" )
