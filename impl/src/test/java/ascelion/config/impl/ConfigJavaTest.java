@@ -57,6 +57,7 @@ public class ConfigJavaTest
 	}
 
 	static private final ConfigJava CJ = new ConfigJava();
+
 	private final String prop;
 	private final Type type;
 	private final Object expected;

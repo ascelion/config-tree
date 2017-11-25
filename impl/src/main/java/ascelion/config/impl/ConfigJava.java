@@ -28,10 +28,17 @@ public final class ConfigJava
 	private final List<Predicate<ConfigSource>> filters = new ArrayList<>();
 
 	private ConfigNode root;
+	{
+		this.cvs.setRootNode( this::root );
+	}
 
 	public ConfigJava()
 	{
-		this.cvs.setRootNode( this::root );
+	}
+
+	public ConfigJava( ClassLoader cld )
+	{
+		this.sc.addClassLoader( cld );
 	}
 
 	public void add( ConfigReader rd )
@@ -79,8 +86,9 @@ public final class ConfigJava
 				.forEach( this.cvs::register );
 
 			this.ld.addReaders( getReaders() );
+			this.ld.addSources( getSources() );
 
-			this.root = this.ld.load( getSources() );
+			this.root = this.ld.load();
 		}
 
 		return this.root;

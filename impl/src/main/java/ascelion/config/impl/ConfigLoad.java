@@ -2,6 +2,7 @@
 package ascelion.config.impl;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ public final class ConfigLoad
 	static private final Logger L = LoggerFactory.getLogger( ConfigLoad.class );
 
 	private final Map<String, ConfigReader> readers = new TreeMap<>();
+	private final Collection<ConfigSource> sources = new ArrayList<>();
 
 	public void addReader( ConfigReader rd )
 	{
@@ -43,16 +45,26 @@ public final class ConfigLoad
 		Stream.of( t.types() ).forEach( x -> this.readers.put( x.toUpperCase(), rd ) );
 	}
 
-	public void addReaders( Collection<ConfigReader> readers )
+	public void addReaders( Collection<? extends ConfigReader> readers )
 	{
 		readers.forEach( this::addReader );
 	}
 
-	public ConfigNode load( Collection<ConfigSource> sources )
+	public void addSource( ConfigSource source )
+	{
+		this.sources.add( source );
+	}
+
+	public void addSources( Collection<ConfigSource> sources )
+	{
+		this.sources.addAll( sources );
+	}
+
+	public ConfigNode load()
 	{
 		final ConfigNodeImpl root = new ConfigNodeImpl();
 
-		sources.stream()
+		this.sources.stream()
 			.sorted( ( s1, s2 ) -> Integer.compare( s1.priority(), s2.priority() ) )
 			.forEach( s -> {
 				load( s, root );
@@ -71,14 +83,13 @@ public final class ConfigLoad
 		return root;
 	}
 
-	public void load( ConfigSource source, ConfigNode root )
+	private void load( ConfigSource source, ConfigNodeImpl root )
 	{
-		final ConfigNodeImpl impl = (ConfigNodeImpl) root;
 		final String type = getType( source );
 		final ConfigReader rd = getReader( type );
 
 		if( rd.enabled() ) {
-			final Set<String> keys = impl.getKeys();
+			final Set<String> keys = root.getKeys();
 
 			try {
 				L.trace( "Reading: type {} from '{}'", type, source.value() );
@@ -88,10 +99,10 @@ public final class ConfigLoad
 
 				n.set( m );
 
-				impl.add( n );
+				root.add( n );
 			}
 			catch( final UnsupportedOperationException x ) {
-				readFromURL( source, type, rd, keys, impl );
+				readFromURL( source, type, rd, keys, root );
 			}
 			catch( final ConfigException e ) {
 				L.error( "Cannot read config source: " + source.value() );

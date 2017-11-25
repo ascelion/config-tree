@@ -11,7 +11,9 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.impl.Utils;
 
 import static ascelion.config.impl.Utils.unwrap;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 class MapConverter<T> implements ConfigConverter<Map<String, T>>
 {
@@ -28,12 +30,17 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 	@Override
 	public Map<String, T> create( Type t, ConfigNode u, int unwrap )
 	{
+		if( u == null ) {
+			return emptyMap();
+		}
+
 		final Map<String, T> m = new TreeMap<>();
 
 		switch( u.getKind() ) {
 			case NULL:
 			break;
 
+			case LINK:
 			case NODE:
 				if( Utils.isContainer( this.type ) ) {
 					u.<Collection<ConfigNode>> getValue()
@@ -59,6 +66,10 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 	@Override
 	public Map<String, T> create( Type t, String u )
 	{
+		if( isBlank( u ) ) {
+			return emptyMap();
+		}
+
 		throw new UnsupportedOperationException();
 	}
 

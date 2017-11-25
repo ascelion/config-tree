@@ -37,7 +37,7 @@ import static io.leangen.geantyref.GenericTypeReflector.getTypeName;
 import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
 import static java.lang.String.format;
 
-public final class Converters implements ConfigConverter<Object>
+public final class Converters<T> implements ConfigConverter<T>
 {
 
 	static final TypeVariable<? extends Class<?>> CV_TYPE = ConfigConverter.class.getTypeParameters()[0];
@@ -196,13 +196,13 @@ public final class Converters implements ConfigConverter<Object>
 	}
 
 	@Override
-	public Object create( Type t, ConfigNode u, int unwrap )
+	public T create( Type t, ConfigNode u, int unwrap )
 	{
 		return getConverter( t ).create( t, u, unwrap );
 	}
 
 	@Override
-	public Object create( Type t, String u )
+	public T create( Type t, String u )
 	{
 		return getConverter( t ).create( t, u );
 	}
@@ -216,7 +216,7 @@ public final class Converters implements ConfigConverter<Object>
 		return this.root.get().getNode( path );
 	}
 
-	<T> ConfigConverter<T> getConverter( Type type )
+	ConfigConverter<T> getConverter( Type type )
 	{
 		final Lock rdLock = this.RW_LOCK.readLock();
 
@@ -270,7 +270,7 @@ public final class Converters implements ConfigConverter<Object>
 		}
 	}
 
-	private <T> ConfigConverter<T> inferConverter( Type type )
+	private ConfigConverter<T> inferConverter( Type type )
 	{
 		if( type instanceof ParameterizedType ) {
 			final ParameterizedType pt = (ParameterizedType) type;
@@ -370,17 +370,7 @@ public final class Converters implements ConfigConverter<Object>
 		put( type, primitive( ( t, u ) -> func.apply( u ) ) );
 	}
 
-	private void put( Type type, ConfigConverter<?> conv )
-	{
-		if( conv.isNullHandled() ) {
-			this.cached.put( type, conv );
-		}
-		else {
-			this.cached.put( type, nullable( conv ) );
-		}
-	}
-
-	private <T> void add( ConfigConverter<T> c )
+	private void add( ConfigConverter<?> c )
 	{
 		final Class<? extends ConfigConverter> cls = c.getClass();
 		final Type t = getTypeParameter( cls, CV_TYPE );
@@ -390,5 +380,15 @@ public final class Converters implements ConfigConverter<Object>
 		}
 
 		put( t, c );
+	}
+
+	private void put( Type type, ConfigConverter<?> conv )
+	{
+		if( conv.isNullHandled() ) {
+			this.cached.put( type, conv );
+		}
+		else {
+			this.cached.put( type, nullable( conv ) );
+		}
 	}
 }

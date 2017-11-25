@@ -1,5 +1,5 @@
 
-package ascelion.cdi.conf.profile;
+package ascelion.config.eclipse;
 
 import java.util.Map;
 

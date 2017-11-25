@@ -1,10 +1,11 @@
 
-package ascelion.cdi.conf.profile;
+package ascelion.config.eclipse;
 
 import java.util.Optional;
 
 import ascelion.config.api.ConfigNode;
-import ascelion.config.impl.ConfigJava;
+
+import static java.util.Optional.ofNullable;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -12,7 +13,6 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 public class ConfigImpl implements Config
 {
 
-	private final ConfigJava java = new ConfigJava();
 	private final ConfigNode root;
 
 	public ConfigImpl( ConfigNode root )
@@ -23,19 +23,19 @@ public class ConfigImpl implements Config
 	@Override
 	public <T> T getValue( String propertyName, Class<T> propertyType )
 	{
-		return (T) this.root.getNode( propertyName ).getValue( true );
+		return (T) this.root.getNode( propertyName ).getValue();
 	}
 
 	@Override
 	public <T> Optional<T> getOptionalValue( String propertyName, Class<T> propertyType )
 	{
-		return Optional.ofNullable( getValue( propertyName, propertyType ) );
+		return ofNullable( getValue( propertyName, propertyType ) );
 	}
 
 	@Override
 	public Iterable<String> getPropertyNames()
 	{
-		return this.root.asMap().keySet();
+		return this.root.getKeys();
 	}
 
 	@Override

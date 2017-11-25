@@ -100,8 +100,9 @@ class ConfigProd
 		} );
 
 		this.rdi.forEach( this.load::addReader );
+		this.load.addSources( this.ext.sources() );
 
-		this.root = this.load.load( this.ext.sources() );
+		this.root = this.load.load();
 	}
 
 	@PreDestroy

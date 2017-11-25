@@ -1,0 +1,44 @@
+apply plugin: 'java'
+
+sourceSets {
+	tckTest {
+		java {
+			srcDirs 'microprofile/tck/src/main/java'
+		}
+		resources {
+			srcDirs 'microprofile/tck/src/main/resources'
+		}
+	}
+}
+
+dependencies {
+	compile project( ':impl' )
+
+	compile 'org.eclipse.microprofile.config:microprofile-config-api:1.1'
+
+	testCompile 'junit:junit'
+	testCompile 'org.mockito:mockito-core'
+	testCompile 'org.hamcrest:hamcrest-library'
+	
+	testRuntime 'org.slf4j:jul-to-slf4j'
+	testRuntime 'org.slf4j:jcl-over-slf4j'
+	testRuntime 'org.slf4j:log4j-over-slf4j'
+	testRuntime 'ch.qos.logback:logback-classic'
+
+	tckTestCompile 'org.eclipse.microprofile.config:microprofile-config-tck:1.1'
+	tckTestRuntime 'org.jboss.arquillian.container:arquillian-weld-embedded:2.0.0.Beta5'
+	tckTestRuntime 'org.jboss.weld.se:weld-se-shaded:3.0.2.Final'
+}
+
+test {
+	enabled = false
+}
+
+tckTest {
+	enabled = false
+
+	useTestNG() {
+		suites 'src/test/tck-suite.xml'
+	}
+}
+

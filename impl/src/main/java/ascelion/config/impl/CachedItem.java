@@ -9,7 +9,7 @@ import ascelion.config.api.ConfigNode.Kind;
 final class CachedItem
 {
 
-	private ConfigNodeImpl node;
+	private final ConfigNodeImpl node;
 	private Kind kind;
 	private final Object value;
 	private Object cached = null;
@@ -46,10 +46,6 @@ final class CachedItem
 			this.kind = Kind.NODE;
 			this.cached = item;
 		}
-		else if( item instanceof ConfigNodeImpl ) {
-			this.kind = Kind.LINK;
-			this.cached = item;
-		}
 		else {
 			throw new IllegalArgumentException( "Unsuported type: " + item.getClass().getName() );
 		}
@@ -68,12 +64,9 @@ final class CachedItem
 				sb.append( "<NULL>" );
 			break;
 
+			case LINK:
 			case ITEM:
 				sb.append( this.value.toString() );
-			break;
-
-			case LINK:
-				sb.append( ( (ConfigNodeImpl) this.value ).path );
 			break;
 
 			case NODE:
@@ -113,18 +106,34 @@ final class CachedItem
 
 	<T> T cached()
 	{
-		if( this.kind == Kind.NULL || this.cached != null ) {
-			return (T) this.cached;
+		switch( this.kind ) {
+			case NULL:
+				return null;
+
+			case ITEM:
+				if( this.cached != null ) {
+					return (T) this.cached;
+				}
+
+				final CachedItem val = ( (Expression) this.value ).eval( this.node );
+
+				if( val.kind != Kind.NODE ) {
+					this.kind = val.kind;
+					this.cached = val.cached();
+
+					return (T) this.cached;
+				}
+
+				this.kind = Kind.LINK;
+				this.cached = val;
+
+			case LINK:
+				return ( (CachedItem) this.cached ).cached();
+
+			case NODE:
+				return (T) this.cached;
 		}
 
-		if( this.kind == Kind.ITEM ) {
-			final CachedItem val = ( (Expression) this.value ).eval( this.node );
-
-			this.node = val.node;
-			this.kind = val.kind;
-			this.cached = val.cached;
-		}
-
-		return (T) this.cached;
+		throw new AssertionError( "UNREACHABLE CODE" );
 	}
 }

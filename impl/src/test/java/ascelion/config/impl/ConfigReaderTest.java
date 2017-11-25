@@ -17,7 +17,6 @@ import ascelion.config.read.YMLConfigReader;
 
 import static ascelion.config.impl.Utils.asArray;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -91,8 +90,9 @@ public class ConfigReaderTest
 		final ConfigReader rd = new ConfigStreamReader( source, this.cls.newInstance() );
 
 		ld.addReader( rd );
+		ld.addSource( new ConfigSourceLiteral( "", 0, "STREAM" ) );
 
-		final ConfigNode cn = ld.load( asList( new ConfigSourceLiteral( "", 0, "STREAM" ) ) );
+		final ConfigNode cn = ld.load();
 
 		assertThat( cn.getNode( "default" ).getValue(), is( "0" ) );
 		assertThat( cn.getNode( "prop1" ).getValue(), is( "value1" ) );

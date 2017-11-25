@@ -53,9 +53,11 @@ public class ConfigScanner
 		this.cs.verbose( verbose );
 
 		addFilter( c -> !c.isAnonymousClass() );
+	}
 
-		Stream.of( this.cs.findBestClassLoader() )
-			.forEach( this.cs::addClassLoader );
+	public void addClassLoader( ClassLoader cld )
+	{
+		this.cs.addClassLoader( cld );
 	}
 
 	public Set<ConfigSource> getSources()

@@ -107,6 +107,7 @@ final class ConfigNodeImpl implements ConfigNode
 	public <T> T getValue()
 	{
 		switch( this.item.kind() ) {
+			case LINK:
 			case NODE:
 				return (T) ( (Map) this.item.cached() ).values();
 
@@ -260,6 +261,7 @@ final class ConfigNodeImpl implements ConfigNode
 
 		switch( kind ) {
 			case NODE:
+			case LINK:
 				return this.item.cached();
 
 			default:
@@ -304,7 +306,7 @@ final class ConfigNodeImpl implements ConfigNode
 			return;
 		}
 		if( value != null ) {
-			if( this.item.kind() == Kind.NODE ) {
+			if( this.item.kindNoEval() == Kind.NODE ) {
 				throw new ConfigException( format( "Path: %s, cannot change value from NODE to ITEM", this.path ) );
 			}
 
@@ -340,26 +342,6 @@ final class ConfigNodeImpl implements ConfigNode
 			return tree( false ).get( name );
 		}
 	}
-
-//	private void fillMap( int unwrap, Map<String, String> m )
-//	{
-//		switch( this.item.kind() ) {
-//			case NULL:
-//			break;
-//
-//			case ITEM: {
-//				m.put( unwrap( this.path, unwrap ), this.item.cached() );
-//			}
-//			break;
-//
-//			case LINK:
-//				( (ConfigNodeImpl) this.item.cached() ).tree( false ).forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
-//			break;
-//
-//			case NODE:
-//				tree( false ).forEach( ( k, v ) -> v.fillMap( unwrap, m ) );
-//		}
-//	}
 
 	@Override
 	public Set<String> getKeys()

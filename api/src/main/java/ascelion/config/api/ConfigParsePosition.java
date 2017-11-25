@@ -1,9 +1,11 @@
 
 package ascelion.config.api;
 
+import java.io.Serializable;
+
 import static java.lang.String.format;
 
-public class ConfigParsePosition
+public class ConfigParsePosition implements Serializable
 {
 
 	private final String message;

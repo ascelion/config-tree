@@ -16,6 +16,10 @@ public interface ConfigConverter<T>
 
 	default T create( Type t, ConfigNode u, int unwrap )
 	{
+		if( u == null ) {
+			return create( t, null );
+		}
+
 		switch( u.getKind() ) {
 			case ITEM:
 				return create( t, ofNullable( u ).map( ConfigNode::<String> getValue ).orElse( null ) );
