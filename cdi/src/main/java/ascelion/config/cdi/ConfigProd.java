@@ -18,6 +18,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
+import javax.management.MBeanServer;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
@@ -26,6 +27,8 @@ import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.conv.Converters;
 import ascelion.config.impl.ConfigLoad;
+import ascelion.config.impl.JMXSupport;
+import ascelion.config.read.JMXConfigReader;
 
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -52,6 +55,9 @@ class ConfigProd
 	@Inject
 	@Any
 	private Instance<ConfigConverter<?>> cvi;
+	@Inject
+	@Any
+	private Instance<MBeanServer> mbsi;
 
 	private final ConfigLoad load = new ConfigLoad();
 	private ConfigNode root;
@@ -108,6 +114,14 @@ class ConfigProd
 		this.load.addSources( this.ext.sources() );
 
 		this.root = this.load.load();
+
+		this.ext.sources().stream()
+			.filter( s -> s.type().equals( JMXConfigReader.TYPE ) )
+			.forEach( s -> {
+				final JMXSupport sup = new JMXSupport( this.mbsi.get(), s.value() );
+
+				sup.buildEntries( this.root );
+			} );
 	}
 
 	@PreDestroy
