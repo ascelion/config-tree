@@ -48,7 +48,7 @@ class ConfigBeanImpl extends NotificationBroadcasterSupport implements ConfigBea
 	@Override
 	public String getExpression()
 	{
-		return this.node.getExpression().toString();
+		return Objects.toString( this.node.getExpression(), null );
 	}
 
 	@Override
