@@ -1,6 +1,7 @@
 
 package ascelion.config.cdi;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,6 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -127,9 +129,16 @@ public class ConfigExtension implements Extension
 		final InjectionPoint p = event.getInjectionPoint();
 
 		if( p.getAnnotated().isAnnotationPresent( ConfigValue.class ) ) {
-			L.info( "Config type: {} from {}", p.getType(), p );
+			Type t = p.getType();
 
-			this.types.add( wrap( p.getType() ) );
+			if( t instanceof ParameterizedType ) {
+				if( Instance.class == ( (ParameterizedType) t ).getRawType() ) {
+					t = ( (ParameterizedType) t ).getActualTypeArguments()[0];
+				}
+			}
+			L.info( "Config type: {} from {}", t, p );
+
+			this.types.add( wrap( t ) );
 		}
 	}
 

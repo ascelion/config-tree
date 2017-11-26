@@ -3,6 +3,8 @@ package ascelion.config.cdi;
 
 import java.io.File;
 
+import javax.enterprise.inject.Instance;
+
 import ascelion.config.api.ConfigValue;
 import ascelion.tests.cdi.CdiUnit;
 
@@ -21,12 +23,12 @@ public class SimpleTest
 	private String version;
 
 	@ConfigValue( "java.io.tmpdir" )
-	private File temp;
+	private Instance<File> temp;
 
 	@Test
 	public void run()
 	{
 		assertThat( this.version, is( System.getProperty( "java.version" ) ) );
-		assertThat( this.temp, is( new File( System.getProperty( "java.io.tmpdir" ) ) ) );
+		assertThat( this.temp.get(), is( new File( System.getProperty( "java.io.tmpdir" ) ) ) );
 	}
 }
