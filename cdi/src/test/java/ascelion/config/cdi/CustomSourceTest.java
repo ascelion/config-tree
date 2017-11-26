@@ -3,7 +3,6 @@ package ascelion.config.cdi;
 
 import java.lang.reflect.Type;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Singleton;
 
@@ -47,7 +46,7 @@ public class CustomSourceTest
 	{
 
 		@Override
-		public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys )
+		public Map<String, ?> readConfiguration( ConfigSource source )
 		{
 			return new Gson().fromJson( source.value(), Map.class );
 		}
@@ -59,7 +58,7 @@ public class CustomSourceTest
 	@ConfigValue( "custom.prop2" )
 	private int iValue;
 
-	@ConfigValue( value = "custom.prop2", converter = CustomConverter.class )
+	@ConfigValue( value = "custom.prop3", converter = CustomConverter.class )
 	private String cValue;
 
 	@Test
@@ -67,6 +66,6 @@ public class CustomSourceTest
 	{
 		assertThat( this.sValue, is( "value" ) );
 		assertThat( this.iValue, is( 314 ) );
-		assertThat( this.iValue, is( "CUSTOM: HIHI" ) );
+		assertThat( this.cValue, is( "CUSTOM: HIHI!" ) );
 	}
 }

@@ -134,12 +134,6 @@ public class ConfigNodeTest
 		assertThat( d2.getValue(), is( "def_val" ) );
 	}
 
-	@Test( expected = IllegalArgumentException.class )
-	public void pathInvalid()
-	{
-		this.root.set( "prefix-${prop}-suffix", "" );
-	}
-
 	@Test
 	public void keys()
 	{

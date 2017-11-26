@@ -3,31 +3,27 @@ package ascelion.config.read;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 
-import static org.apache.commons.lang3.StringUtils.trimToNull;
-
-@ConfigReader.Type( value = "ENV" )
-@ConfigSource( type = "ENV", priority = 300 )
+@ConfigReader.Type( value = ENVConfigReader.TYPE )
+@ConfigSource( type = ENVConfigReader.TYPE, priority = 300 )
 public class ENVConfigReader implements ConfigReader
 {
 
+	static public final String TYPE = "ENV";
+
 	@Override
-	public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys ) throws ConfigException
+	public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
 	{
 		final Map<String, String> map = new HashMap<>();
 
-		keys.forEach( k -> {
-			final String v = trimToNull( System.getenv( k ) );
-
-			if( v != null ) {
-				map.put( k, v );
-			}
-		} );
+		System.getenv()
+			.forEach( ( k, v ) -> {
+				map.put( k, v.replace( ":", "\\:" ) );
+			} );
 
 		return map;
 	}

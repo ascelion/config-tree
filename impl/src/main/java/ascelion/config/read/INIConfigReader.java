@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigReader;
@@ -16,12 +15,14 @@ import static ascelion.config.impl.Utils.path;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 
-@ConfigReader.Type( value = "INI" )
+@ConfigReader.Type( value = INIConfigReader.TYPE )
 public class INIConfigReader implements ConfigReader
 {
 
+	static public final String TYPE = "INI";
+
 	@Override
-	public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys, InputStream is ) throws IOException
+	public Map<String, ?> readConfiguration( ConfigSource source, InputStream is ) throws IOException
 	{
 		final Map<String, String> map = new HashMap<>();
 		final Ini ini = new Ini( is );

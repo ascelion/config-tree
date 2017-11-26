@@ -3,7 +3,6 @@ package ascelion.config.cdi;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.enterprise.context.Dependent;
 
@@ -37,7 +36,7 @@ public class PrefixTest
 	{
 
 		@Override
-		public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys ) throws ConfigException
+		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
 		{
 			final Map<String, String> map = new HashMap<>();
 

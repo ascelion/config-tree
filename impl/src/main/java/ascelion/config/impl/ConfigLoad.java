@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
@@ -89,20 +88,13 @@ public final class ConfigLoad
 		final ConfigReader rd = getReader( type );
 
 		if( rd.enabled() ) {
-			final Set<String> keys = root.getKeys();
-
 			try {
 				L.trace( "Reading: type {} from '{}'", type, source.value() );
 
-				final Map<String, ?> m = rd.readConfiguration( source, keys );
-				final ConfigNodeImpl n = new ConfigNodeImpl();
-
-				n.set( m );
-
-				root.add( n );
+				root.set( rd.readConfiguration( source ) );
 			}
 			catch( final UnsupportedOperationException x ) {
-				readFromURL( source, type, rd, keys, root );
+				readFromURL( source, type, rd, root );
 			}
 			catch( final ConfigException e ) {
 				L.error( "Cannot read config source: " + source.value() );
@@ -112,7 +104,7 @@ public final class ConfigLoad
 		}
 	}
 
-	private void readFromURL( ConfigSource source, String type, ConfigReader rd, Set<String> keys, ConfigNodeImpl root )
+	private void readFromURL( ConfigSource source, String type, ConfigReader rd, ConfigNodeImpl root )
 	{
 		final List<URL> all = ConfigReader.getResources( source.value() );
 
@@ -124,17 +116,7 @@ public final class ConfigLoad
 				L.trace( "Reading: type {} from '{}'", type, u );
 
 				try {
-					final Map<String, ?> m = rd.readConfiguration( source, keys, u );
-
-					if( m.size() > 0 ) {
-						final ConfigNodeImpl n = new ConfigNodeImpl();
-
-						n.set( m );
-
-						root.add( n );
-
-						keys = root.getKeys();
-					}
+					root.set( rd.readConfiguration( source, u ) );
 				}
 				catch( final ConfigException e ) {
 					L.error( "Cannot read config source: " + source.value() );

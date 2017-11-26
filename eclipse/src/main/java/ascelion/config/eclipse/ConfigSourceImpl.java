@@ -4,7 +4,6 @@ package ascelion.config.eclipse;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.conv.Converters;
 import ascelion.config.impl.ConfigLoad;
@@ -65,9 +64,9 @@ final class ConfigSourceImpl implements ConfigSource
 	private Map<String, String> load()
 	{
 		if( this.properties == null ) {
-			final ConfigConverter<Map<String, String>> cv = new Converters<>();
+			final Converters cv = new Converters();
 
-			this.properties = cv.create( TYPE, this.ld.load(), 0 );
+			this.properties = (Map<String, String>) cv.create( TYPE, this.ld.load(), 0 );
 		}
 
 		return this.properties;

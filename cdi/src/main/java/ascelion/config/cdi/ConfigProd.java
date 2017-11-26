@@ -28,6 +28,7 @@ import ascelion.config.conv.Converters;
 import ascelion.config.impl.ConfigLoad;
 
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,10 +49,13 @@ class ConfigProd
 	@Inject
 	@Any
 	private Instance<ConfigReader> rdi;
+	@Inject
+	@Any
+	private Instance<ConfigConverter<?>> cvi;
 
 	private final ConfigLoad load = new ConfigLoad();
 	private ConfigNode root;
-	private final Map<Class<? extends ConfigConverter>, InstanceInfo<? extends ConfigConverter>> converters = new IdentityHashMap<>();
+	private final Map<Class<?>, InstanceInfo<ConfigConverter>> converters = new IdentityHashMap<>();
 
 	@Produces
 	@Dependent
@@ -65,11 +69,13 @@ class ConfigProd
 
 		L.trace( format( "%s -> %s ", a.value(), ip.getAnnotated() ) );
 
+		final ConfigConverter<?> c = ofNullable( this.converters.get( a.converter() ) ).map( i -> i.instance ).orElse( this.conv );
+
 		try {
-			return this.conv.create( t, this.root.getNode( a.value() ), a.unwrap() );
+			return c.create( t, this.root.getNode( a.value() ), a.unwrap() );
 		}
 		catch( final ConfigNotFoundException e ) {
-			return this.conv.create( t, this.root.getValue( a.value() ) );
+			return c.create( t, this.root.getValue( a.value() ) );
 		}
 	}
 
@@ -95,7 +101,6 @@ class ConfigProd
 			}
 
 			this.conv.register( info.instance );
-
 			this.converters.put( c, info );
 		} );
 

@@ -30,19 +30,13 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	@Override
 	public ConfigBuilder addDefaultSources()
 	{
-//		this.sources.add( new ConfigSourceImpl( new ENVConfigReader() ) );
-//		this.sources.add( new ConfigSourceImpl( new SYSConfigReader() ) );
-//		this.sources.add( new ConfigSourceImpl( new PRPConfigReader(), "META-INF/microprofile-config.properties" ) );
-//
-//		this.sources.add( new ConfigSourceImpl() );
-//		this.sources.add( new ENVConfigSource() );
-//		this.sources.add( new SYSConfigSource() );
-
 		this.ld.addReader( new PRPConfigReader() );
 		this.ld.addReader( new ENVConfigReader() );
 		this.ld.addReader( new SYSConfigReader() );
 
-		this.ld.addSource( new ConfigSourceLiteral( "META-INF/microprofile-config.properties", 0, "properties" ) );
+		this.ld.addSource( new ConfigSourceLiteral( "META-INF/microprofile-config.properties", 100, PRPConfigReader.TYPE ) );
+		this.ld.addSource( new ConfigSourceLiteral( "", 300, ENVConfigReader.TYPE ) );
+		this.ld.addSource( new ConfigSourceLiteral( "", 400, SYSConfigReader.TYPE ) );
 
 		return this;
 	}

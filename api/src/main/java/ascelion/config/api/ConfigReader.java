@@ -10,7 +10,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.enterprise.util.Nonbinding;
 import javax.inject.Qualifier;
@@ -60,22 +59,22 @@ public interface ConfigReader
 		return true;
 	}
 
-	default Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys ) throws ConfigException
+	default Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
 	{
 		throw new UnsupportedOperationException( source.value() );
 	}
 
-	default Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys, URL url ) throws ConfigException
+	default Map<String, ?> readConfiguration( ConfigSource source, URL url ) throws ConfigException
 	{
 		try( InputStream is = url.openStream() ) {
-			return readConfiguration( source, keys, is );
+			return readConfiguration( source, is );
 		}
 		catch( final IOException e ) {
 			throw new ConfigException( url.toExternalForm(), e );
 		}
 	}
 
-	default Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys, InputStream is ) throws IOException
+	default Map<String, ?> readConfiguration( ConfigSource source, InputStream is ) throws IOException
 	{
 		throw new UnsupportedOperationException( "not implemented" );
 	}

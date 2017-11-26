@@ -34,6 +34,13 @@ public final class JMXSupport
 
 	private void createEntry( ConfigNodeImpl node )
 	{
+		if( System.getProperties().containsKey( node.path ) ) {
+			return;
+		}
+		if( System.getenv().containsKey( node.path ) ) {
+			return;
+		}
+
 		switch( node.item().kindNoEval() ) {
 			case NULL:
 			case ITEM:

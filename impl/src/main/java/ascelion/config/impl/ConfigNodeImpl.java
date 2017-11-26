@@ -188,16 +188,6 @@ final class ConfigNodeImpl implements ConfigNode
 		return node;
 	}
 
-//	@Override
-//	public Map<String, String> asMap( int unwrap )
-//	{
-//		final TreeMap<String, String> m = new TreeMap<>();
-//
-//		fillMap( unwrap, m );
-//
-//		return m;
-//	}
-
 	@Override
 	public String toString()
 	{
@@ -243,17 +233,11 @@ final class ConfigNodeImpl implements ConfigNode
 		final ConfigNode.Kind kind;
 
 		if( create ) {
-			switch( this.item.kind() ) {
-				case NULL:
-					this.item = new CachedItem( new TreeMap<>(), this );
-				case NODE:
-				break;
-
-				default:
-					throw new IllegalStateException();
+			if( this.item.kindNoEval() != Kind.NODE ) {
+				this.item = new CachedItem( new TreeMap<>(), this );
 			}
 
-			kind = this.item.kind();
+			kind = this.item.kindNoEval();
 		}
 		else {
 			kind = this.item.kindNoEval();
@@ -271,12 +255,6 @@ final class ConfigNodeImpl implements ConfigNode
 
 	void set( String path, Object value )
 	{
-		final Expression expr = Expression.compile( path );
-
-		if( expr != null && expr.isExpression() ) {
-			throw new IllegalArgumentException( path );
-		}
-
 		findNode( path, true ).set( value );
 	}
 
@@ -375,49 +353,5 @@ final class ConfigNodeImpl implements ConfigNode
 				node.tree( false ).forEach( ( k, v ) -> fillKeys( v, set ) );
 			break;
 		}
-	}
-
-	void add( ConfigNodeImpl node )
-	{
-		switch( node.item.kindNoEval() ) {
-			case NODE:
-				switch( this.item.kindNoEval() ) {
-					case NULL:
-					case NODE:
-						node.tree( false )
-							.forEach( ( k, v ) -> {
-								child( k, true ).add( v );
-							} );
-					break;
-
-					case LINK:
-					case ITEM:
-						throw new ConfigException( format( "Path: %s, cannot change value from %s to NODE", this.path, this.item.kind() ) );
-				}
-			break;
-
-			case NULL:
-			break;
-
-			default:
-				if( this.item.kindNoEval() == Kind.NODE ) {
-					throw new ConfigException( format( "Path: %s, cannot change value from NODE to ITEM", this.path ) );
-				}
-
-				this.item = new CachedItem( node.item.value(), this );
-		}
-//		if( this.value.kind == Kind.NODE ) {
-//			if( this.value.kind != Kind.NODE ) {
-//				this.cached = null;
-//			}
-//
-//			node.tree( false )
-//				.forEach( ( k, v ) -> {
-//					child( k, true ).add( v );
-//				} );
-//		}
-//		else {
-//			this.value = node.value;
-//		}
 	}
 }

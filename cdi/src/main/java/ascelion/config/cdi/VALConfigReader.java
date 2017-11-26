@@ -21,11 +21,9 @@ class VALConfigReader implements ConfigReader
 	private ConfigExtension ext;
 
 	@Override
-	public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys ) throws ConfigException
+	public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
 	{
 		final Map<String, String> map = new HashMap<>();
-
-		addAll( map, keys );
 
 		this.ext.values().forEach( a -> {
 			addAll( map, Expression.compile( a.value() ).evaluables() );

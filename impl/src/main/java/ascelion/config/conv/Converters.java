@@ -37,7 +37,7 @@ import static io.leangen.geantyref.GenericTypeReflector.getTypeName;
 import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
 import static java.lang.String.format;
 
-public final class Converters<T> implements ConfigConverter<T>
+public final class Converters implements ConfigConverter<Object>
 {
 
 	static final TypeVariable<? extends Class<?>> CV_TYPE = ConfigConverter.class.getTypeParameters()[0];
@@ -196,13 +196,13 @@ public final class Converters<T> implements ConfigConverter<T>
 	}
 
 	@Override
-	public T create( Type t, ConfigNode u, int unwrap )
+	public Object create( Type t, ConfigNode u, int unwrap )
 	{
 		return getConverter( t ).create( t, u, unwrap );
 	}
 
 	@Override
-	public T create( Type t, String u )
+	public Object create( Type t, String u )
 	{
 		return getConverter( t ).create( t, u );
 	}
@@ -216,7 +216,7 @@ public final class Converters<T> implements ConfigConverter<T>
 		return this.root.get().getNode( path );
 	}
 
-	ConfigConverter<T> getConverter( Type type )
+	ConfigConverter<?> getConverter( Type type )
 	{
 		final Lock rdLock = this.RW_LOCK.readLock();
 
@@ -224,7 +224,7 @@ public final class Converters<T> implements ConfigConverter<T>
 
 		try {
 			if( this.cached.containsKey( type ) ) {
-				return (ConfigConverter<T>) this.cached.get( type );
+				return this.cached.get( type );
 			}
 
 			rdLock.unlock();
@@ -236,12 +236,12 @@ public final class Converters<T> implements ConfigConverter<T>
 
 				try {
 					if( this.cached.containsKey( type ) ) {
-						return (ConfigConverter<T>) this.cached.get( type );
+						return this.cached.get( type );
 					}
 
-					ConfigConverter<T> c = this.cached.entrySet().stream()
+					ConfigConverter<?> c = this.cached.entrySet().stream()
 						.filter( e -> isBaseOf( e.getKey(), type ) )
-						.map( e -> (ConfigConverter<T>) e.getValue() )
+						.map( e -> (ConfigConverter<?>) e.getValue() )
 						.findFirst()
 						.orElse( null );
 
@@ -270,7 +270,7 @@ public final class Converters<T> implements ConfigConverter<T>
 		}
 	}
 
-	private ConfigConverter<T> inferConverter( Type type )
+	private ConfigConverter<?> inferConverter( Type type )
 	{
 		if( type instanceof ParameterizedType ) {
 			final ParameterizedType pt = (ParameterizedType) type;
@@ -314,7 +314,7 @@ public final class Converters<T> implements ConfigConverter<T>
 
 				return ( t, u ) -> {
 					try {
-						return (T) c.newInstance( u );
+						return c.newInstance( u );
 					}
 					catch( InstantiationException | IllegalAccessException e ) {
 						throw new ConfigException( u, e.getCause() );
@@ -337,7 +337,7 @@ public final class Converters<T> implements ConfigConverter<T>
 
 					return ( t, u ) -> {
 						try {
-							return (T) m.invoke( null, u );
+							return m.invoke( null, u );
 						}
 						catch( final IllegalAccessException e ) {
 							throw new ConfigException( u, e );
@@ -384,11 +384,13 @@ public final class Converters<T> implements ConfigConverter<T>
 
 	private void put( Type type, ConfigConverter<?> conv )
 	{
-		if( conv.isNullHandled() ) {
-			this.cached.put( type, conv );
-		}
-		else {
-			this.cached.put( type, nullable( conv ) );
+		if( !this.cached.containsKey( type ) ) {
+			if( conv.isNullHandled() ) {
+				this.cached.put( type, conv );
+			}
+			else {
+				this.cached.put( type, nullable( conv ) );
+			}
 		}
 	}
 }

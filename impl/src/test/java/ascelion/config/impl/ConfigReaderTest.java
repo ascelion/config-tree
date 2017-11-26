@@ -4,7 +4,6 @@ package ascelion.config.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Set;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
@@ -63,10 +62,10 @@ public class ConfigReaderTest
 		}
 
 		@Override
-		public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys ) throws ConfigException
+		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
 		{
 			try {
-				return this.delegate.readConfiguration( source, keys, this.stream );
+				return this.delegate.readConfiguration( source, this.stream );
 			}
 			catch( final IOException e ) {
 				throw new ConfigException( e.getMessage() );
@@ -81,9 +80,17 @@ public class ConfigReaderTest
 
 		assertThat( a, is( notNullValue() ) );
 
-		final String res = format( "/config.%s", a.value().toLowerCase() );
-		final InputStream source = getClass().getResourceAsStream( res );
+		InputStream source = input( a.value() );
 
+		if( source == null ) {
+			for( final String type : a.types() ) {
+				source = input( type );
+
+				if( source != null ) {
+					break;
+				}
+			}
+		}
 		assertThat( source, is( notNullValue() ) );
 
 		final ConfigLoad ld = new ConfigLoad();
@@ -105,4 +112,11 @@ public class ConfigReaderTest
 		assertThat( cn.getNode( "map3.prop2" ).getValue(), is( "value2" ) );
 	}
 
+	private InputStream input( String type )
+	{
+		final String res = format( "/config.%s", type.toLowerCase() );
+		final InputStream source = getClass().getResourceAsStream( res );
+
+		return source;
+	}
 }

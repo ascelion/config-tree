@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -21,9 +20,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-@ConfigReader.Type( value = "XML" )
+@ConfigReader.Type( value = XMLConfigReader.TYPE )
 public class XMLConfigReader implements ConfigReader
 {
+
+	static public final String TYPE = "XML";
 
 	static class Context
 	{
@@ -103,7 +104,7 @@ public class XMLConfigReader implements ConfigReader
 	}
 
 	@Override
-	public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys, InputStream is ) throws IOException
+	public Map<String, ?> readConfiguration( ConfigSource source, InputStream is ) throws IOException
 	{
 		try {
 			final Map<String, String> m = new HashMap<>();

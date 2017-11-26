@@ -6,7 +6,6 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
@@ -18,7 +17,7 @@ class XYZReader implements ConfigReader
 {
 
 	@Override
-	public Map<String, ?> readConfiguration( ConfigSource source, Set<String> keys ) throws ConfigException
+	public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
 	{
 		final Map<String, String> m = new HashMap<>();
 		final Properties p = new Properties();

@@ -2,7 +2,6 @@
 package ascelion.config.eclipse;
 
 import java.util.Map;
-import java.util.Set;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
@@ -23,7 +22,7 @@ final class ConfigSourceReader implements ConfigReader
 	}
 
 	@Override
-	public Map<String, ?> readConfiguration( ascelion.config.api.ConfigSource source, Set<String> keys ) throws ConfigException
+	public Map<String, ?> readConfiguration( ascelion.config.api.ConfigSource source ) throws ConfigException
 	{
 		return this.cs.getProperties();
 	}
