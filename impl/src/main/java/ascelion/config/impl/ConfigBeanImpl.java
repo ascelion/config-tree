@@ -56,16 +56,18 @@ class ConfigBeanImpl extends NotificationBroadcasterSupport implements ConfigBea
 	{
 		final String oldValue = getExpression();
 
-		try {
-			this.node.set( value );
-		}
-		catch( final ConfigParseException e ) {
-			this.node.set( value.replace( ":", "\\:" ) );
-		}
-		finally {
-			final Notification n = new AttributeChangeNotification( this, this.ntf_seq++, System.currentTimeMillis(), "Configuration changed", this.node.getPath(), "java.lang.String", oldValue, value );
+		if( !Objects.equals( value, oldValue ) ) {
+			try {
+				this.node.set( value );
+			}
+			catch( final ConfigParseException e ) {
+				this.node.set( value.replace( ":", "\\:" ) );
+			}
+			finally {
+				final Notification n = new AttributeChangeNotification( this, this.ntf_seq++, System.currentTimeMillis(), "Configuration changed", this.node.getPath(), "java.lang.String", oldValue, value );
 
-			sendNotification( n );
+				sendNotification( n );
+			}
 		}
 	}
 
