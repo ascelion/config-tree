@@ -2,6 +2,7 @@
 package ascelion.config.conv;
 
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,8 @@ public class ConvertNullTest
 		data.add( asArray( parameterizedClass( List.class, String.class ), notNullValue() ) );
 		data.add( asArray( parameterizedClass( Set.class, String.class ), notNullValue() ) );
 		data.add( asArray( arrayOf( String.class ), notNullValue() ) );
+
+		data.add( asArray( URI.class, nullValue() ) );
 
 		return data.toArray();
 	}

@@ -309,15 +309,50 @@ public final class Converters implements ConfigConverter<Object>
 				return new InterfaceConverter<>( this );
 			}
 
+			final ConfigConverter<?> fc = fromClass( cls );
+
+			if( fc != null ) {
+				return nullable( fc );
+			}
+		}
+
+		throw new ConfigException( format( "NO WAY to construct a %s", type.getTypeName() ) );
+	}
+
+	private ConfigConverter<?> fromClass( final Class<?> cls )
+	{
+		try {
+			final Constructor<?> c = cls.getConstructor( String.class );
+
+			return ( t, u ) -> {
+				try {
+					return c.newInstance( u );
+				}
+				catch( InstantiationException | IllegalAccessException e ) {
+					throw new ConfigException( u, e.getCause() );
+				}
+				catch( final InvocationTargetException e ) {
+					throw new ConfigException( u, e.getCause() );
+				}
+			};
+		}
+		catch( final NoSuchMethodException e ) {
+		}
+
+		for( final String create : CREATE ) {
 			try {
-				final Constructor<?> c = cls.getConstructor( String.class );
+				final Method m = cls.getMethod( create, String.class );
+
+				if( !Modifier.isStatic( m.getModifiers() ) ) {
+					continue;
+				}
 
 				return ( t, u ) -> {
 					try {
-						return c.newInstance( u );
+						return m.invoke( null, u );
 					}
-					catch( InstantiationException | IllegalAccessException e ) {
-						throw new ConfigException( u, e.getCause() );
+					catch( final IllegalAccessException e ) {
+						throw new ConfigException( u, e );
 					}
 					catch( final InvocationTargetException e ) {
 						throw new ConfigException( u, e.getCause() );
@@ -326,33 +361,9 @@ public final class Converters implements ConfigConverter<Object>
 			}
 			catch( final NoSuchMethodException e ) {
 			}
-
-			for( final String create : CREATE ) {
-				try {
-					final Method m = cls.getMethod( create, String.class );
-
-					if( !Modifier.isStatic( m.getModifiers() ) ) {
-						continue;
-					}
-
-					return ( t, u ) -> {
-						try {
-							return m.invoke( null, u );
-						}
-						catch( final IllegalAccessException e ) {
-							throw new ConfigException( u, e );
-						}
-						catch( final InvocationTargetException e ) {
-							throw new ConfigException( u, e.getCause() );
-						}
-					};
-				}
-				catch( final NoSuchMethodException e ) {
-				}
-			}
 		}
 
-		throw new ConfigException( format( "NO WAY to construct a %s", type.getTypeName() ) );
+		return null;
 	}
 
 	private void add( Type type, Function<String, ?> func )
