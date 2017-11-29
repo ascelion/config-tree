@@ -19,6 +19,7 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
@@ -287,6 +288,10 @@ public final class Converters implements ConfigConverter<Object>
 			if( rt.equals( Map.class ) ) {
 				final Type ct = pt.getActualTypeArguments()[1];
 				return new MapConverter( ct, getConverter( ct ) );
+			}
+			if( rt.equals( Optional.class ) ) {
+				final Type ct = pt.getActualTypeArguments()[0];
+				return new OptionalConverter( ct, getConverter( ct ) );
 			}
 
 			return getConverter( rt );

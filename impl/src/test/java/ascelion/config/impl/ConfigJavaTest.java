@@ -4,6 +4,7 @@ package ascelion.config.impl;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import ascelion.config.api.ConfigSource;
@@ -39,6 +40,8 @@ public class ConfigJavaTest
 			asArray( "file.prop2", String.class, "value2" ),
 			asArray( "file.prop3", String.class, "value1, value2, value3" ),
 			asArray( "file.prop3", String[].class, asArray( "value1", "value2", "value3" ) ),
+
+			asArray( "file.prop1", parameterizedClass( Optional.class, Long.class ), Optional.of( 314L ) ),
 
 			asArray( "file.prop6", String.class, "1, 2, 3" ),
 			asArray( "file.prop6", String[].class, asArray( "1", "2", "3" ) ),
