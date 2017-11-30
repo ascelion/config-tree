@@ -13,19 +13,18 @@ import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
+import ascelion.logging.LOG;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class ConfigLoad
 {
 
-	static private final Logger L = LoggerFactory.getLogger( ConfigLoad.class );
+	static private final LOG L = LOG.get();
 
 	private final Map<String, ConfigReader> readers = new TreeMap<>();
 	private final Collection<ConfigSource> sources = new ArrayList<>();
@@ -37,7 +36,7 @@ public final class ConfigLoad
 		final ConfigReader.Type t = Utils.findAnnotation( ConfigReader.Type.class, c )
 			.orElseThrow( () -> new ConfigException( format( "Cannot find annotation @ConfigReader.Type on class %s", c.getName() ) ) );
 
-		L.trace( format( "Adding reader %s from %s", t.value(), c.getSimpleName() ) );
+		L.trace( "Adding reader %s from %s", t.value(), c.getSimpleName() );
 
 		this.readers.put( t.value().toUpperCase(), rd );
 
@@ -76,7 +75,7 @@ public final class ConfigLoad
 				.create()
 				.toJson( root );
 
-			L.trace( "Config: {}", s );
+			L.trace( "Config: %s", s );
 		}
 
 		return root;
@@ -89,7 +88,7 @@ public final class ConfigLoad
 
 		if( rd.enabled() ) {
 			try {
-				L.trace( "Reading: type {} from '{}'", type, source.value() );
+				L.trace( "Reading: type %s from '%s'", type, source.value() );
 
 				root.set( rd.readConfiguration( source ) );
 			}
@@ -109,11 +108,11 @@ public final class ConfigLoad
 		final List<URL> all = ConfigReader.getResources( source.value() );
 
 		if( all.isEmpty() ) {
-			L.warn( "Cannot find configuration source {}", source.value() );
+			L.warn( "Cannot find configuration source %s", source.value() );
 		}
 		else {
 			for( final URL u : all ) {
-				L.trace( "Reading: type {} from '{}'", type, u );
+				L.trace( "Reading: type %s from '%s'", type, u );
 
 				try {
 					root.set( rd.readConfiguration( source, u ) );

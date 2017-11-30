@@ -29,19 +29,16 @@ import ascelion.config.conv.Converters;
 import ascelion.config.impl.ConfigLoad;
 import ascelion.config.impl.JMXSupport;
 import ascelion.config.read.JMXConfigReader;
+import ascelion.logging.LOG;
 
-import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Typed( ConfigProd.class )
 class ConfigProd
 {
 
-	static private final Logger L = LoggerFactory.getLogger( ConfigProd.class );
+	static private final LOG L = LOG.get();
 
 	@Inject
 	private BeanManager bm;
@@ -68,12 +65,12 @@ class ConfigProd
 	@ConfigValue( "" )
 	Object create( InjectionPoint ip )
 	{
-		L.trace( "Value: {}", ip.getAnnotated() );
+		L.trace( "Value: %s", ip.getAnnotated() );
 
 		final ConfigValue a = ip.getAnnotated().getAnnotation( ConfigValue.class );
 		final Type t = ip.getType();
 
-		L.trace( format( "%s -> %s ", a.value(), ip.getAnnotated() ) );
+		L.trace( "%s -> %s ", a.value(), ip.getAnnotated() );
 
 		final ConfigConverter<?> c = ofNullable( this.converters.get( a.converter() ) ).map( i -> i.instance ).orElse( this.conv );
 

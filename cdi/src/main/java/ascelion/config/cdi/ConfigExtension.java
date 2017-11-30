@@ -38,19 +38,18 @@ import ascelion.config.read.PRPConfigReader;
 import ascelion.config.read.SYSConfigReader;
 import ascelion.config.read.XMLConfigReader;
 import ascelion.config.read.YMLConfigReader;
+import ascelion.logging.LOG;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
 import com.google.common.primitives.Primitives;
 import org.apache.deltaspike.core.api.literal.SingletonLiteral;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ConfigExtension implements Extension
 {
 
-	static private final Logger L = LoggerFactory.getLogger( ConfigExtension.class );
+	static private final LOG L = LOG.get();
 
 	private final Set<ConfigSource> sources = new HashSet<>();
 	private final Set<Class<? extends ConfigConverter<?>>> converters = new TreeSet<>( new TypeCMP<>() );
@@ -104,12 +103,12 @@ public class ConfigExtension implements Extension
 			.forEach( x -> addSources( t, x.annotationType().getAnnotation( ConfigSource.class ) ) );
 	}
 
-	<X> void collectConfigValue( BeanManager bm, @Observes @WithAnnotations( ConfigValue.class ) ProcessAnnotatedType<X> event )
+	<X> void collectConfigValue( @Observes @WithAnnotations( ConfigValue.class ) ProcessAnnotatedType<X> event )
 	{
 		final ConfigType<X> type = new ConfigType<>( event.getAnnotatedType() );
 
 		if( type.modified() ) {
-			L.info( "Found: {}", type.getBaseType().getTypeName() );
+			L.info( "Found: %s", type.getBaseType().getTypeName() );
 
 			if( L.isDebugEnabled() ) {
 				logMembers( "Constructor", type.getConstructors() );
@@ -137,7 +136,7 @@ public class ConfigExtension implements Extension
 					t = ( (ParameterizedType) t ).getActualTypeArguments()[0];
 				}
 			}
-			L.info( "Config type: {} from {}", t, p );
+			L.info( "Config type: %s from %s", t, p );
 
 			this.types.add( wrap( t ) );
 		}
@@ -146,7 +145,7 @@ public class ConfigExtension implements Extension
 	void defaultProducer( @Observes ProcessBean<ConfigProd> event )
 	{
 		if( event.getAnnotated() instanceof AnnotatedMember ) {
-			L.info( "Default producer: {}", event.getBean() );
+			L.info( "Default producer: %s", event.getBean() );
 
 			this.producer = event.getBean();
 		}
@@ -159,7 +158,7 @@ public class ConfigExtension implements Extension
 		if( m.isAnnotationPresent( ConfigValue.class ) && ( m.getBaseType() != Object.class ) ) {
 			final Type t = wrap( m.getBaseType() );
 
-			L.info( "Remove type: {} from {}", t, m );
+			L.info( "Remove type: %s from %s", t, m );
 
 			this.producedTypes.add( t );
 		}
@@ -170,7 +169,7 @@ public class ConfigExtension implements Extension
 		this.types.removeAll( this.producedTypes );
 
 		if( this.types.size() > 0 ) {
-			L.info( "Add producer for types {}", this.types );
+			L.info( "Add producer for types %s", this.types );
 
 			event.addBean( new ConfigProdBean<>( this.producer, this.types ) );
 		}
@@ -204,14 +203,14 @@ public class ConfigExtension implements Extension
 	{
 		final List<ConfigSource> all = asList( sources );
 
-		L.info( "Source: {}", t.getBaseType() );
-		L.debug( "\t{}", all );
+		L.info( "Source: %s", t.getBaseType() );
+		L.debug( "\t%s", all );
 
 		this.sources.addAll( all );
 	}
 
 	private <A extends AnnotatedMember<? super X>, X> void logMembers( String prefix, Collection<A> members )
 	{
-		members.stream().filter( e -> e.isAnnotationPresent( Inject.class ) ).forEach( e -> L.debug( "\t{}: {}/{}", prefix, e, e.getBaseType() ) );
+		members.stream().filter( e -> e.isAnnotationPresent( Inject.class ) ).forEach( e -> L.debug( "\t%s: %s/%s", prefix, e, e.getBaseType() ) );
 	}
 }

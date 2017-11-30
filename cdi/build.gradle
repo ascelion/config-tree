@@ -4,8 +4,7 @@ dependencies {
 	compile project( ':impl' )
 
 	compile 'ascelion.shared:cdi-utils'
-
-	compile 'org.slf4j:slf4j-api'
+	compile 'ascelion.shared:fmt-log'
 
 	compile 'org.apache.deltaspike.core:deltaspike-core-api'
 
