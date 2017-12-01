@@ -39,7 +39,7 @@ dependencyManagement {
 		}
 
 		dependency 'junit:junit:4.12'
-		
+
 		dependencySet( group: 'org.slf4j', version: versions.slf4j ) {
 			entry 'slf4j-api'
 			entry 'jul-to-slf4j'

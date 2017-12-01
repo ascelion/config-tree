@@ -79,7 +79,7 @@ public class ConfigExtension implements Extension
 
 		at.getAnnotations().add( new SingletonLiteral() );
 
-		event.addAnnotatedType( at );
+		event.addAnnotatedType( at, type.getName() );
 	}
 
 	<X> void collectConfigSourceList( @Observes ProcessAnnotatedType<X> event )
