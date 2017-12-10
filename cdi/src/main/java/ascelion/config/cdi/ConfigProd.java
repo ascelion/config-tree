@@ -51,7 +51,7 @@ class ConfigProd
 	private Instance<ConfigReader> rdi;
 	@Inject
 	@Any
-	private Instance<ConfigConverter<?>> cvi;
+	private Instance<ConfigConverter> cvi;
 	@Inject
 	@Any
 	private Instance<MBeanServer> mbsi;

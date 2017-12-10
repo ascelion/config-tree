@@ -34,7 +34,7 @@ final class InterfaceConverter<T> implements ConfigConverter<T>
 		}
 
 		final Class<?>[] types = new Class[] { cls };
-		final ClassLoader cld = Thread.currentThread().getContextClassLoader();
+		final ClassLoader cld = cls.getClassLoader();
 
 		return (T) Proxy.newProxyInstance( cld, types, new InterfaceValue( cls, this.conv, u ) );
 	}

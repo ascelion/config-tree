@@ -58,7 +58,7 @@ public class ConfigExtension implements Extension
 	private final Set<Type> producedTypes = new TreeSet<>( new TypeCMP<>() );
 	private Bean<ConfigProd> producer;
 
-	void beforeBeanDiscovery( BeanManager bm, @Observes BeforeBeanDiscovery event )
+	void beforeBeanDiscovery( @Observes BeforeBeanDiscovery event, BeanManager bm )
 	{
 		addType( Converters.class, bm, event );
 		addType( ENVConfigReader.class, bm, event );
@@ -69,17 +69,6 @@ public class ConfigExtension implements Extension
 		addType( VALConfigReader.class, bm, event );
 		addType( XMLConfigReader.class, bm, event );
 		addType( YMLConfigReader.class, bm, event );
-	}
-
-	private void addType( Class<?> type, BeanManager bm, BeforeBeanDiscovery event )
-	{
-		AnnotatedType<?> at = bm.createAnnotatedType( type );
-
-		at = new AnnotatedTypeW<>( at );
-
-		at.getAnnotations().add( new SingletonLiteral() );
-
-		event.addAnnotatedType( at, type.getName() );
 	}
 
 	<X> void collectConfigSourceList( @Observes ProcessAnnotatedType<X> event )
@@ -164,7 +153,7 @@ public class ConfigExtension implements Extension
 		}
 	}
 
-	void afterBeanDiscovery( BeanManager bm, @Observes AfterBeanDiscovery event )
+	void afterBeanDiscovery( @Observes AfterBeanDiscovery event, BeanManager bm )
 	{
 		this.types.removeAll( this.producedTypes );
 
@@ -190,13 +179,24 @@ public class ConfigExtension implements Extension
 		return unmodifiableSet( this.values );
 	}
 
-	Type wrap( Type t )
+	private Type wrap( Type t )
 	{
 		if( t instanceof Class && ( (Class<?>) t ).isPrimitive() ) {
 			t = Primitives.wrap( (Class<?>) t );
 		}
 
 		return t;
+	}
+
+	private void addType( Class<?> type, BeanManager bm, BeforeBeanDiscovery event )
+	{
+		AnnotatedType<?> at = bm.createAnnotatedType( type );
+
+		at = new AnnotatedTypeW<>( at );
+
+		at.getAnnotations().add( new SingletonLiteral() );
+
+		event.addAnnotatedType( at, type.getName() );
 	}
 
 	private void addSources( AnnotatedType<?> t, ConfigSource... sources )
