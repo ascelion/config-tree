@@ -1,9 +1,8 @@
-
 rootProject.name = 'config'
 
 def includeChildren( File root )
 {
-	int size = rootProject.projectDir.absolutePath.length() + 1
+	int size = rootProject.projectDir.absolutePath.length()
 	def children = root.listFiles()
 
 	children.each {
@@ -13,14 +12,13 @@ def includeChildren( File root )
 			}
 	
 			if( it.name != 'bin' && it.name != 'build' ) {
-				include it.absolutePath.substring(size);
+				include it.absolutePath.substring(size).replace( '/', ':')
 			}
 		}
 		else {
-			includeChildren( it )
+			includeChildren it
 		}
 	}
 }
 
-includeChildren( rootProject.projectDir )
-
+includeChildren rootProject.projectDir

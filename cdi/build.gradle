@@ -6,15 +6,10 @@ dependencies {
 	compile 'ascelion.shared:cdi-utils'
 	compile 'ascelion.shared:fmt-log'
 
-	compile 'org.apache.deltaspike.core:deltaspike-core-api'
-
-	testCompile 'junit:junit'
-	testCompile 'ascelion.shared:cdi-unit-ext'
+	testCompile 'ascelion.shared:cdi-unit-impl'
 	testCompile 'ascelion.shared:cdi-unit-weld'
+	testCompile 'org.apache.deltaspike.core:deltaspike-core-impl'
 
 	testCompile project( path: ':impl', configuration: 'testArtifacts' )
-
-	testRuntime 'javax.el:javax.el-api'
-	testRuntime 'org.jboss.weld.se:weld-se-core'
 	testRuntime 'org.postgresql:postgresql'
 }

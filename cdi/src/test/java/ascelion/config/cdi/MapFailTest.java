@@ -8,10 +8,10 @@ import java.util.Set;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
+import ascelion.cdi.junit.CdiUnit;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
-import ascelion.tests.cdi.CdiUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

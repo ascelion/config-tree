@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Typed;
+import javax.enterprise.inject.literal.InjectLiteral;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedCallable;
 import javax.enterprise.inject.spi.AnnotatedField;
@@ -73,7 +74,7 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 	private void addInject( Annotated e )
 	{
 		if( !e.isAnnotationPresent( Inject.class ) ) {
-			e.getAnnotations().add( new InjectLiteral() );
+			e.getAnnotations().add( InjectLiteral.INSTANCE );
 
 			this.modified = true;
 		}

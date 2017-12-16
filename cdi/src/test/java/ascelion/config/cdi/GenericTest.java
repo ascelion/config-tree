@@ -8,11 +8,11 @@ import java.util.Map;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
+import ascelion.cdi.junit.CdiUnit;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
-import ascelion.tests.cdi.CdiUnit;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -20,17 +20,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.array;
 import static org.junit.Assert.assertThat;
 
-import org.jglue.cdiunit.AdditionalClasses;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
-@AdditionalClasses( {
-	GenericTest.IBean.class,
-	GenericTest.LBean.class,
-	GenericTest.SBean.class,
-	GenericTest.CustomSource.class,
-} )
 @UseConfigExtension
 public class GenericTest
 {

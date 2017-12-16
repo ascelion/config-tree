@@ -3,7 +3,6 @@ ext {
 		payara: '4.1.2.173',
 		jersey: '2.25.1',
 		slf4j: '1.7.25',
-		logback: '1.2.3',
 		deltaspike: '1.8.0',
 		antlr4: '4.7',
 	]
@@ -11,47 +10,29 @@ ext {
 
 dependencyManagement {
 	imports {
-		mavenBom 'ascelion:defaults-bom:1.3.4-SNAPSHOT'
-		mavenBom "org.apache.deltaspike.distribution:distributions-bom:${versions.deltaspike}"
+		mavenBom 'ascelion.shared:cdi-utils-bom:2.0.0-SNAPSHOT'
 	}
 
-	dependencies {
-		dependency 'javax.enterprise:cdi-api:1.2'
-
-		dependency 'ascelion.shared:fmt-log:2.0.0-SNAPSHOT'
-		dependency 'ascelion.shared:cdi-utils:1.0.5-SNAPSHOT'
-
-		dependencySet( group: 'ascelion.shared', version: '1.0.4-SNAPSHOT' ) {
-			entry 'cdi-unit-ext'
-			entry 'cdi-unit-weld'
+	project.withConfiguration( 'testCompile' ) {
+		configurations( it ) {
+			imports {
+				mavenBom 'ascelion.shared:junit-bom:1.1.6-SNAPSHOT'
+			}
+			
+			dependencies {
+				dependency 'org.postgresql:postgresql:42.1.4'
+			}
 		}
+	}
 
-		dependency 'com.google.guava:guava:20.0'
-		dependency 'org.yaml:snakeyaml:1.18'
-		dependency 'org.ini4j:ini4j:0.5.4'
-		dependency 'com.google.code.gson:gson:2.8.2'
-		dependency 'io.github.lukehutch:fast-classpath-scanner:2.8.2'
-		dependency 'io.leangen.geantyref:geantyref:1.2.1'
-
-		dependencySet( group: 'org.antlr', version: versions.antlr4 ) {
-			entry 'antlr4'
-			entry 'antlr4-runtime'
+	project.withConfigurations( ['antlr', 'testCompile'] ) {
+		configurations( it ) {
+			dependencies {
+				dependencySet( group: 'org.antlr', version: versions.antlr4 ) {
+					entry 'antlr4'
+					entry 'antlr4-runtime'
+				}
+			}
 		}
-
-		dependency 'junit:junit:4.12'
-
-		dependencySet( group: 'org.slf4j', version: versions.slf4j ) {
-			entry 'slf4j-api'
-			entry 'jul-to-slf4j'
-			entry 'jcl-over-slf4j'
-			entry 'log4j-over-slf4j'
-		}
-
-		dependencySet( group: 'ch.qos.logback', version: versions.logback ) {
-			entry 'logback-classic'
-			entry 'logback-access'
-		}
-
-		dependency 'org.jboss.weld.se:weld-se-core:2.4.5.Final'
 	}
 }

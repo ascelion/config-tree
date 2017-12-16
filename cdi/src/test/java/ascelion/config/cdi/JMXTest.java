@@ -8,28 +8,21 @@ import javax.inject.Inject;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 
+import ascelion.cdi.junit.CdiUnit;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.read.JMXConfigReader;
-import ascelion.tests.cdi.CdiUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import org.jglue.cdiunit.AdditionalClasses;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
 @UseConfigExtension
-@AdditionalClasses( {
-	JMXTest.SP.class,
-//	GenericTest.CustomSource.class,
-//	ReloadTest.CustomSource1.class,
-//	ReloadTest.CustomSource2.class,
-} )
 public class JMXTest
 {
 

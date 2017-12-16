@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
@@ -33,7 +32,6 @@ import ascelion.logging.LOG;
 
 import static java.util.Optional.ofNullable;
 
-@ApplicationScoped
 @Typed( ConfigProd.class )
 class ConfigProd
 {

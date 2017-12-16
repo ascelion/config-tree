@@ -6,25 +6,20 @@ import java.util.stream.Stream;
 
 import javax.enterprise.inject.spi.CDI;
 
+import ascelion.cdi.junit.CdiUnit;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.conv.DataSourceDefinition;
-import ascelion.tests.cdi.CdiUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import org.jglue.cdiunit.AdditionalClasses;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
-@AdditionalClasses( {
-	InterfaceTest.Bean1.class,
-//	InterfaceTest.Bean2.class,
-} )
 @ConfigSource( "interfaces.yml" )
 @UseConfigExtension
 public class InterfaceTest

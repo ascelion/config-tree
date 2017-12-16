@@ -10,10 +10,10 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import ascelion.cdi.junit.CdiUnit;
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
-import ascelion.tests.cdi.CdiUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -21,16 +21,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
 
-import org.jglue.cdiunit.AdditionalClasses;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
-@AdditionalClasses( {
-	ConfigValueTest.Bean1.class,
-	ConfigValueTest.Bean2.class,
-	ConfigValueTest.Bean3.class,
-} )
 @UseConfigExtension
 public class ConfigValueTest
 {

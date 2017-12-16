@@ -6,26 +6,22 @@ import java.util.Map;
 
 import javax.enterprise.context.Dependent;
 
+import ascelion.cdi.junit.CdiUnit;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
-import ascelion.tests.cdi.CdiUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.jglue.cdiunit.AdditionalClasses;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
 @ConfigPrefix( "cdi" )
 @ConfigSource( type = "PFX" )
-@AdditionalClasses( {
-	PrefixTest.CustomSource.class,
-} )
 @UseConfigExtension
 public class PrefixTest
 {

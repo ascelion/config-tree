@@ -6,25 +6,21 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
+import ascelion.cdi.junit.CdiUnit;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
-import ascelion.tests.cdi.CdiUnit;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.google.gson.Gson;
-import org.jglue.cdiunit.AdditionalClasses;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
-@AdditionalClasses( {
-	CustomSourceTest.CustomReader.class
-} )
 @UseConfigExtension
 @ConfigSource( type = "custom", value = "{ 'custom.prop1': 'value', 'custom.prop2': '314', 'custom.prop3': 'HIHI!' }", priority = Integer.MAX_VALUE )
 public class CustomSourceTest

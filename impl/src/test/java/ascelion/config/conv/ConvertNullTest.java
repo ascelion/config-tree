@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ascelion.tests.WhiteBox;
+
 import static ascelion.config.impl.Utils.asArray;
 import static ascelion.config.impl.Utils.isArray;
 import static ascelion.config.impl.Utils.isPrimitive;
@@ -22,7 +24,6 @@ import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.mockito.internal.util.reflection.Whitebox;
 
 @RunWith( Parameterized.class )
 public class ConvertNullTest
@@ -34,7 +35,7 @@ public class ConvertNullTest
 	static public Object[] data()
 	{
 		final List<Object[]> data = new ArrayList<>();
-		final Map<Type, ?> cached = (Map<Type, ?>) Whitebox.getInternalState( CVS, "cached" );
+		final Map<Type, ?> cached = (Map<Type, ?>) WhiteBox.getFieldValue( CVS, "cached" );
 
 		for( final Type t : cached.keySet() ) {
 			if( isPrimitive( t ) ) {

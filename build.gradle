@@ -5,29 +5,21 @@ buildscript {
 }
 
 allprojects {
+	group = 'ascelion.shared'
+
 	apply plugin: 'ascelion'
 }
 
 subprojects {
-	group = 'ascelion.shared'
+	apply plugin: 'java'
 
 	tasks.withType( JavaCompile ) {
 		options.compilerArgs << '-parameters'
 	}
 
-	def baseName = "${rootProject.name}${path.replace(':', '-')}"
+	def fullName = "${rootProject.name}${path.replace(':', '-')}"
 
-	ascelion {
-		java {
-			main {
-				artifactId = baseName
-			}
-		}
-	}
-
-	eclipse {
-		project {
-			name = baseName
-		}
-	}
+	eclipse.project.name = fullName
+	ascelion.java.main.artifactId = fullName
 }
+

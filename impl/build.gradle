@@ -1,12 +1,9 @@
 apply plugin: 'java'
-apply plugin: 'antlr'
 
 dependencies {
-	antlr 'org.antlr:antlr4'
-
 	compile project( ':api' )
 
-	compile 'org.slf4j:slf4j-api'
+	compile 'ascelion.shared:fmt-log'
 
 	compile 'org.apache.commons:commons-lang3'
 	compile 'commons-io:commons-io'
@@ -21,14 +18,7 @@ dependencies {
 	compile 'io.leangen.geantyref:geantyref'
 
 	testCompile 'org.antlr:antlr4-runtime'
-	testCompile 'junit:junit'
-	testCompile 'org.mockito:mockito-core'
-	testCompile 'org.hamcrest:hamcrest-library'
-
-	testRuntime 'org.slf4j:jul-to-slf4j'
-	testRuntime 'org.slf4j:jcl-over-slf4j'
-	testRuntime 'org.slf4j:log4j-over-slf4j'
-	testRuntime 'ch.qos.logback:logback-classic'
+	testCompile 'ascelion.shared:junit-ext'
 
 	testRuntime 'org.postgresql:postgresql'
 }
@@ -41,12 +31,6 @@ artifacts {
 	testArtifacts testJar
 }
 
-tasks.withType( AntlrTask ).all { t ->
-	eclipseClasspath {
-		dependsOn t
-	}
-}
-
 task( cleanLog, type: Delete ) {
 	delete '**/*.log'
 	outputs.upToDateWhen { false }
@@ -55,20 +39,3 @@ task( cleanLog, type: Delete ) {
 test {
 	dependsOn cleanLog
 }
-
-task( grun, type: JavaExec ) {
-	main = 'org.antlr.v4.gui.TestRig'
-	classpath += sourceSets.test.output
-	classpath += sourceSets.test.runtimeClasspath
-	classpath += configurations.antlr
-	args += [ 'ascelion.cdi.conf.Expression', 'root' ]
-	args += [ '-tokens', '-trace', '-diagnostics', '-SLL', '-tree']
-	
-	if( System.getProperty( "stdin" ) == '' ) {
-		standardInput = System.in
-	}
-	else {
-		args += fileTree( dir: 'src/test/resources', include: 'expression-??.txt' ).sort()
-	}
-}
-

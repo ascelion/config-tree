@@ -5,8 +5,8 @@ import java.io.File;
 
 import javax.enterprise.inject.Instance;
 
+import ascelion.cdi.junit.CdiUnit;
 import ascelion.config.api.ConfigValue;
-import ascelion.tests.cdi.CdiUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ascelion.tests.WhiteBox;
+
 import static ascelion.config.impl.Utils.asArray;
 import static io.leangen.geantyref.TypeFactory.arrayOf;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
@@ -21,7 +23,6 @@ import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.mockito.internal.util.reflection.Whitebox;
 
 @RunWith( Parameterized.class )
 public class ConverterTypeTest
@@ -128,7 +129,7 @@ public class ConverterTypeTest
 			}
 
 			try {
-				o = Whitebox.getInternalState( o, "conv" );
+				o = WhiteBox.getFieldValue( o, "conv" );
 			}
 			catch( final RuntimeException e ) {
 				o = null;

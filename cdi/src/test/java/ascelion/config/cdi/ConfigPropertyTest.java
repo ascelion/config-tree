@@ -13,29 +13,20 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
-import ascelion.tests.cdi.CdiUnit;
+import ascelion.cdi.junit.CdiUnit;
+import ascelion.cdi.junit.ImportClasspaths;
 
 import org.apache.deltaspike.core.api.config.ConfigProperty;
 import org.apache.deltaspike.core.api.config.ConfigResolver;
 import org.apache.deltaspike.core.api.provider.BeanManagerProvider;
 import org.apache.deltaspike.core.impl.config.ConfigurationExtension;
 import org.apache.deltaspike.core.spi.config.BaseConfigPropertyProducer;
-import org.jglue.cdiunit.AdditionalClasses;
-import org.jglue.cdiunit.AdditionalClasspaths;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
-@AdditionalClasses( {
-	ConfigPropertyTest.Bean1.class,
-	ConfigPropertyTest.Bean2.class,
-	ConfigPropertyTest.Bean3.class,
-	ConfigPropertyTest.BigDecimalCVT.class,
-	ConfigPropertyTest.DateCVT.class,
-	ConfigPropertyTest.FileCVT.class,
-} )
-@AdditionalClasspaths( {
+@ImportClasspaths( {
 	BeanManagerProvider.class,
 	ConfigurationExtension.class,
 } )

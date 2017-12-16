@@ -5,10 +5,10 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import ascelion.cdi.junit.CdiUnit;
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
-import ascelion.tests.cdi.CdiUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;

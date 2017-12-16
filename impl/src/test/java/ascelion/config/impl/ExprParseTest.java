@@ -101,22 +101,4 @@ public class ExprParseTest
 			throw e;
 		}
 	}
-
-	@Test
-	public void parseLex() throws IOException
-	{
-		System.out.println( "PARSE-LEX ----------------------" );
-		System.out.printf( "'%s'\n", this.content );
-
-		try {
-			System.out.println( EvalLex.parse( this.content ) );
-		}
-		catch( final ConfigParseException e ) {
-			e.getErrors().forEach( System.err::println );
-
-			assertThat( e.getErrors(), hasSize( this.errors ) );
-
-			throw e;
-		}
-	}
 }

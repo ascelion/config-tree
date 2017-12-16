@@ -11,6 +11,7 @@ import java.util.TreeSet;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.literal.SingletonLiteral;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -44,7 +45,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
 import com.google.common.primitives.Primitives;
-import org.apache.deltaspike.core.api.literal.SingletonLiteral;
 
 public class ConfigExtension implements Extension
 {
@@ -60,6 +60,7 @@ public class ConfigExtension implements Extension
 
 	void beforeBeanDiscovery( @Observes BeforeBeanDiscovery event, BeanManager bm )
 	{
+		addType( ConfigProd.class, bm, event );
 		addType( Converters.class, bm, event );
 		addType( ENVConfigReader.class, bm, event );
 		addType( INIConfigReader.class, bm, event );
@@ -194,7 +195,7 @@ public class ConfigExtension implements Extension
 
 		at = new AnnotatedTypeW<>( at );
 
-		at.getAnnotations().add( new SingletonLiteral() );
+		at.getAnnotations().add( SingletonLiteral.INSTANCE );
 
 		event.addAnnotatedType( at, type.getName() );
 	}
