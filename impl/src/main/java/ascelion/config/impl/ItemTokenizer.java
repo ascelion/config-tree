@@ -189,6 +189,9 @@ final class ItemTokenizer
 		for( int k = 0; k < size; k++ ) {
 			final char c = this.sb.charAt( k );
 
+			if( k > 0 && c == '$' && this.sb.charAt( k - 1 ) == '\\' ) {
+				continue;
+			}
 			if( c == '$' || c == '{' ) {
 				this.errors.add( new ConfigParsePosition( format( "unknown char '%c' (\\u%04d)", c, (int) c ), k ) );
 			}
