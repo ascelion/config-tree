@@ -1,6 +1,6 @@
 buildscript {
 	dependencies {
-		classpath 'ascelion.gradle.plugins:gradle-ascelion-plugin:1.1.0-SNAPSHOT'
+		classpath 'ascelion.gradle.plugins:gradle-ascelion-plugin:1.1.1-SNAPSHOT'
 	}
 }
 

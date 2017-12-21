@@ -1,38 +1,16 @@
-ext {
-	versions = [
-		payara: '4.1.2.173',
-		jersey: '2.25.1',
-		slf4j: '1.7.25',
-		deltaspike: '1.8.0',
-		antlr4: '4.7',
-	]
+dependencyRecommendations {
+	propertiesFile file: file( 'versions.properties' )
+
+	mavenBom module: 'org.apache.deltaspike.distribution:distributions-bom:1.8.0'
+
+	mavenBom module: 'ascelion.shared:cdi-utils-bom:2.0.0-SNAPSHOT'
+	mavenBom module: 'ascelion.shared:cdi-unit-bom:2.0.0-SNAPSHOT'
+	mavenBom module: 'ascelion.shared:fmt-log-bom:2.0.0-SNAPSHOT'
+	mavenBom module: 'ascelion.shared:junit-bom:1.1.6-SNAPSHOT'
 }
 
-dependencyManagement {
-	imports {
-		mavenBom 'ascelion.shared:cdi-utils-bom:2.0.0-SNAPSHOT'
-	}
-
-	project.withConfiguration( 'testCompile' ) {
-		configurations( it ) {
-			imports {
-				mavenBom 'ascelion.shared:junit-bom:1.1.6-SNAPSHOT'
-			}
-			
-			dependencies {
-				dependency 'org.postgresql:postgresql:42.1.4'
-			}
-		}
-	}
-
-	project.withConfigurations( ['antlr', 'testCompile'] ) {
-		configurations( it ) {
-			dependencies {
-				dependencySet( group: 'org.antlr', version: versions.antlr4 ) {
-					entry 'antlr4'
-					entry 'antlr4-runtime'
-				}
-			}
-		}
+ascelion {
+	bom {
+		importBom 'ascelion.shared:cdi-utils-bom'
 	}
 }

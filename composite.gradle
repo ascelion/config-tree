@@ -1,0 +1,16 @@
+
+def compBuild( String dir, String mod ) {
+	dir = "../$dir"
+
+	if( file(dir).exists() ) {
+		includeBuild( dir ) {
+			dependencySubstitution {
+				substitute module( mod ) with project(':')
+			}
+		}
+	}
+}
+
+compBuild 'fmt-log', 'ascelion.shared:fmt-log'
+compBuild 'tsort', 'ascelion.shared:tsort'
+compBuild 'cdi-utils', 'ascelion.shared:cdi-utils'

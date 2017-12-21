@@ -23,19 +23,11 @@ dependencies {
 	testRuntime 'org.postgresql:postgresql'
 }
 
-configurations {
-	testArtifacts.extendsFrom testRuntime
-}
-
-artifacts {
-	testArtifacts testJar
-}
-
 task( cleanLog, type: Delete ) {
 	delete '**/*.log'
-	outputs.upToDateWhen { false }
 }
 
 test {
 	dependsOn cleanLog
 }
+
