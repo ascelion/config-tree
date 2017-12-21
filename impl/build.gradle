@@ -31,3 +31,10 @@ test {
 	dependsOn cleanLog
 }
 
+//configurations {
+//	testArtifact.extendsFrom testRuntime
+//}
+//
+//artifacts {
+//	testArtifact testJar
+//}

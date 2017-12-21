@@ -6,11 +6,10 @@ dependencies {
 	compile 'ascelion.shared:cdi-utils'
 	compile 'ascelion.shared:fmt-log'
 
+	testCompile project( path: ':impl', configuration: 'testArchive' )
 	testCompile 'ascelion.shared:cdi-unit-impl'
 	testCompile 'ascelion.shared:cdi-unit-weld'
 	testCompile 'org.apache.deltaspike.core:deltaspike-core-impl'
 
-	testCompile project( path: ':impl', configuration: 'testJar' )
 	testRuntime 'org.postgresql:postgresql'
 }
-

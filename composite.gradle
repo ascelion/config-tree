@@ -11,6 +11,5 @@ def compBuild( String dir, String mod ) {
 	}
 }
 
-compBuild 'fmt-log', 'ascelion.shared:fmt-log'
-compBuild 'tsort', 'ascelion.shared:tsort'
-compBuild 'cdi-utils', 'ascelion.shared:cdi-utils'
+//compBuild 'fmt-log', 'ascelion.shared:fmt-log'
+//compBuild 'cdi-utils', 'ascelion.shared:cdi-utils'
