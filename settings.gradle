@@ -1,24 +1,3 @@
 rootProject.name = 'config'
 
-def includeChildren( File root )
-{
-	int size = rootProject.projectDir.absolutePath.length()
-	def children = root.listFiles()
-
-	children.each {
-		if( file( "$it/build.gradle").exists() ) {
-			if( file( "$it/.no-build").exists() ) {
-				return
-			}
-	
-			if( it.name != 'bin' && it.name != 'build' ) {
-				include it.absolutePath.substring(size).replace( '/', ':')
-			}
-		}
-		else {
-			includeChildren it
-		}
-	}
-}
-
-includeChildren rootProject.projectDir
+apply from: "${gradle.gradleUserHomeDir}/settings.gradle"
