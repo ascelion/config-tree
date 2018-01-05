@@ -58,13 +58,16 @@ final class InterfaceValue implements InvocationHandler
 			final Type t = GenericTypeReflector.getExactReturnType( method, this.type );
 
 			if( this.node != null ) {
-				try {
-					final ConfigNode n = this.node.getNode( a.value() );
+				ConfigNode n = null;
 
-					return this.conv.create( t, n, a.unwrap() );
+				try {
+					n = this.node.getNode( a.value() );
 				}
 				catch( final ConfigNotFoundException e ) {
-					;
+				}
+
+				if( n != null ) {
+					return this.conv.create( t, n, a.unwrap() );
 				}
 			}
 
