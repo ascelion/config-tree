@@ -45,7 +45,7 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 				if( Utils.isContainer( this.type ) ) {
 					u.<Collection<ConfigNode>> getValue()
 						.forEach( n -> {
-							m.put( unwrap( n.getPath(), unwrap ), this.conv.create( this.type, n, 0 ) );
+							m.put( unwrap( n.getPath(), unwrap ), this.conv.create( this.type, n, unwrap ) );
 						} );
 				}
 				else {
