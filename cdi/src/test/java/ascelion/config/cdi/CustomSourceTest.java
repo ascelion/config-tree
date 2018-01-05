@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 
 @RunWith( CdiUnit.class )
 @UseConfigExtension
-@ConfigSource( type = "custom", value = "{ 'custom.prop1': 'value', 'custom.prop2': '314', 'custom.prop3': 'HIHI!' }", priority = Integer.MAX_VALUE )
+@ConfigSource( type = "custom", value = "{ 'custom.prop1': 'value', 'custom.prop2': '314', 'custom.prop3': 'HIHI!' }", priority = 9999 )
 public class CustomSourceTest
 {
 

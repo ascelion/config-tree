@@ -13,7 +13,7 @@ import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.Expression;
 
 @ConfigReader.Type( "VAL" )
-@ConfigSource( type = "VAL", priority = Integer.MIN_VALUE )
+@ConfigSource( type = "VAL", priority = -5000 )
 class VALConfigReader implements ConfigReader
 {
 

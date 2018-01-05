@@ -23,11 +23,12 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface ConfigValue
 {
 
-	@Retention( RUNTIME )
-	@Target( { METHOD, FIELD, PARAMETER, TYPE } )
-	@interface Default
-	{
-	}
+	// TODO
+//	@Retention( RUNTIME )
+//	@Target( { METHOD, FIELD, PARAMETER, TYPE } )
+//	@interface Default
+//	{
+//	}
 
 	@Nonbinding
 	String value() default "";
