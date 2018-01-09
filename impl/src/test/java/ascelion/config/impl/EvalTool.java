@@ -10,9 +10,12 @@ import java.util.stream.Collectors;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
+import ascelion.config.api.ConfigParseException;
+import ascelion.config.api.ConfigParsePosition;
 import ascelion.config.impl.ItemTokenizer.Token;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 
 public final class EvalTool
 {
@@ -245,6 +248,10 @@ public final class EvalTool
 		@Override
 		public void seen( ItemTokenizer.Token tok )
 		{
+			if( this.root == null ) {
+				throw new ConfigParseException( "unknown error", asList( new ConfigParsePosition( "unbalanced '}'", tok.position ) ) );
+			}
+
 			switch( tok.type ) {
 				case BEG:
 					this.root = this.root.push( new Expr() );

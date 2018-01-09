@@ -12,9 +12,12 @@ import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigNode.Kind;
 import ascelion.config.api.ConfigNotFoundException;
+import ascelion.config.api.ConfigParseException;
+import ascelion.config.api.ConfigParsePosition;
 import ascelion.config.impl.ItemTokenizer.Token;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
 public final class Expression extends Evaluable
@@ -39,6 +42,10 @@ public final class Expression extends Evaluable
 		@Override
 		public void seen( Token tok )
 		{
+			if( this.expr == null ) {
+				throw new ConfigParseException( "unknown error", asList( new ConfigParsePosition( "unbalanced '}'", tok.position ) ) );
+			}
+
 			this.expr = this.expr.seen( tok );
 		}
 
