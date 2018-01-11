@@ -1,182 +1,164 @@
 
 package ascelion.config.impl;
 
-import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
-import ascelion.config.api.ConfigException;
+import ascelion.config.api.ConfigParseException;
 import ascelion.config.api.ConfigParsePosition;
-
-import static java.lang.String.format;
 
 final class ItemTokenizer
 {
 
-	static final class Token
+	static enum Context
 	{
-
-		static final char C_ESC = '\\';
-		static final String S_BEG = "${";
-		static final String S_DEF = ":";
-		static final String S_END = "}";
-
-		enum Type
-		{
-			BEG( S_BEG ),
-			DEF( S_DEF ),
-			END( S_END ),
-			STR,
-
-			;
-
-			final String value;
-
-			Type()
-			{
-				this( "" );
-			}
-
-			Type( String value )
-			{
-				this.value = value;
-			}
-		}
-
-		final int position;
-		final Type type;
-		final String text;
-
-		Token( int position, Type type, StringBuilder b )
-		{
-			this( position, type, b, b.length() );
-		}
-
-		Token( int position, Type type, StringBuilder b, int count )
-		{
-			this.position = position;
-			this.type = type;
-			this.text = b.substring( 0, count ).toString().replace( "\\:", ":" );
-
-			b.delete( 0, count );
-		}
-
-		@Override
-		public String toString()
-		{
-			if( this.text.isEmpty() ) {
-				return format( "%s[%d]", this.type, this.position );
-			}
-			else {
-				return format( "%s[%d] - %s", this.type, this.position, this.text );
-			}
-		}
+		COLLECT,
+		ESCAPE,
+		DOLLAR,
+		VALUE,
+		DEFAULT,
 	}
 
-	private final Reader rd;
-	private final StringBuilder sb = new StringBuilder();
+	private final char[] content;
+	private int offset;
+	private final StringBuilder text = new StringBuilder();
+	private final Deque<Context> contexts = new LinkedList<>();
 	private final List<ConfigParsePosition> errors = new ArrayList<>();
 
-	private int position;
-	private boolean escape;
-
-	ItemTokenizer( Reader rd )
+	ItemTokenizer( String content )
 	{
-		this.rd = rd;
+		this.content = content.toCharArray();
+
+		push( Context.COLLECT );
 	}
 
 	Token next()
 	{
-		if( this.sb.length() > 0 ) {
-			final String tx = this.sb.toString();
+		while( this.offset < this.content.length ) {
+			final char c = this.content[this.offset++];
 
-			switch( tx ) {
-				case Token.S_BEG:
-					return new Token( this.position, Token.Type.BEG, this.sb );
-				case Token.S_DEF:
-					return new Token( this.position, Token.Type.DEF, this.sb );
-				case Token.S_END:
-					return new Token( this.position, Token.Type.END, this.sb );
+			switch( context() ) {
+				case ESCAPE: {
+					pop();
+
+					this.text.append( c );
+				}
+				break;
+
+				case COLLECT: {
+					switch( c ) {
+						case '\\':
+							push( Context.ESCAPE );
+						break;
+
+						case '$':
+							push( Context.DOLLAR );
+						break;
+
+						default:
+							this.text.append( c );
+					}
+				}
+				break;
+
+				case DOLLAR: {
+					switch( c ) {
+						case '\\':
+							push( Context.ESCAPE );
+						break;
+
+						case '{':
+							pop();
+							push( Context.VALUE );
+							return new Token( this.offset, Token.Type.BEG, this.text );
+
+						default:
+							pop();
+							this.text.append( '$' );
+					}
+				}
+				break;
+
+				case VALUE: {
+					switch( c ) {
+						case '\\':
+							push( Context.ESCAPE );
+						break;
+
+						case '}': {
+							pop();
+
+							return new Token( this.offset, Token.Type.END, this.text );
+						}
+
+						case ':': {
+							pop();
+							push( Context.DEFAULT );
+
+							return new Token( this.offset, Token.Type.DEF, this.text );
+						}
+
+						default:
+							this.text.append( c );
+					}
+				}
+				break;
+
+				case DEFAULT:
+					switch( c ) {
+						case '\\':
+							push( Context.ESCAPE );
+						break;
+
+						case '}': {
+							pop();
+
+							return new Token( this.offset, Token.Type.END, this.text );
+						}
+
+						default:
+							this.text.append( c );
+					}
+				break;
 			}
 		}
 
-		while( true ) {
-			final char c;
+		if( this.text.length() == 0 ) {
+			if( this.contexts.size() > 1 ) {
+				final String message;
 
-			try {
-				final int n = this.rd.read();
-				if( n == -1 ) {
+				switch( pop() ) {
+					case ESCAPE:
+						message = "waiting for escaped character";
 					break;
+
+					case DOLLAR:
+						this.text.append( '$' );
+
+						return new Token( this.offset, Token.Type.STR, this.text );
+
+					case VALUE:
+						message = "waiting for closing brace or colon";
+					break;
+
+					case DEFAULT:
+						message = "waiting for closing brace";
+					break;
+
+					default:
+						message = "internal error: COLLECT";
 				}
 
-				c = (char) n;
-			}
-			catch( final IOException e ) {
-				throw new ConfigException( e.getMessage() );
-			}
-
-			this.position++;
-
-			switch( c ) {
-				case Token.C_ESC:
-					if( this.escape ) {
-						this.escape = false;
-					}
-					else {
-						this.escape = true;
-						this.sb.append( c );
-
-						continue;
-					}
-
-				default:
-					this.sb.append( c );
+				this.errors.add( new ConfigParsePosition( message, this.offset ) );
 			}
 
-			final String tx = this.sb.toString();
-
-			if( tx.endsWith( Token.S_BEG ) && !this.escape ) {
-				if( this.sb.length() > 2 ) {
-					check( this.sb.length() - 2 );
-
-					return new Token( this.position, Token.Type.STR, this.sb, this.sb.length() - 2 );
-				}
-				else {
-					return new Token( this.position, Token.Type.BEG, this.sb );
-				}
-			}
-			if( tx.endsWith( Token.S_DEF ) && !this.escape ) {
-				if( this.sb.length() > 1 ) {
-					check( this.sb.length() - 1 );
-
-					return new Token( this.position, Token.Type.STR, this.sb, this.sb.length() - 1 );
-				}
-				else {
-					return new Token( this.position, Token.Type.DEF, this.sb );
-				}
-			}
-			if( tx.endsWith( Token.S_END ) && !this.escape ) {
-				if( this.sb.length() > 1 ) {
-					check( this.sb.length() - 1 );
-
-					return new Token( this.position, Token.Type.STR, this.sb, this.sb.length() - 1 );
-				}
-				else {
-					return new Token( this.position, Token.Type.END, this.sb );
-				}
-			}
-
-			this.escape = false;
-		}
-
-		if( this.sb.length() == 0 ) {
 			return null;
 		}
 
-		check( this.sb.length() );
-
-		return new Token( this.position, Token.Type.STR, this.sb );
+		return new Token( this.offset, Token.Type.STR, this.text );
 	}
 
 	public List<ConfigParsePosition> getErrors()
@@ -184,17 +166,25 @@ final class ItemTokenizer
 		return this.errors;
 	}
 
-	private void check( int size )
+	private void push( Context context )
 	{
-		for( int k = 0; k < size; k++ ) {
-			final char c = this.sb.charAt( k );
+		this.contexts.push( context );
+	}
 
-			if( k > 0 && c == '$' && this.sb.charAt( k - 1 ) == '\\' ) {
-				continue;
-			}
-			if( c == '$' || c == '{' ) {
-				this.errors.add( new ConfigParsePosition( format( "unknown char '%c' (\\u%04d)", c, (int) c ), k ) );
-			}
+	private Context context()
+	{
+		return this.contexts.peek();
+	}
+
+	private Context pop()
+	{
+		try {
+			return this.contexts.pop();
+		}
+		catch( final NoSuchElementException e ) {
+			this.errors.add( new ConfigParsePosition( "unknown context", this.offset ) );
+
+			throw new ConfigParseException( new String( this.content ), this.errors );
 		}
 	}
 }

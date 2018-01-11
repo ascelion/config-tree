@@ -13,14 +13,12 @@ final class CachedItem
 	private Kind kind;
 	private final Object value;
 	private Object cached = null;
-	private final boolean def;
 
 	CachedItem( ConfigNodeImpl node )
 	{
 		this.node = node;
 		this.kind = Kind.NULL;
 		this.value = null;
-		this.def = false;
 	}
 
 	CachedItem( Object item, ConfigNodeImpl node )
@@ -51,7 +49,6 @@ final class CachedItem
 		}
 
 		this.value = item;
-		this.def = def;
 	}
 
 	@Override
@@ -89,11 +86,6 @@ final class CachedItem
 		return this.kind;
 	}
 
-	boolean isDefault()
-	{
-		return this.def;
-	}
-
 	ConfigNodeImpl node()
 	{
 		return this.node;
@@ -115,7 +107,7 @@ final class CachedItem
 					return (T) this.cached;
 				}
 
-				final CachedItem val = ( (Expression) this.value ).eval( this.node );
+				final CachedItem val = ( (ExpressionOLD) this.value ).eval( this.node );
 
 				if( val.kind != Kind.NODE ) {
 					this.kind = val.kind;

@@ -16,6 +16,11 @@ subprojects {
 	tasks.withType( JavaCompile ) {
 		options.compilerArgs << '-parameters'
 	}
+	plugins.withType( JavaPlugin ) {
+		sourceSets.all {
+			dependencies.add( it.compileOnlyConfigurationName, 'org.projectlombok:lombok' )
+		}
+	}
 
 	def fullName = "${rootProject.name}${path.replace(':', '-')}"
 

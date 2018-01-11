@@ -3,10 +3,11 @@ package ascelion.config.impl;
 
 import java.util.Objects;
 
+@Deprecated
 abstract class ExpressionItem
 {
 
-	Expression parent;
+	ExpressionOLD parent;
 
 	@Override
 	public boolean equals( Object obj )

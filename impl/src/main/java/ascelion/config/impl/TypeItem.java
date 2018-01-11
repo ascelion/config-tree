@@ -1,14 +1,13 @@
 
 package ascelion.config.impl;
 
-import ascelion.config.impl.ItemTokenizer.Token;
-
+@Deprecated
 class TypeItem extends ExpressionItem
 {
 
 	final Token.Type type;
 
-	TypeItem( ItemTokenizer.Token.Type type )
+	TypeItem( Token.Type type )
 	{
 		this.type = type;
 	}

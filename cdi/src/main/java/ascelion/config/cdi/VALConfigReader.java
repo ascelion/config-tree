@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.impl.Expression;
+import ascelion.config.impl.ExpressionOLD;
 
 @ConfigReader.Type( "VAL" )
 @ConfigSource( type = "VAL", priority = -5000 )
@@ -26,7 +26,7 @@ class VALConfigReader implements ConfigReader
 		final Map<String, String> map = new HashMap<>();
 
 		this.ext.values().forEach( a -> {
-			addAll( map, Expression.compile( a.value() ).evaluables() );
+			addAll( map, ExpressionOLD.compile( a.value() ).evaluables() );
 		} );
 
 		return map;

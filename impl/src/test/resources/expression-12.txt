@@ -1,1 +1,2 @@
-${${prop}:${value}}
+${${prop-null}:${value}}
+=<value>

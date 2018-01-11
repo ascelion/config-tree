@@ -1,1 +1,2 @@
-${${prop}:default}
+${${prop-null}:default}
+=default

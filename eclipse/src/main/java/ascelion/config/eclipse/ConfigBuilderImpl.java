@@ -22,7 +22,7 @@ public class ConfigBuilderImpl implements ConfigBuilder
 
 	private final ConfigLoad ld = new ConfigLoad();
 	private boolean discoveredSources;
-	private boolean descoveredConverters;
+	private boolean discoveredConverters;
 	private ClassLoader cld;
 	private final Collection<ConfigSource> sources = new ArrayList<>();
 	private final Collection<Converter<?>> converters = new ArrayList<>();
@@ -52,7 +52,7 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	@Override
 	public ConfigBuilder addDiscoveredConverters()
 	{
-		this.descoveredConverters = true;
+		this.discoveredConverters = true;
 
 		return this;
 	}

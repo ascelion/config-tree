@@ -35,7 +35,7 @@ test {
 }
 
 tckTest {
-	enabled = false
+//	enabled = false
 
 	useTestNG() {
 		suites 'src/test/tck-suite.xml'

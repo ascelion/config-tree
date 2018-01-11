@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite guice-stage="DEVELOPMENT" name="Failed suite [Default suite]">
+  <test name="Default test(failed)">
+    <classes>
+      <class name="org.eclipse.microprofile.config.tck.AutoDiscoveredConfigSourceTest">
+        <methods>
+          <include name="testAutoDiscoveredConverterManuallyAdded"/>
+          <include name="arquillianAfterSuite"/>
+          <include name="testAutoDiscoveredConfigureSources"/>
+          <include name="arquillianAfterClass"/>
+          <include name="arquillianBeforeClass"/>
+          <include name="testAutoDiscoveredConverterNotAddedAutomatically"/>
+          <include name="arquillianAfterTest"/>
+          <include name="arquillianBeforeSuite"/>
+        </methods>
+      </class> <!-- org.eclipse.microprofile.config.tck.AutoDiscoveredConfigSourceTest -->
+    </classes>
+  </test> <!-- Default test(failed) -->
+</suite> <!-- Failed suite [Default suite] -->

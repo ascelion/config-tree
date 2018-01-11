@@ -79,7 +79,7 @@ final class ConfigNodeImpl implements ConfigNode
 				}
 
 			case LINK:
-				set.addAll( ( (Expression) node.item.value() ).evaluables() );
+				set.addAll( ( (ExpressionOLD) node.item.value() ).evaluables() );
 			break;
 
 			case NODE:
@@ -156,7 +156,7 @@ final class ConfigNodeImpl implements ConfigNode
 			path = "${" + path + "}";
 		}
 
-		final Expression expr = Expression.compile( path );
+		final ExpressionOLD expr = ExpressionOLD.compile( path );
 		final ConfigNode node;
 
 		if( expr.isExpression() ) {
@@ -191,15 +191,11 @@ final class ConfigNodeImpl implements ConfigNode
 			path = "${" + path + "}";
 		}
 
-		final Expression expr = Expression.compile( path );
+		final ExpressionOLD expr = ExpressionOLD.compile( path );
 		final ConfigNode node;
 
 		if( expr.isExpression() ) {
 			final CachedItem val = expr.eval( this );
-
-			if( val.isDefault() ) {
-				throw new ConfigNotFoundException( path );
-			}
 
 			node = val.node();
 		}
@@ -341,7 +337,7 @@ final class ConfigNodeImpl implements ConfigNode
 				throw new ConfigException( format( "Path: %s, cannot change value from NODE to ITEM", this.path ) );
 			}
 
-			this.item = new CachedItem( Expression.compile( value.toString() ), this );
+			this.item = new CachedItem( ExpressionOLD.compile( value.toString() ), this );
 		}
 		else {
 			this.item = new CachedItem( this );

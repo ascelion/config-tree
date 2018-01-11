@@ -12,7 +12,6 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.api.ConfigParseException;
 import ascelion.config.api.ConfigParsePosition;
-import ascelion.config.impl.ItemTokenizer.Token;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -246,10 +245,10 @@ public final class EvalTool
 
 		@SuppressWarnings( "incomplete-switch" )
 		@Override
-		public void seen( ItemTokenizer.Token tok )
+		public void seen( Token tok )
 		{
 			if( this.root == null ) {
-				throw new ConfigParseException( "unknown error", asList( new ConfigParsePosition( "unbalanced '}'", tok.position ) ) );
+				throw new ConfigParseException( "unknown error", asList( new ConfigParsePosition( "unbalanced '}'", tok.offset ) ) );
 			}
 
 			switch( tok.type ) {

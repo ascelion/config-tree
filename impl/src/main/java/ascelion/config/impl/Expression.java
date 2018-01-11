@@ -1,238 +1,302 @@
 
 package ascelion.config.impl;
 
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
+import java.util.function.UnaryOperator;
 
-import ascelion.config.api.ConfigNode.Kind;
-import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.api.ConfigParseException;
 import ascelion.config.api.ConfigParsePosition;
-import ascelion.config.impl.ItemTokenizer.Token;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.joining;
 
-public final class Expression extends Evaluable
+import lombok.ToString;
+
+public class Expression
 {
 
-	public static Expression compile( String content )
+	@ToString
+	static class Result
 	{
-		return ContentParser.parse( content, Expression.Listener::new );
+
+		final String tok;
+		final String val;
+
+		Result( String tok, String val )
+		{
+			this.tok = tok;
+			this.val = val;
+		}
 	}
 
-	static private class Listener implements ContentParser.Listener<Expression>
+	enum ContextName
+	{
+		COLLECT,
+		DOLLAR,
+		VALUE,
+		DEFAULT,
+	}
+
+	@ToString( of = { "name", "text" } )
+	static class Context
 	{
 
-		private Expression expr;
+		final Context prev;
+		final ContextName name;
+		StringBuilder text = null;
+		boolean skipEval;
+		int braces;
 
-		@Override
-		public void start()
+		Context( Context prev, ContextName name )
 		{
-			this.expr = new Expression();
+			this.prev = prev;
+			this.name = name;
 		}
 
-		@Override
-		public void seen( Token tok )
+		void add( char c )
 		{
-			if( this.expr == null ) {
-				throw new ConfigParseException( "unknown error", asList( new ConfigParsePosition( "unbalanced '}'", tok.position ) ) );
+			if( this.text == null ) {
+				this.text = new StringBuilder();
+			}
+			this.text.append( c );
+		}
+
+		void add( String s )
+		{
+			if( this.text == null ) {
+				this.text = new StringBuilder();
+			}
+			this.text.append( s );
+		}
+
+		String text()
+		{
+			return this.text != null ? this.text.toString() : null;
+		}
+
+		void skipEval()
+		{
+			this.skipEval = true;
+		}
+	}
+
+	private final char[] content;
+	private int offset;
+	private Context context;
+	private boolean escape;
+
+	Expression( String content )
+	{
+		this.content = content.toCharArray();
+	}
+
+	String eval( UnaryOperator<String> fun )
+	{
+		ConfigLoopException.push( new String( this.content ) );
+
+		try {
+			return doEval( fun );
+		}
+		finally {
+			ConfigLoopException.pop();
+		}
+	}
+
+	private String doEval( UnaryOperator<String> fun )
+	{
+		move( ContextName.COLLECT );
+
+		while( this.offset < this.content.length ) {
+			final char ch = this.content[this.offset++];
+
+			if( this.escape ) {
+				this.escape = false;
+
+				this.context.add( ch );
+
+				continue;
+			}
+			else if( ch == '\\' ) {
+				this.escape = true;
+
+				continue;
 			}
 
-			this.expr = this.expr.seen( tok );
-		}
+			switch( this.context.name ) {
+				case COLLECT:
+					switch( ch ) {
+						case '$':
+							move( ContextName.DOLLAR );
+						break;
 
-		@Override
-		public Expression finish()
-		{
-			return this.expr;
-		}
-	}
+						case '{':
+							this.context.braces++;
+							this.context.add( ch );
+						break;
 
-	static private final ThreadLocal<Deque<Expression>> CHAIN = new ThreadLocal<Deque<Expression>>()
-	{
+						case '}':
+							if( --this.context.braces < 0 ) {
+								final ConfigParsePosition pos = new ConfigParsePosition( "unbalanced '}'", this.offset );
 
-		@Override
-		protected Deque<Expression> initialValue()
-		{
-			return new LinkedList<>();
-		};
-	};
+								throw new ConfigParseException( new String( this.content ), asList( pos ) );
+							}
 
-	final List<ExpressionItem> children = new ArrayList<>();
-	final List<Evaluable> val = new ArrayList<>();
-	final List<Evaluable> def = new ArrayList<>();
-	List<Evaluable> add = this.val;
+							this.context.add( ch );
+						break;
 
-	@Override
-	public String toString()
-	{
-		return this.children.stream().map( Object::toString ).collect( joining() );
-	}
+						default:
+							this.context.add( ch );
+					}
+				break;
 
-	<T extends ExpressionItem> T addChild( T child )
-	{
-		child.parent = this;
+				case DOLLAR:
+					switch( ch ) {
+						case '{':
+							back();
+							move( ContextName.VALUE );
+						break;
 
-		this.children.add( child );
+						default:
+							back();
 
-		if( child instanceof Evaluable ) {
-			this.add.add( (Evaluable) child );
-		}
+							this.context.add( '$' );
+							this.context.add( ch );
+					}
+				break;
 
-		return child;
-	}
+				case VALUE:
+					switch( ch ) {
+						case '$':
+							move( ContextName.DOLLAR );
+						break;
 
-	@Override
-	CachedItem eval( ConfigNodeImpl node )
-	{
-		final StringBuilder b = new StringBuilder();
+						case '}': {
+							final String tok = back().text();
+							final Result res = evaluate( tok, fun, fun );
 
-		b.insert( 0, this );
+							if( res.val == null && this.context.name != ContextName.VALUE ) {
+								throwUnresolved( res.tok );
+							}
 
-		CHAIN.get().forEach( x -> {
-			b.insert( 0, "->" );
-			b.insert( 0, x );
-			if( Objects.equals( this, x ) ) {
-				throw new ConfigLoopException( format( "recursive definition: %s", b ) );
-			}
-		} );
-
-		CachedItem item = eval( this.val, node );
-
-		if( isEvaluable() ) {
-			CHAIN.get().push( this );
-
-			try {
-				final ConfigNodeImpl found = node.root.findNode( (String) item.cached(), false );
-
-				if( found == null ) {
-					item = new CachedItem( node );
-				}
-				else {
-					item = found.item();
-
-					// force evaluation before ending eval recursively
-					item.cached();
-				}
-			}
-			finally {
-				CHAIN.get().pop();
-			}
-		}
-
-		if( item.kind() == Kind.NULL ) {
-			item = eval( this.def, node );
-			item = new CachedItem( item.value(), item.node(), true );
-		}
-
-		if( isEvaluable() && item.kind() == Kind.NULL ) {
-			throw new ConfigNotFoundException( toString() );
-		}
-
-		return item;
-	}
-
-	boolean isExpression()
-	{
-		return this.children.stream().anyMatch( c -> {
-			return TypeItem.class.isInstance( c ) || Expression.class.isInstance( c );
-		} );
-	}
-
-	@Override
-	boolean isEvaluable()
-	{
-		return this.val.size() == 1 && this.children.size() > 2;
-	}
-
-	public Set<String> evaluables()
-	{
-		final Set<String> set = new HashSet<>();
-
-		evaluables( Stream.of( this ), set );
-
-		return set;
-	}
-
-	private void evaluables( Stream<? extends Evaluable> stm, Set<String> set )
-	{
-		stm.filter( Expression.class::isInstance )
-			.map( Expression.class::cast )
-			.forEach( e -> {
-				if( e.isEvaluable() ) {
-					set.add( e.val.get( 0 ).toString() );
-				}
-				else {
-					evaluables( e.val.stream(), set );
-				}
-
-				evaluables( e.def.stream(), set );
-			} );
-	}
-
-	private CachedItem eval( List<Evaluable> elements, ConfigNodeImpl node )
-	{
-		switch( elements.size() ) {
-			case 0:
-				return new CachedItem( node );
-
-			case 1:
-				return elements.get( 0 ).eval( node );
-
-			default:
-				final String item = elements.stream()
-					.map( e -> {
-						final CachedItem v = e.eval( node );
-
-						if( v.kind() != Kind.ITEM ) {
-							throw new ConfigNotFoundException( e.toString() );
+							if( res.val != null ) {
+								this.context.add( res.val );
+							}
 						}
+						break;
 
-						return (String) v.cached();
-					} )
-					.collect( joining() );
+						case ':': {
+							final String tok = this.context.text();
+							final Result res = evaluate( tok, fun, fun );
 
-				return new CachedItem( item, node );
+							back();
+
+							if( res.val == null ) {
+								move( ContextName.DEFAULT );
+							}
+							else {
+								this.context.add( res.val );
+
+								move( ContextName.DEFAULT );
+
+								this.context.skipEval();
+							}
+						}
+						break;
+
+						default:
+							this.context.add( ch );
+					}
+				break;
+
+				case DEFAULT: {
+					switch( ch ) {
+						case '$':
+							move( ContextName.DOLLAR );
+						break;
+
+						case '}':
+							if( this.context.skipEval ) {
+								back();
+							}
+							else {
+								final String tok = this.context.text();
+								final Result res = evaluate( tok, tok, fun );
+
+								if( res == null ) {
+									throwUnresolved( this.context.text() );
+								}
+
+								back();
+
+								this.context.add( res.val );
+							}
+						break;
+
+						default:
+							this.context.add( ch );
+					}
+				}
+				break;
+			}
 		}
+
+		if( this.context.prev != null ) {
+			final ConfigParsePosition pos = new ConfigParsePosition( "expression error", this.offset );
+
+			throw new ConfigParseException( new String( this.content ), asList( pos ) );
+		}
+
+		return back().text();
 	}
 
-	private Expression seen( Token tok )
+	private void move( ContextName name )
 	{
-		switch( tok.type ) {
-			case BEG: {
-				final Expression expr = addChild( new Expression() );
+		this.context = new Context( this.context, name );
+	}
 
-				expr.addChild( new TypeItem( Token.Type.BEG ) );
+	private Context back()
+	{
+		if( this.context == null ) {
+			final ConfigParsePosition pos = new ConfigParsePosition( "expression error", this.offset );
 
-				return expr;
-			}
+			throw new ConfigParseException( new String( this.content ), asList( pos ) );
+		}
+		if( this.context.braces > 0 ) {
+			final ConfigParsePosition pos = new ConfigParsePosition( "unbalanced '{'", this.offset );
 
-			case END:
-				addChild( new TypeItem( tok.type ) );
-
-				return this.parent;
-
-			case DEF:
-				addChild( new TypeItem( tok.type ) );
-
-				this.add = this.def;
-				;
-			break;
-
-			case STR: {
-				addChild( new TextItem( tok.text ) );
-			}
-			break;
+			throw new ConfigParseException( new String( this.content ), asList( pos ) );
 		}
 
-		return this;
+		final Context cx = this.context;
+
+		this.context = cx.prev;
+
+		return cx;
+	}
+
+	private void throwUnresolved( String tok )
+	{
+		final ConfigParsePosition pos = new ConfigParsePosition( format( "unresolved '%s'", tok ), this.offset );
+
+		throw new ConfigParseException( new String( this.content ), asList( pos ) );
+	}
+
+	private Result evaluate( String tok, UnaryOperator<String> first, UnaryOperator<String> next )
+	{
+		if( this.context.skipEval ) {
+			return new Result( tok, tok );
+		}
+
+		return evaluate( tok, first.apply( tok ), next );
+	}
+
+	private Result evaluate( String tok, String val, UnaryOperator<String> fun )
+	{
+		if( val == null ) {
+			return new Result( tok, val );
+		}
+
+		val = new Expression( val ).eval( fun );
+
+		return new Result( tok, val );
 	}
 }

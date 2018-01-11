@@ -14,7 +14,7 @@ public class ConfigParseException extends ConfigException
 
 	public ConfigParseException( String content, List<ConfigParsePosition> errors )
 	{
-		super( format( "'%s': %s", content, errors.get( 0 ).toMessage() ) );
+		super( format( "'%s': %s", content, errors.get( 0 ) ) );
 
 		this.errors = unmodifiableList( new ArrayList<>( errors ) );
 	}

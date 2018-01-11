@@ -5,7 +5,10 @@ import java.io.Serializable;
 
 import static java.lang.String.format;
 
-public class ConfigParsePosition implements Serializable
+import lombok.Getter;
+
+@Getter
+public final class ConfigParsePosition implements Serializable
 {
 
 	private final String message;
@@ -17,17 +20,8 @@ public class ConfigParsePosition implements Serializable
 		this.position = position;
 	}
 
-	public String getMessage()
-	{
-		return this.message;
-	}
-
-	public int getPosition()
-	{
-		return this.position;
-	}
-
-	public String toMessage()
+	@Override
+	public String toString()
 	{
 		return format( "at %d: %s", this.position, this.message );
 	}

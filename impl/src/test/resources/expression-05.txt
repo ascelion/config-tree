@@ -1,1 +1,2 @@
 item0.${prop.value}.item2
+=item0.<prop.value>.item2

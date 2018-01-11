@@ -61,7 +61,7 @@ final class ConfigSourceImpl implements ConfigSource
 		return this.name;
 	}
 
-	private Map<String, String> load()
+	private synchronized Map<String, String> load()
 	{
 		if( this.properties == null ) {
 			final Converters cv = new Converters();

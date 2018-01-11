@@ -1,6 +1,7 @@
 
 package ascelion.config.impl;
 
+@Deprecated
 final class TextItem extends Evaluable
 {
 

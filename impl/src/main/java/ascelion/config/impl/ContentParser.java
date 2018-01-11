@@ -1,7 +1,6 @@
 
 package ascelion.config.impl;
 
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -11,10 +10,10 @@ import java.util.function.Supplier;
 
 import ascelion.config.api.ConfigParseException;
 import ascelion.config.api.ConfigParsePosition;
-import ascelion.config.impl.ItemTokenizer.Token;
 
 import static java.lang.String.format;
 
+@Deprecated
 final class ContentParser
 {
 
@@ -47,9 +46,8 @@ final class ContentParser
 	@SuppressWarnings( "incomplete-switch" )
 	private <T> T parse( Listener<T> listener )
 	{
-		final StringReader rd = new StringReader( this.content );
-		final ItemTokenizer tkz = new ItemTokenizer( rd );
-		final Deque<ItemTokenizer.Token> begTokens = new LinkedList<>();
+		final ItemTokenizer tkz = new ItemTokenizer( this.content );
+		final Deque<Token> begTokens = new LinkedList<>();
 		final List<ConfigParsePosition> errors = new ArrayList<>();
 
 		listener.start();
@@ -64,7 +62,7 @@ final class ContentParser
 
 				case DEF:
 					if( begTokens.isEmpty() ) {
-						errors.add( new ConfigParsePosition( format( "unexpected token '%s'", tok.type.value ), tok.position ) );
+						errors.add( new ConfigParsePosition( format( "unexpected token '%s'", tok.type.value ), tok.offset ) );
 					}
 				break;
 
@@ -73,7 +71,7 @@ final class ContentParser
 						begTokens.pop();
 					}
 					catch( final NoSuchElementException e ) {
-						errors.add( new ConfigParsePosition( format( "unbalanced token '%s'", tok.type.value ), tok.position ) );
+						errors.add( new ConfigParsePosition( format( "unbalanced token '%s'", tok.type.value ), tok.offset ) );
 					}
 				break;
 			}
@@ -84,7 +82,7 @@ final class ContentParser
 		errors.addAll( tkz.getErrors() );
 
 		if( begTokens.size() > 0 ) {
-			errors.add( new ConfigParsePosition( "unbalanced '${'", begTokens.peek().position ) );
+			errors.add( new ConfigParsePosition( "unbalanced '${'", begTokens.peek().offset ) );
 		}
 
 		if( errors.size() > 0 ) {
