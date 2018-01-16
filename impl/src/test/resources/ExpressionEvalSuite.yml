@@ -1,0 +1,66 @@
+- expression: ${x}
+  properties:
+    x: <x>
+  expected: <x>
+
+- expression: '{${x}}'
+  properties:
+    x: <x>
+  expected: '{<x>}'
+
+- expression: ${x}
+  expected: ${x}
+
+- expression: '{${x}}'
+  expected: '{${x}}'
+
+- expression: '{{${x}}}'
+  properties:
+    x: <x>
+  expected: '{{<x>}}'
+
+- expression: '$$${x}$$'
+  properties:
+    x: <x>
+  expected: $$<x>$$
+
+- expression: '\${x}'
+  expected: '${x}'
+
+- expression: ${x:-a}
+  expected: a
+
+- expression: '{${x:-a}}'
+  expected: '{a}'
+
+- expression: '${x:-${a}}'
+  properties:
+    a: ${b:-${c}}
+    c: d
+  expected: 'd'
+
+- expression: '${${a:-b}:-${c}}'
+  properties:
+    a: ${b:${c}}
+    c: d
+  expected: 'd'
+
+- expression: '${x}'
+  properties:
+    x: a-${y}-b
+    y: a-${z}-b
+    z: a-${x}-b
+  exception: ascelion.config.impl.ConfigLoopException
+
+- expression: '\${x'
+  expected: '${x'
+
+- expression: 'abc-${def-${ghi:-jkl}-${mno:pqr}:-${stu}-v}-xyz'
+  properties:
+    ghi: GHI
+    stu: STU
+  expected: abc-STU-v-xyz
+
+- expression: ${x\:-a}
+  expectedCT: a
+  expected: ${x:-a}

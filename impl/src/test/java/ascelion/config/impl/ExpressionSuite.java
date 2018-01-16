@@ -50,8 +50,8 @@ public class ExpressionSuite
 		System.out.printf( "'%s'\n", this.data.expression );
 
 		try {
-			final Expression exp = new Expression( this.data.expression );
-			final String val = exp.eval( ExpressionTest::mockEval );
+			final Expression exp = new Expression( this.data.expression, ExpressionTest::mockEval );
+			final String val = exp.getValue();
 
 			System.out.println( val );
 

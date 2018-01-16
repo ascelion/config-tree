@@ -9,6 +9,7 @@ import ascelion.config.api.ConfigNotFoundException;
 
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
@@ -20,19 +21,19 @@ import org.junit.Test;
 public class ConfigNodeTest
 {
 
-	private final ConfigNodeImpl root = new ConfigNodeImpl();
+	private final ConfigNodeEval root = new ConfigNodeEval();
 
 	@Test
 	public void itemOnly()
 	{
 
-		this.root.set( "a.b.c1.d1", "abcd11" );
+		this.root.setValue( "a.b.c1.d1", "abcd11" );
 		System.out.println( this.root );
-		this.root.set( "a.b.c2.d2", "abcd22" );
+		this.root.setValue( "a.b.c2.d2", "abcd22" );
 		System.out.println( this.root );
-		this.root.set( "a.b.c", singletonMap( "d", singletonMap( "e1", "abcde1" ) ) );
+		this.root.setValue( "a.b.c", singletonMap( "d", singletonMap( "e1", "abcde1" ) ) );
 		System.out.println( this.root );
-		this.root.set( "a.b.c", singletonMap( "d.e2", "abcde2" ) );
+		this.root.setValue( "a.b.c", singletonMap( "d.e2", "abcde2" ) );
 		System.out.println( this.root );
 
 		try {
@@ -46,7 +47,7 @@ public class ConfigNodeTest
 		assertThat( this.root.getValue( "a.b.c2.d2" ), is( "abcd22" ) );
 
 		try {
-			this.root.set( "a.b", "ab" );
+			this.root.setValue( "a.b", "ab" );
 			fail();
 		}
 		catch( final ConfigException e ) {
@@ -63,11 +64,11 @@ public class ConfigNodeTest
 	@Test
 	public void values()
 	{
-		this.root.set( "item1", "${item2}" );
-		this.root.set( "item2", "value" );
-		this.root.set( "item12", "${item1}-${item2}" );
-		this.root.set( "def1", "${undefined:def_val}" );
-		this.root.set( "def2", "${undefined:${def1}}" );
+		this.root.setValue( "item1", "${item2}" );
+		this.root.setValue( "item2", "value" );
+		this.root.setValue( "item12", "${item1}-${item2}" );
+		this.root.setValue( "def1", "${undefined:def_val}" );
+		this.root.setValue( "def2", "${undefined:${def1}}" );
 
 		final String v1 = this.root.getValue( "item1" );
 		final String v2 = this.root.getValue( "item2" );
@@ -94,11 +95,11 @@ public class ConfigNodeTest
 	@Test
 	public void nodes()
 	{
-		this.root.set( "item1", "${item2}" );
-		this.root.set( "item2", "value" );
-		this.root.set( "item12", "${item1}-${item2}" );
-		this.root.set( "def1", "${undefined:def_val}" );
-		this.root.set( "def2", "${undefined:${def1}}" );
+		this.root.setValue( "item1", "${item2}" );
+		this.root.setValue( "item2", "value" );
+		this.root.setValue( "item12", "${item1}-${item2}" );
+		this.root.setValue( "def1", "${undefined:def_val}" );
+		this.root.setValue( "def2", "${undefined:${def1}}" );
 
 		final ConfigNode v1 = this.root.getNode( "item1" );
 		final ConfigNode v2 = this.root.getNode( "${item2}" );
@@ -137,7 +138,7 @@ public class ConfigNodeTest
 	@Test
 	public void keys()
 	{
-		this.root.set( "prop", null );
+		this.root.setValue( "prop", null );
 
 		assertThat( this.root.getKeys(), contains( "prop" ) );
 	}
@@ -149,7 +150,7 @@ public class ConfigNodeTest
 			try {
 				try {
 					this.root.getNode( (String) k );
-					this.root.set( (String) k, ( (String) v ).replace( ":", "\\:" ) );
+					this.root.setValue( (String) k, ( (String) v ).replace( ":", "\\:" ) );
 				}
 				catch( final ConfigNotFoundException x ) {
 				}
@@ -176,7 +177,7 @@ public class ConfigNodeTest
 	@Test
 	public void map()
 	{
-		this.root.set( singletonMap( "a.b", "ab" ) );
+		this.root.setValue( singletonMap( "a.b", "ab" ) );
 
 		assertThat( this.root.getValue( "a.b" ), is( "ab" ) );
 	}
@@ -184,7 +185,7 @@ public class ConfigNodeTest
 	@Test( expected = ConfigLoopException.class )
 	public void loop1()
 	{
-		this.root.set( "prop", "${prop}" );
+		this.root.setValue( "prop", "${prop}" );
 
 		try {
 			this.root.getValue( "prop" );
@@ -199,10 +200,10 @@ public class ConfigNodeTest
 	@Test( expected = ConfigLoopException.class )
 	public void loop2()
 	{
-		this.root.set( "prop", "1-${value1}-${value2}-2" );
-		this.root.set( "value1", "${value}-1" );
-		this.root.set( "value2", "${value}-2" );
-		this.root.set( "value", "${prop}" );
+		this.root.setValue( "prop", "1-${value1}-${value2}-2" );
+		this.root.setValue( "value1", "${value}-1" );
+		this.root.setValue( "value2", "${value}-2" );
+		this.root.setValue( "value", "${prop}" );
 
 		try {
 			this.root.getValue( "prop" );
@@ -217,7 +218,7 @@ public class ConfigNodeTest
 	@Test( expected = ConfigLoopException.class )
 	public void loop3()
 	{
-		this.root.set( "prop", "${prop1:${prop2:${prop3:${prop}}}}" );
+		this.root.setValue( "prop", "${prop1:${prop2:${prop3:${prop}}}}" );
 
 		try {
 			this.root.getValue( "prop" );
@@ -232,10 +233,10 @@ public class ConfigNodeTest
 	@Test
 	public void notLoop()
 	{
-		this.root.set( "prop", "1-${value1}-${value2}-2" );
-		this.root.set( "value1", "${value}-1" );
-		this.root.set( "value2", "${value}-2" );
-		this.root.set( "value", "xxx" );
+		this.root.setValue( "prop", "1-${value1}-${value2}-2" );
+		this.root.setValue( "value1", "${value}-1" );
+		this.root.setValue( "value2", "${value}-2" );
+		this.root.setValue( "value", "xxx" );
 
 		try {
 			this.root.getValue( "prop" );
@@ -250,7 +251,7 @@ public class ConfigNodeTest
 	@Test
 	public void run1()
 	{
-		this.root.set( "prop", "value" );
+		this.root.setValue( "prop", "value" );
 
 		final String x = this.root.getValue( "prop" );
 
@@ -260,21 +261,21 @@ public class ConfigNodeTest
 	@Test
 	public void run2()
 	{
-		this.root.set( "prop", "value" );
+		this.root.setValue( "prop", "value" );
 
 		final String x = this.root.getValue( "${prop}" );
 
-		assertThat( x, is( "value" ) );
+		assertThat( x, is( nullValue() ) );
 	}
 
 	@Test
 	public void run3()
 	{
-		this.root.set( "prop1", "value1-${prop2}" );
-		this.root.set( "prop2", "value2" );
-		this.root.set( "prop3", "prefix-${prop1}-suffix" );
+		this.root.setValue( "prop1", "value1-${prop2}" );
+		this.root.setValue( "prop2", "value2" );
+		this.root.setValue( "prop3", "prefix-${prop1}-suffix" );
 
-		final String x = this.root.getValue( "${prop3}" );
+		final String x = this.root.getValue( "prop3" );
 
 		assertThat( x, is( "prefix-value1-value2-suffix" ) );
 	}
@@ -282,7 +283,7 @@ public class ConfigNodeTest
 	@Test
 	public void run4()
 	{
-		this.root.set( "prop1", "value1-${prop2:value2}" );
+		this.root.setValue( "prop1", "value1-${prop2:value2}" );
 
 		final String x = this.root.getValue( "prefix-${prop1}-suffix" );
 
@@ -292,7 +293,7 @@ public class ConfigNodeTest
 	@Test
 	public void run5()
 	{
-		this.root.set( "prop1", "value1-${prop2:value2}" );
+		this.root.setValue( "prop1", "value1-${prop2:value2}" );
 
 		final String x = this.root.getValue( "${prefix-${prop1}-suffix:${prop1}}" );
 
@@ -320,7 +321,7 @@ public class ConfigNodeTest
 	@Test( expected = ConfigNotFoundException.class )
 	public void run9()
 	{
-		this.root.set( "prop1", "${prop2}" );
+		this.root.setValue( "prop1", "${prop2}" );
 
 		this.root.getValue( "prefix-${prop1}-suffix" );
 	}

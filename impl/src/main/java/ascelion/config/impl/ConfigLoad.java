@@ -90,7 +90,7 @@ public final class ConfigLoad
 			try {
 				L.trace( "Reading: type %s from '%s'", type, source.value() );
 
-				root.set( rd.readConfiguration( source ) );
+				root.setValue( rd.readConfiguration( source ) );
 			}
 			catch( final UnsupportedOperationException x ) {
 				readFromURL( source, type, rd, root );
@@ -115,7 +115,7 @@ public final class ConfigLoad
 				L.trace( "Reading: type %s from '%s'", type, u );
 
 				try {
-					root.set( rd.readConfiguration( source, u ) );
+					root.setValue( rd.readConfiguration( source, u ) );
 				}
 				catch( final ConfigException e ) {
 					L.error( "Cannot read config source: " + source.value() );

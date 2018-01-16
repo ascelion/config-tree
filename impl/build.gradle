@@ -6,6 +6,7 @@ dependencies {
 	compile 'ascelion.shared:fmt-log'
 
 	compile 'org.apache.commons:commons-lang3'
+	compile 'org.apache.commons:commons-text'
 	compile 'commons-io:commons-io'
 
 	compile 'org.yaml:snakeyaml'

@@ -28,6 +28,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
+@Deprecated
 final class ConfigNodeImpl implements ConfigNode
 {
 
@@ -142,6 +143,12 @@ final class ConfigNodeImpl implements ConfigNode
 			default:
 				return this.item.cached();
 		}
+	}
+
+	@Override
+	public Set<ConfigNode> getNodes()
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -299,18 +306,18 @@ final class ConfigNodeImpl implements ConfigNode
 		}
 	}
 
-	void set( String path, Object value )
+	void setValue( String path, Object value )
 	{
-		findNode( path, true ).set( value );
+		findNode( path, true ).setValue( value );
 	}
 
-	void set( Object value )
+	void setValue( Object value )
 	{
 		if( value instanceof Map ) {
 			final Map<String, Object> ms = (Map<String, Object>) value;
 
 			ms.forEach( ( k, s ) -> {
-				set( k, s );
+				setValue( k, s );
 			} );
 
 			return;
@@ -318,14 +325,14 @@ final class ConfigNodeImpl implements ConfigNode
 		if( value instanceof Collection ) {
 			final Collection<?> c = (Collection<?>) value;
 
-			set( c.stream().map( Object::toString ).collect( Collectors.joining( "," ) ) );
+			setValue( c.stream().map( Object::toString ).collect( Collectors.joining( "," ) ) );
 
 			return;
 		}
 		if( value instanceof Object[] ) {
 			final Object[] v = (Object[]) value;
 
-			set( Stream.of( v ).map( Object::toString ).collect( Collectors.joining( "," ) ) );
+			setValue( Stream.of( v ).map( Object::toString ).collect( Collectors.joining( "," ) ) );
 
 			return;
 		}

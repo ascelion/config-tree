@@ -2,11 +2,13 @@
 package ascelion.config.api;
 
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.Set;
 
 public interface ConfigNode
 {
 
+	@Deprecated
 	enum Kind
 	{
 
@@ -35,18 +37,28 @@ public interface ConfigNode
 
 	String getPath();
 
-	Kind getKind();
+	@Deprecated
+	default Kind getKind()
+	{
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * See {@link Kind} for returning values.
 	 */
 	<T> T getValue();
 
+	Collection<ConfigNode> getNodes();
+
 	Set<String> getKeys();
 
 	ConfigNode getNode( String path );
 
-	<T> T getValue( String path );
+	@Deprecated
+	default <T> T getValue( String path )
+	{
+		return getNode( path ).getValue();
+	}
 
 	void addChangeListener( PropertyChangeListener pcl );
 

@@ -1,302 +1,174 @@
 
 package ascelion.config.impl;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.UnaryOperator;
 
-import ascelion.config.api.ConfigParseException;
-import ascelion.config.api.ConfigParsePosition;
-
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.text.StringEscapeUtils.unescapeJava;
 
 import lombok.ToString;
 
-public class Expression
+@ToString( of = { "expression", "cached", "value" } )
+final class Expression
 {
 
-	@ToString
-	static class Result
+	static private final char[] PREFIX = "${".toCharArray();
+	static private final char[] DEFAULT = ":-".toCharArray();
+	static private final char[] SUFFIX = "}".toCharArray();
+	static private final char ESCAPE = '\\';
+
+	private final UnaryOperator<String> lookup;
+	private final String expression;
+	private volatile String value;
+	private volatile boolean cached;
+	private final ReadWriteLock rwl = new ReentrantReadWriteLock();
+	private final Set<String> names = new LinkedHashSet<>();
+
+	Expression( String expression, UnaryOperator<String> lookup )
 	{
-
-		final String tok;
-		final String val;
-
-		Result( String tok, String val )
-		{
-			this.tok = tok;
-			this.val = val;
-		}
+		this.expression = expression;
+		this.lookup = lookup;
+		this.cached = isBlank( expression );
 	}
 
-	enum ContextName
+	String getValue()
 	{
-		COLLECT,
-		DOLLAR,
-		VALUE,
-		DEFAULT,
-	}
-
-	@ToString( of = { "name", "text" } )
-	static class Context
-	{
-
-		final Context prev;
-		final ContextName name;
-		StringBuilder text = null;
-		boolean skipEval;
-		int braces;
-
-		Context( Context prev, ContextName name )
-		{
-			this.prev = prev;
-			this.name = name;
-		}
-
-		void add( char c )
-		{
-			if( this.text == null ) {
-				this.text = new StringBuilder();
-			}
-			this.text.append( c );
-		}
-
-		void add( String s )
-		{
-			if( this.text == null ) {
-				this.text = new StringBuilder();
-			}
-			this.text.append( s );
-		}
-
-		String text()
-		{
-			return this.text != null ? this.text.toString() : null;
-		}
-
-		void skipEval()
-		{
-			this.skipEval = true;
-		}
-	}
-
-	private final char[] content;
-	private int offset;
-	private Context context;
-	private boolean escape;
-
-	Expression( String content )
-	{
-		this.content = content.toCharArray();
-	}
-
-	String eval( UnaryOperator<String> fun )
-	{
-		ConfigLoopException.push( new String( this.content ) );
+		this.rwl.readLock().lock();
 
 		try {
-			return doEval( fun );
+			if( this.cached ) {
+				return this.value;
+			}
 		}
 		finally {
-			ConfigLoopException.pop();
+			this.rwl.readLock().unlock();
+		}
+
+		this.rwl.writeLock().lock();
+
+		try {
+			if( this.cached ) {
+				return this.value;
+			}
+
+			final Buffer buf = new Buffer( this.expression );
+
+			this.value = unescapeJava( replace( buf ) );
+			this.cached = true;
+
+			return this.value;
+		}
+		finally {
+			this.rwl.writeLock().unlock();
 		}
 	}
 
-	private String doEval( UnaryOperator<String> fun )
+	void expire()
 	{
-		move( ContextName.COLLECT );
+		this.rwl.writeLock().lock();
 
-		while( this.offset < this.content.length ) {
-			final char ch = this.content[this.offset++];
+		try {
+			this.cached = false;
+			this.value = null;
+		}
+		finally {
+			this.rwl.writeLock().unlock();
+		}
+	}
 
-			if( this.escape ) {
-				this.escape = false;
+	private String replace( Buffer buf )
+	{
+		return replace( buf, buf.offset(), buf.count() );
+	}
 
-				this.context.add( ch );
+	private String replace( Buffer buf, int offset, int count )
+	{
+		for( int o1 = offset; o1 < count; o1++ ) {
+			if( buf.matches( PREFIX, o1, count, ESCAPE, offset ) ) {
+				final int start = o1 + PREFIX.length;
+				int nested = 0;
 
-				continue;
-			}
-			else if( ch == '\\' ) {
-				this.escape = true;
+				for( int o2 = start; o2 < count; o2++ ) {
+					if( buf.matches( PREFIX, o2, count ) ) {
+						nested++;
 
-				continue;
-			}
-
-			switch( this.context.name ) {
-				case COLLECT:
-					switch( ch ) {
-						case '$':
-							move( ContextName.DOLLAR );
-						break;
-
-						case '{':
-							this.context.braces++;
-							this.context.add( ch );
-						break;
-
-						case '}':
-							if( --this.context.braces < 0 ) {
-								final ConfigParsePosition pos = new ConfigParsePosition( "unbalanced '}'", this.offset );
-
-								throw new ConfigParseException( new String( this.content ), asList( pos ) );
-							}
-
-							this.context.add( ch );
-						break;
-
-						default:
-							this.context.add( ch );
+						continue;
 					}
-				break;
 
-				case DOLLAR:
-					switch( ch ) {
-						case '{':
-							back();
-							move( ContextName.VALUE );
-						break;
+					if( buf.matches( SUFFIX, o2, count ) ) {
+						if( nested == 0 ) {
+							final Buffer place = buf.subBuffer( start, o2 - start );
 
-						default:
-							back();
+							addName( place.toString() );
 
-							this.context.add( '$' );
-							this.context.add( ch );
-					}
-				break;
+							replace( place );
 
-				case VALUE:
-					switch( ch ) {
-						case '$':
-							move( ContextName.DOLLAR );
-						break;
+							final int defIx = place.find( DEFAULT, ESCAPE );
+							final Buffer varName;
+							final Buffer varValue;
 
-						case '}': {
-							final String tok = back().text();
-							final Result res = evaluate( tok, fun, fun );
-
-							if( res.val == null && this.context.name != ContextName.VALUE ) {
-								throwUnresolved( res.tok );
-							}
-
-							if( res.val != null ) {
-								this.context.add( res.val );
-							}
-						}
-						break;
-
-						case ':': {
-							final String tok = this.context.text();
-							final Result res = evaluate( tok, fun, fun );
-
-							back();
-
-							if( res.val == null ) {
-								move( ContextName.DEFAULT );
+							if( defIx < 0 ) {
+								varName = place;
+								varValue = null;
 							}
 							else {
-								this.context.add( res.val );
-
-								move( ContextName.DEFAULT );
-
-								this.context.skipEval();
+								varName = place.subBuffer( 0, defIx );
+								varValue = place.subBuffer( defIx + DEFAULT.length, place.count() - defIx - DEFAULT.length );
 							}
-						}
-						break;
 
-						default:
-							this.context.add( ch );
-					}
-				break;
+							final String var = varName.toString();
 
-				case DEFAULT: {
-					switch( ch ) {
-						case '$':
-							move( ContextName.DOLLAR );
-						break;
+							String val = this.lookup.apply( var );
 
-						case '}':
-							if( this.context.skipEval ) {
-								back();
-							}
-							else {
-								final String tok = this.context.text();
-								final Result res = evaluate( tok, tok, fun );
-
-								if( res == null ) {
-									throwUnresolved( this.context.text() );
+							if( val == null ) {
+								if( varValue != null ) {
+									val = varValue.toString();
 								}
-
-								back();
-
-								this.context.add( res.val );
 							}
-						break;
+							if( val != null ) {
+								final Buffer valBuf = new Buffer( val );
 
-						default:
-							this.context.add( ch );
+								val = replace( valBuf );
+
+								final int end = o2 + SUFFIX.length;
+								final int dif = buf.replace( o1, end - o1, val );
+
+								o1 = end + dif - 1;
+								count += dif;
+							}
+
+							delName( var );
+
+							break;
+						}
+						else {
+							nested--;
+						}
 					}
 				}
-				break;
 			}
 		}
 
-		if( this.context.prev != null ) {
-			final ConfigParsePosition pos = new ConfigParsePosition( "expression error", this.offset );
-
-			throw new ConfigParseException( new String( this.content ), asList( pos ) );
-		}
-
-		return back().text();
+		return buf.toString();
 	}
 
-	private void move( ContextName name )
+	private void addName( String name )
 	{
-		this.context = new Context( this.context, name );
+		if( !this.names.add( name ) ) {
+			final String m = format( "Recursive definition for ${%s}: %s", name, this.names.stream().collect( joining( " -> " ) ) );
+
+			throw new ConfigLoopException( m );
+		}
 	}
 
-	private Context back()
+	private void delName( String name )
 	{
-		if( this.context == null ) {
-			final ConfigParsePosition pos = new ConfigParsePosition( "expression error", this.offset );
-
-			throw new ConfigParseException( new String( this.content ), asList( pos ) );
-		}
-		if( this.context.braces > 0 ) {
-			final ConfigParsePosition pos = new ConfigParsePosition( "unbalanced '{'", this.offset );
-
-			throw new ConfigParseException( new String( this.content ), asList( pos ) );
-		}
-
-		final Context cx = this.context;
-
-		this.context = cx.prev;
-
-		return cx;
-	}
-
-	private void throwUnresolved( String tok )
-	{
-		final ConfigParsePosition pos = new ConfigParsePosition( format( "unresolved '%s'", tok ), this.offset );
-
-		throw new ConfigParseException( new String( this.content ), asList( pos ) );
-	}
-
-	private Result evaluate( String tok, UnaryOperator<String> first, UnaryOperator<String> next )
-	{
-		if( this.context.skipEval ) {
-			return new Result( tok, tok );
-		}
-
-		return evaluate( tok, first.apply( tok ), next );
-	}
-
-	private Result evaluate( String tok, String val, UnaryOperator<String> fun )
-	{
-		if( val == null ) {
-			return new Result( tok, val );
-		}
-
-		val = new Expression( val ).eval( fun );
-
-		return new Result( tok, val );
+		this.names.remove( name );
 	}
 }

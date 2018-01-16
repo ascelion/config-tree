@@ -72,7 +72,7 @@ public class ExprParseTest
 		try {
 			final ConfigNodeImpl node = new ConfigNodeImpl();
 
-			node.set( this.data.expression );
+			node.setValue( this.data.expression );
 		}
 		catch( final ConfigParseException e ) {
 			e.getErrors().forEach( System.err::println );

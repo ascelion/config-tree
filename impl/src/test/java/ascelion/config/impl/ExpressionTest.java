@@ -23,10 +23,19 @@ public class ExpressionTest
 	}
 
 	@Test
+	public void run00()
+	{
+		final Expression exp = new Expression( "${a}", ExpressionTest::mockEval );
+		final String val = exp.getValue();
+
+		assertThat( val, is( "<a>" ) );
+	}
+
+	@Test
 	public void run01()
 	{
-		final Expression exp = new Expression( "{a-${b-${c}-d}-e}" );
-		final String val = exp.eval( ExpressionTest::mockEval );
+		final Expression exp = new Expression( "{a-${b-${c}-d}-e}", ExpressionTest::mockEval );
+		final String val = exp.getValue();
 
 		assertThat( val, is( "{a-<b-<c>-d>-e}" ) );
 	}
@@ -34,8 +43,8 @@ public class ExpressionTest
 	@Test
 	public void run02()
 	{
-		final Expression exp = new Expression( "x-${a-null:b}-y" );
-		final String val = exp.eval( ExpressionTest::mockEval );
+		final Expression exp = new Expression( "x-${a-null:-b}-y", ExpressionTest::mockEval );
+		final String val = exp.getValue();
 
 		assertThat( val, is( "x-b-y" ) );
 	}
@@ -43,8 +52,8 @@ public class ExpressionTest
 	@Test
 	public void run03()
 	{
-		final Expression exp = new Expression( "x-${a-null:${b-null:c}}-y" );
-		final String val = exp.eval( ExpressionTest::mockEval );
+		final Expression exp = new Expression( "x-${a-null:${b-null:c}}-y", ExpressionTest::mockEval );
+		final String val = exp.getValue();
 
 		assertThat( val, is( "x-c-y" ) );
 	}
@@ -52,8 +61,8 @@ public class ExpressionTest
 	@Test
 	public void run04()
 	{
-		final Expression exp = new Expression( "{a-${b-${c-null:x-${y}-z}-d}-e}" );
-		final String val = exp.eval( ExpressionTest::mockEval );
+		final Expression exp = new Expression( "{a-${b-${c-null:x-${y}-z}-d}-e}", ExpressionTest::mockEval );
+		final String val = exp.getValue();
 
 		assertThat( val, is( "{a-<b-x-<y>-z-d>-e}" ) );
 	}
@@ -61,8 +70,8 @@ public class ExpressionTest
 	@Test
 	public void run05()
 	{
-		final Expression exp = new Expression( "$a:b" );
-		final String val = exp.eval( ExpressionTest::mockEval );
+		final Expression exp = new Expression( "$a:b", ExpressionTest::mockEval );
+		final String val = exp.getValue();
 
 		assertThat( val, is( "$a:b" ) );
 	}
@@ -70,8 +79,8 @@ public class ExpressionTest
 	@Test
 	public void run06()
 	{
-		final Expression exp = new Expression( "${a\\:b}" );
-		final String val = exp.eval( ExpressionTest::mockEval );
+		final Expression exp = new Expression( "${a\\:b}", ExpressionTest::mockEval );
+		final String val = exp.getValue();
 
 		assertThat( val, is( "<a:b>" ) );
 	}
@@ -79,8 +88,8 @@ public class ExpressionTest
 	@Test
 	public void run07()
 	{
-		final Expression exp = new Expression( "${a-null:b:c}" );
-		final String val = exp.eval( ExpressionTest::mockEval );
+		final Expression exp = new Expression( "${a-null:b:c}", ExpressionTest::mockEval );
+		final String val = exp.getValue();
 
 		assertThat( val, is( "b:c" ) );
 	}
@@ -88,8 +97,8 @@ public class ExpressionTest
 	@Test
 	public void run08()
 	{
-		final Expression exp = new Expression( "${null-a\\:b:c}" );
-		final String val = exp.eval( ExpressionTest::mockEval );
+		final Expression exp = new Expression( "${null-a\\:b:c}", ExpressionTest::mockEval );
+		final String val = exp.getValue();
 
 		assertThat( val, is( "c" ) );
 	}
@@ -97,8 +106,8 @@ public class ExpressionTest
 	@Test
 	public void run09()
 	{
-		final Expression exp = new Expression( "\\$\\{x\\}" );
-		final String val = exp.eval( ExpressionTest::mockEval );
+		final Expression exp = new Expression( "\\$\\{x\\}", ExpressionTest::mockEval );
+		final String val = exp.getValue();
 
 		assertThat( val, is( "${x}" ) );
 	}
@@ -106,10 +115,19 @@ public class ExpressionTest
 	@Test
 	public void run10()
 	{
-		final Expression exp = new Expression( "${a-null:\\$\\{x\\}}" );
-		final String val = exp.eval( ExpressionTest::mockEval );
+		final Expression exp = new Expression( "${a-null:\\$\\{x\\}}", ExpressionTest::mockEval );
+		final String val = exp.getValue();
 
 		assertThat( val, is( "<x>" ) );
+	}
+
+	@Test
+	public void run11()
+	{
+		final Expression exp = new Expression( "${a-${b-${c}-d}-e}", x -> null );
+		final String val = exp.getValue();
+
+		assertThat( val, is( "{a-<b-<c>-d>-e}" ) );
 	}
 
 	@Test( expected = ConfigLoopException.class )
@@ -119,8 +137,8 @@ public class ExpressionTest
 		final UnaryOperator<String> fun = x -> {
 			return format( "${X%02d}", ++count[0] % 5 );
 		};
-		final Expression exp = new Expression( "${X00}" );
+		final Expression exp = new Expression( "${X00}", fun );
 
-		exp.eval( fun );
+		exp.getValue();
 	}
 }
