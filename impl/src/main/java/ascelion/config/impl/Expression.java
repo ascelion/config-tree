@@ -126,8 +126,6 @@ final class Expression
 						if( nested == 0 ) {
 							final Buffer place = buf.subBuffer( start, o2 - start );
 
-							addName( place.toString() );
-
 							replace( place );
 
 							final int defIx = place.find( DEFAULT, ESCAPE );
@@ -144,6 +142,8 @@ final class Expression
 							}
 
 							final String var = varName.toString();
+
+							addName( var );
 
 							String val = this.lookup.apply( var );
 

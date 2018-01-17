@@ -91,13 +91,13 @@ public class ExpressionTest
 		final Expression exp = new Expression( "${a-null:-b:-c}", ExpressionTest::mockEval );
 		final String val = exp.getValue();
 
-		assertThat( val, is( "b:c" ) );
+		assertThat( val, is( "b:-c" ) );
 	}
 
 	@Test
 	public void run08()
 	{
-		final Expression exp = new Expression( "${null-a\\:b:c}", ExpressionTest::mockEval );
+		final Expression exp = new Expression( "${null-a\\:-b:-c}", ExpressionTest::mockEval );
 		final String val = exp.getValue();
 
 		assertThat( val, is( "c" ) );
@@ -115,19 +115,10 @@ public class ExpressionTest
 	@Test
 	public void run10()
 	{
-		final Expression exp = new Expression( "${a-null:\\$\\{x\\}}", ExpressionTest::mockEval );
+		final Expression exp = new Expression( "${a-null:-\\$\\{x\\}}", ExpressionTest::mockEval );
 		final String val = exp.getValue();
 
-		assertThat( val, is( "<x>" ) );
-	}
-
-	@Test
-	public void run11()
-	{
-		final Expression exp = new Expression( "${a-${b-${c}-d}-e}", x -> null );
-		final String val = exp.getValue();
-
-		assertThat( val, is( "{a-<b-<c>-d>-e}" ) );
+		assertThat( val, is( "${x}" ) );
 	}
 
 	@Test( expected = ConfigLoopException.class )
