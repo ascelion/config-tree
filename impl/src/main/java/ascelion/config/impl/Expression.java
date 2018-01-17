@@ -9,9 +9,10 @@ import java.util.function.UnaryOperator;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.text.StringEscapeUtils.unescapeJava;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.ToString;
 
 @ToString( of = { "expression", "cached", "value" } )
@@ -24,7 +25,8 @@ final class Expression
 	static private final char ESCAPE = '\\';
 
 	private final UnaryOperator<String> lookup;
-	private final String expression;
+	@Getter( AccessLevel.PACKAGE )
+	private String expression;
 	private volatile String value;
 	private volatile boolean cached;
 	private final ReadWriteLock rwl = new ReentrantReadWriteLock();
@@ -32,9 +34,28 @@ final class Expression
 
 	Expression( String expression, UnaryOperator<String> lookup )
 	{
-		this.expression = expression;
 		this.lookup = lookup;
-		this.cached = isBlank( expression );
+
+		setValue( expression );
+	}
+
+	Expression( UnaryOperator<String> lookup )
+	{
+		this.lookup = lookup;
+	}
+
+	void setValue( String expression )
+	{
+		this.rwl.writeLock().lock();
+
+		try {
+			this.expression = expression;
+			this.cached = expression == null;
+			this.value = null;
+		}
+		finally {
+			this.rwl.writeLock().unlock();
+		}
 	}
 
 	String getValue()

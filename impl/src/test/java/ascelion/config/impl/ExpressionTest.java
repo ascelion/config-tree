@@ -52,7 +52,7 @@ public class ExpressionTest
 	@Test
 	public void run03()
 	{
-		final Expression exp = new Expression( "x-${a-null:${b-null:c}}-y", ExpressionTest::mockEval );
+		final Expression exp = new Expression( "x-${a-null:-${b-null:-c}}-y", ExpressionTest::mockEval );
 		final String val = exp.getValue();
 
 		assertThat( val, is( "x-c-y" ) );
@@ -61,7 +61,7 @@ public class ExpressionTest
 	@Test
 	public void run04()
 	{
-		final Expression exp = new Expression( "{a-${b-${c-null:x-${y}-z}-d}-e}", ExpressionTest::mockEval );
+		final Expression exp = new Expression( "{a-${b-${c-null:-x-${y}-z}-d}-e}", ExpressionTest::mockEval );
 		final String val = exp.getValue();
 
 		assertThat( val, is( "{a-<b-x-<y>-z-d>-e}" ) );
@@ -88,7 +88,7 @@ public class ExpressionTest
 	@Test
 	public void run07()
 	{
-		final Expression exp = new Expression( "${a-null:b:c}", ExpressionTest::mockEval );
+		final Expression exp = new Expression( "${a-null:-b:-c}", ExpressionTest::mockEval );
 		final String val = exp.getValue();
 
 		assertThat( val, is( "b:c" ) );

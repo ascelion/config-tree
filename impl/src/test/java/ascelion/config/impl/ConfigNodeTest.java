@@ -21,7 +21,7 @@ import org.junit.Test;
 public class ConfigNodeTest
 {
 
-	private final ConfigNodeEval root = new ConfigNodeEval();
+	private final ConfigNodeImpl root = new ConfigNodeImpl();
 
 	@Test
 	public void itemOnly()

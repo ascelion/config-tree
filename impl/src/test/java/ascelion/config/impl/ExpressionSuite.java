@@ -2,72 +2,131 @@
 package ascelion.config.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import ascelion.config.api.ConfigParseException;
-
+import static java.lang.String.format;
+import static org.apache.commons.text.StringEscapeUtils.unescapeJava;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
+import org.apache.commons.text.StrLookup;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.yaml.snakeyaml.Yaml;
 
 @RunWith( Parameterized.class )
 public class ExpressionSuite
 {
 
 	@Parameterized.Parameters( name = "{0}" )
-	static public Object data()
+	static public Object data() throws IOException
 	{
-		return EvalData.suiteData();
+		final List<Object[]> data = new ArrayList<>();
+		final ClassLoader cld = Thread.currentThread().getContextClassLoader();
+
+		final Set<String> names = new LinkedHashSet<>();
+
+		try( InputStream is = cld.getResourceAsStream( ExpressionSuite.class.getSimpleName() + ".yml" ) ) {
+			final Yaml yml = new Yaml();
+			final List<Map<String, Object>> all = (List<Map<String, Object>>) yml.load( is );
+
+			for( final Map<String, Object> td : all ) {
+				final String tn = ( (String) td.get( "expression" ) )
+					.replace( "$", "@" )
+					.replace( "\\", "^" );
+
+				if( names.add( tn ) ) {
+					data.add( new Object[] { tn, td } );
+				}
+				else {
+					throw new RuntimeException( format( "%d: duplicated name: %s", names.size(), tn ) );
+				}
+			}
+		}
+
+		return data;
 	}
 
-	@org.junit.Rule
-	public ExpectedException exRule = ExpectedException.none();
+	@Rule
+	public ExpectedException xx = ExpectedException.none();
 
-	private final EvalData data;
+	private final String expression;
+	private final String expected;
+	private final String expectedCT;
+	private final Map<String, String> properties;
+	private final Class<? extends Exception> exception;
 
-	public ExpressionSuite( String name, EvalData data ) throws IOException
+	public ExpressionSuite( String unused, Map<String, Object> td ) throws ClassNotFoundException
 	{
-		this.data = data;
+		this.expression = (String) td.get( "expression" );
+		this.properties = (Map<String, String>) td.get( "properties" );
+		this.expected = (String) td.get( "expected" );
+		this.expectedCT = (String) td.get( "expectedCT" );
+
+		final String exception = (String) td.get( "exception" );
+
+		if( exception != null ) {
+			this.exception = (Class<? extends Exception>) Class.forName( exception );
+		}
+		else {
+			this.exception = null;
+		}
 	}
 
 	@Before
 	public void setUp()
 	{
-		if( this.data.errors > 0 ) {
-			this.exRule.expect( ConfigParseException.class );
+		if( this.exception != null ) {
+			this.xx.expect( this.exception );
 		}
 	}
 
 	@Test
-	public void eval()
+	public void commonsText()
 	{
-		System.out.println( "EVAL ----------------------" );
-		System.out.printf( "'%s'\n", this.data.expression );
-
 		try {
-			final Expression exp = new Expression( this.data.expression, ExpressionTest::mockEval );
-			final String val = exp.getValue();
+			final StrSub sub = new StrSub();
 
-			System.out.println( val );
+			sub.setEscapeChar( '\\' );
+			sub.setPreserveEscapes( true );
+			sub.setEnableSubstitutionInVariables( true );
+			sub.setVariableResolver( StrLookup.mapLookup( this.properties ) );
 
-			if( this.data.expected != null ) {
-				assertThat( val, is( this.data.expected ) );
+			final String text = unescapeJava( sub.replace( this.expression ) );
+
+			if( this.expectedCT != null ) {
+				assertThat( text, is( this.expectedCT ) );
+			}
+			else {
+				assertThat( text, is( this.expected ) );
 			}
 		}
-		catch( final ConfigParseException e ) {
-			System.err.println( e );
-
-			e.getErrors().forEach( System.err::println );
-
-			assertThat( e.getErrors(), hasSize( this.data.errors ) );
-
-			throw e;
+		catch( final IllegalStateException e ) {
+			throw new ConfigLoopException( e.getMessage() );
 		}
+	}
+
+	@Test
+	public void expression()
+	{
+		final Expression exp = new Expression( this.expression, this::lookup );
+		final String text = exp.getValue();
+
+		assertThat( text, is( this.expected ) );
+	}
+
+	private String lookup( String key )
+	{
+		return this.properties != null ? this.properties.get( key ) : null;
 	}
 
 }

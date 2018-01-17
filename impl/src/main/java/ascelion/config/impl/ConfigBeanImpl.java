@@ -30,13 +30,13 @@ class ConfigBeanImpl extends NotificationBroadcasterSupport implements ConfigBea
 	@Override
 	public String getName()
 	{
-		return this.node.name;
+		return this.node.getName();
 	}
 
 	@Override
 	public String getPath()
 	{
-		return this.node.path;
+		return this.node.getPath();
 	}
 
 	@Override

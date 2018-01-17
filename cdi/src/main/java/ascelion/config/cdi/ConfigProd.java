@@ -26,8 +26,8 @@ import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.conv.Converters;
 import ascelion.config.impl.ConfigLoad;
-import ascelion.config.impl.JMXSupport;
-import ascelion.config.read.JMXConfigReader;
+//import ascelion.config.impl.JMXSupport;
+//import ascelion.config.read.JMXConfigReader;
 import ascelion.logging.LOG;
 
 import static java.util.Optional.ofNullable;
@@ -110,13 +110,13 @@ class ConfigProd
 
 		this.root = this.load.load();
 
-		this.ext.sources().stream()
-			.filter( s -> s.type().equals( JMXConfigReader.TYPE ) )
-			.forEach( s -> {
-				final JMXSupport sup = new JMXSupport( this.mbsi.get(), s.value() );
-
-				sup.buildEntries( this.root );
-			} );
+//		this.ext.sources().stream()
+//			.filter( s -> s.type().equals( JMXConfigReader.TYPE ) )
+//			.forEach( s -> {
+//				final JMXSupport sup = new JMXSupport( this.mbsi.get(), s.value() );
+//
+//				sup.buildEntries( this.root );
+//			} );
 	}
 
 	@PreDestroy

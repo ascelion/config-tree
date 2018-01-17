@@ -1,2 +1,0 @@
-${${prop-null:${value1}}}
-=<<value1>>

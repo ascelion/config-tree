@@ -1,2 +1,0 @@
-${prop.prop1-null:default}
-=default

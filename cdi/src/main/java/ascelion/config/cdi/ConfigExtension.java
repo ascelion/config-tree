@@ -67,7 +67,7 @@ public class ConfigExtension implements Extension
 		addType( JMXConfigReader.class, bm, event );
 		addType( PRPConfigReader.class, bm, event );
 		addType( SYSConfigReader.class, bm, event );
-		addType( VALConfigReader.class, bm, event );
+//		addType( VALConfigReader.class, bm, event );
 		addType( XMLConfigReader.class, bm, event );
 		addType( YMLConfigReader.class, bm, event );
 	}

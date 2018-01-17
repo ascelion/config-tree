@@ -1,2 +1,0 @@
-${null-prop1:def1}, ${null-prop2:def2}, ${null-prop3:def3}
-=def1, def2, def3

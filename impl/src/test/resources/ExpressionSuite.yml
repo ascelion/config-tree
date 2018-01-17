@@ -1,0 +1,106 @@
+- expression: ${x}
+  properties:
+    x: <x>
+  expected: <x>
+
+- expression: '{${x}}'
+  properties:
+    x: <x>
+  expected: '{<x>}'
+
+- expression: ${y}
+  expected: ${y}
+
+- expression: '{${y}}'
+  expected: '{${y}}'
+
+- expression: '{{${x}}}'
+  properties:
+    x: <x>
+  expected: '{{<x>}}'
+
+- expression: '$$${x}$$'
+  properties:
+    x: <x>
+  expected: $$<x>$$
+
+- expression: '\${x}'
+  expected: '${x}'
+
+- expression: ${x:-a}
+  expected: a
+
+- expression: '{${x:-a}}'
+  expected: '{a}'
+
+- expression: '${x:-${a}}'
+  properties:
+    a: ${b:-${c}}
+    c: d
+  expected: 'd'
+
+- expression: '${${a:-b}:-${c}}'
+  properties:
+    a: ${b:${c}}
+    c: d
+  expected: 'd'
+
+- expression: ${item0.${prop.value}.item2}
+  expected: ${item0.${prop.value}.item2}
+
+- expression: '${X}'
+  properties:
+    X: a-${Y}-b
+    Y: a-${Z}-b
+    Z: a-${X}-b
+  exception: ascelion.config.impl.ConfigLoopException
+
+- expression: '\${x'
+  expected: '${x'
+
+- expression: 'abc-${def-${ghi:-jkl}-${mno:pqr}:-${stu}-v}-xyz'
+  properties:
+    ghi: GHI
+    stu: STU
+  expected: abc-STU-v-xyz
+
+- expression: ${x\:-a}
+  expectedCT: a
+  expected: ${x:-a}
+
+- expression: ${x
+  expected: ${x
+
+- expression: ${${x
+  expected: ${${x
+
+- expression: x}
+  expected: x}
+
+- expression: x}}
+  expected: x}}
+
+- expression: ${a:-b:-c}
+  expected: b:-c
+
+- expression: ${a\:-b:-c}
+  expected: c
+  expectedCT: b:-c
+
+- expression: ${prop1:-def1}, ${prop2:-def2}, ${prop3:-def3}
+  expected: def1, def2, def3
+
+- expression: uid={0},${base}
+  properties:
+    base: ou=users,dc=ascelion
+  expected: uid={0},ou=users,dc=ascelion
+
+- expression: ${prop1:-${prop2:-${prop3:-${prop4:-prefix-${prop5:-default}-suffix}}}}
+  expected: prefix-default-suffix
+
+- expression: jdbc:postgresql://${db1.host}:${db1.port}/${db1.name}
+  properties:
+    db1.name: db
+    db1.host: 127.0.0.1
+    db1.port: '5432'
+  expected: jdbc:postgresql://127.0.0.1:5432/db

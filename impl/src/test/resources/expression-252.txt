@@ -1,2 +1,0 @@
-${null-prop1:${null-prop2:${null-prop3:${null-prop4:prefix-${null-prop5:default}-suffix}}}}
-=prefix-default-suffix

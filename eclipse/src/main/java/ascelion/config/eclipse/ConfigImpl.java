@@ -23,7 +23,7 @@ public class ConfigImpl implements Config
 	@Override
 	public <T> T getValue( String propertyName, Class<T> propertyType )
 	{
-		return (T) this.root.getNode( propertyName ).getValue();
+		return (T) this.root.getValue();
 	}
 
 	@Override
