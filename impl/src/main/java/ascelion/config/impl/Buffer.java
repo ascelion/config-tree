@@ -3,6 +3,8 @@ package ascelion.config.impl;
 
 import java.util.Arrays;
 
+import static java.util.Arrays.copyOfRange;
+
 final class Buffer
 {
 
@@ -12,15 +14,10 @@ final class Buffer
 
 	Buffer( String content )
 	{
-		this( content.toCharArray() );
+		this( content.toCharArray(), 0, content.length() );
 	}
 
-	Buffer( char[] content )
-	{
-		this( content, 0, content.length );
-	}
-
-	Buffer( char[] content, int offset, int count )
+	private Buffer( char[] content, int offset, int count )
 	{
 		this.content = content;
 		this.offset = offset;
@@ -35,17 +32,12 @@ final class Buffer
 
 	int find( final char[] c, char escape )
 	{
-		return find( c, this.offset, this.count, escape );
-	}
-
-	private int find( final char[] c, int offset, int count, char escape )
-	{
 		if( c.length == 0 ) {
-			return offset;
+			return this.offset;
 		}
 
-		for( int o = offset; o < count; o++ ) {
-			if( matches( c, o, count, escape ) ) {
+		for( int o = this.offset; o < this.offset + this.count; o++ ) {
+			if( matches( c, o, escape ) ) {
 				return o;
 			}
 		}
@@ -53,7 +45,7 @@ final class Buffer
 		return -1;
 	}
 
-	boolean matches( char[] prefix, int offset, int count, char escape )
+	boolean matches( char[] prefix, int offset, char escape )
 	{
 		if( offset > this.offset && this.content[offset - 1] == escape ) {
 			return false;
@@ -62,7 +54,7 @@ final class Buffer
 		if( prefix.length == 0 ) {
 			return true;
 		}
-		if( prefix.length + offset > count ) {
+		if( prefix.length + offset > this.offset + this.count ) {
 			return false;
 		}
 
@@ -120,7 +112,16 @@ final class Buffer
 
 	Buffer subBuffer( int offset, int count )
 	{
-		return new Buffer( new String( this.content, offset, count ) );
+		return new Buffer( this.content, offset, count );
 	}
 
+	Buffer newBuffer( int offset, int count )
+	{
+		return new Buffer( copyOfRange( this.content, offset, offset + count ), 0, count );
+	}
+
+	String toString( int offset, int count )
+	{
+		return new String( this.content, offset, count );
+	}
 }
