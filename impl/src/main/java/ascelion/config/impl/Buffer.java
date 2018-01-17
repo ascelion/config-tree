@@ -6,9 +6,9 @@ import java.util.Arrays;
 final class Buffer
 {
 
-	private char[] content;
-	private final int offset;
-	private int count;
+	char[] content;
+	final int offset;
+	int count;
 
 	Buffer( String content )
 	{
@@ -33,59 +33,19 @@ final class Buffer
 		return new String( this.content, this.offset, this.count );
 	}
 
-	char[] chars()
-	{
-		return this.content;
-	}
-
-	int offset()
-	{
-		return this.offset;
-	}
-
-	int count()
-	{
-		return this.count;
-	}
-
-	int find( String text )
-	{
-		return find( text, this.offset, this.count );
-	}
-
-	int find( String text, int offset, int count )
-	{
-		return find( text.toCharArray(), offset, count );
-	}
-
-	int find( final char[] c, int offset, int count )
-	{
-		if( c.length == 0 ) {
-			return offset;
-		}
-
-		for( int o = offset; o < count; o++ ) {
-			if( matches( c, o, count ) ) {
-				return o;
-			}
-		}
-
-		return -1;
-	}
-
 	int find( final char[] c, char escape )
 	{
-		return find( c, this.offset, this.count, escape, this.offset );
+		return find( c, this.offset, this.count, escape );
 	}
 
-	int find( final char[] c, int offset, int count, char escape, int start )
+	private int find( final char[] c, int offset, int count, char escape )
 	{
 		if( c.length == 0 ) {
 			return offset;
 		}
 
 		for( int o = offset; o < count; o++ ) {
-			if( matches( c, o, count, escape, start ) ) {
+			if( matches( c, o, count, escape ) ) {
 				return o;
 			}
 		}
@@ -93,44 +53,21 @@ final class Buffer
 		return -1;
 	}
 
-	boolean matches( String text )
+	boolean matches( char[] prefix, int offset, int count, char escape )
 	{
-		return matches( text.toCharArray(), this.offset, this.count );
-	}
+		if( offset > this.offset && this.content[offset - 1] == escape ) {
+			return false;
+		}
 
-	boolean matches( String text, int offset, int count )
-	{
-		return matches( text.toCharArray(), offset, count );
-	}
-
-	boolean matches( char[] c, int offset, int count )
-	{
-		if( c.length == 0 ) {
+		if( prefix.length == 0 ) {
 			return true;
 		}
-		if( c.length + offset > count ) {
+		if( prefix.length + offset > count ) {
 			return false;
 		}
 
-		for( int k = 0; k < c.length; k++ ) {
-			if( c[k] != this.content[offset + k] ) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	boolean startsWith( String prefix )
-	{
-		final char[] c = prefix.toCharArray();
-
-		if( c.length > this.count ) {
-			return false;
-		}
-
-		for( int k = 0; k < c.length; k++ ) {
-			if( this.content[this.offset + k] != c[k] ) {
+		for( int k = 0; k < prefix.length; k++ ) {
+			if( prefix[k] != this.content[offset + k] ) {
 				return false;
 			}
 		}
@@ -181,23 +118,9 @@ final class Buffer
 		return 0;
 	}
 
-	char at( int k )
-	{
-		return this.content[k];
-	}
-
 	Buffer subBuffer( int offset, int count )
 	{
 		return new Buffer( new String( this.content, offset, count ) );
-	}
-
-	boolean matches( char[] prefix, int offset, int count, char escape, int start )
-	{
-		if( offset > start && this.content[offset - 1] == escape ) {
-			return false;
-		}
-
-		return matches( prefix, offset, count );
 	}
 
 }

@@ -2,9 +2,7 @@
 package ascelion.config.impl;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,34 +52,6 @@ public class BufferTest
 
 		assertThat( buf.replace( 1, 5, "AB" ), is( -3 ) );
 		assertThat( buf.toString(), is( "aAB" ) );
-	}
-
-	@Test
-	public void startsWith()
-	{
-		final Buffer buf = new Buffer( "abc" );
-
-		assertTrue( buf.startsWith( "" ) );
-		assertTrue( buf.startsWith( "a" ) );
-		assertTrue( buf.startsWith( "ab" ) );
-		assertTrue( buf.startsWith( "abc" ) );
-		assertFalse( buf.startsWith( "abcd" ) );
-	}
-
-	@Test
-	public void find()
-	{
-		final Buffer buf = new Buffer( "abc" );
-
-		assertThat( 0, is( buf.find( "" ) ) );
-		assertThat( 0, is( buf.find( "a" ) ) );
-		assertThat( 0, is( buf.find( "ab" ) ) );
-		assertThat( 0, is( buf.find( "abc" ) ) );
-		assertThat( -1, is( buf.find( "abcd" ) ) );
-
-		assertThat( 1, is( buf.find( "b" ) ) );
-		assertThat( 1, is( buf.find( "bc" ) ) );
-		assertThat( -1, is( buf.find( "bcd" ) ) );
 	}
 
 }

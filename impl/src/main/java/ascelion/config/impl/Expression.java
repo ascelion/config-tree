@@ -105,24 +105,24 @@ final class Expression
 
 	private String replace( Buffer buf )
 	{
-		return replace( buf, buf.offset(), buf.count() );
+		return replace( buf, buf.offset, buf.count );
 	}
 
 	private String replace( Buffer buf, int offset, int count )
 	{
 		for( int o1 = offset; o1 < count; o1++ ) {
-			if( buf.matches( PREFIX, o1, count, ESCAPE, offset ) ) {
+			if( buf.matches( PREFIX, o1, count, ESCAPE ) ) {
 				final int start = o1 + PREFIX.length;
 				int nested = 0;
 
 				for( int o2 = start; o2 < count; o2++ ) {
-					if( buf.matches( PREFIX, o2, count ) ) {
+					if( buf.matches( PREFIX, o2, count, ESCAPE ) ) {
 						nested++;
 
 						continue;
 					}
 
-					if( buf.matches( SUFFIX, o2, count ) ) {
+					if( buf.matches( SUFFIX, o2, count, ESCAPE ) ) {
 						if( nested == 0 ) {
 							final Buffer place = buf.subBuffer( start, o2 - start );
 
@@ -138,7 +138,7 @@ final class Expression
 							}
 							else {
 								varName = place.subBuffer( 0, defIx );
-								varValue = place.subBuffer( defIx + DEFAULT.length, place.count() - defIx - DEFAULT.length );
+								varValue = place.subBuffer( defIx + DEFAULT.length, place.count - defIx - DEFAULT.length );
 							}
 
 							final String var = varName.toString();
