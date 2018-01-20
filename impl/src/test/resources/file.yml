@@ -24,7 +24,7 @@ file:
       values: ${file.map1.values.VAL3}
   interfaces.2: ${file.interfaces.1}
 
-  version1: ${undefined:${java.version}}
+  version1: ${undefined:-${java.version}}
   version2: ${java.version}
   limits:
     from: 1965/11/28

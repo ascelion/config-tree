@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 import ascelion.config.api.ConfigConverter;
+import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 
 import static ascelion.config.impl.Utils.asArray;
@@ -16,6 +18,7 @@ import static ascelion.config.impl.Utils.asSet;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
@@ -31,9 +34,23 @@ import org.junit.runners.Parameterized;
 @ConfigSource( "file.conf" )
 @ConfigSource( "file.ini" )
 @ConfigSource( "file.yml" )
+@ConfigSource( type = ConfigLinkTest.SOURCE_TYPE )
 @RunWith( Parameterized.class )
 public class ConfigLinkTest
 {
+
+	@ConfigReader.Type( SOURCE_TYPE )
+	static public class CustomReader implements ConfigReader
+	{
+
+		@Override
+		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
+		{
+			return singletonMap( "java.version", System.getProperty( "java.version" ) );
+		}
+	};
+
+	static final String SOURCE_TYPE = "ConfigLinkTest";
 
 	static private final String PREFIX = "file";
 	static private final String PROP1 = PREFIX + ".map1.values";
@@ -83,7 +100,7 @@ public class ConfigLinkTest
 	@BeforeClass
 	static public void setUpClass()
 	{
-		CJ.add( s -> s.value().startsWith( "file" ) );
+		CJ.add( s -> s.value().startsWith( "file" ) || SOURCE_TYPE.equals( s.type() ) );
 	}
 
 	private final Type type;

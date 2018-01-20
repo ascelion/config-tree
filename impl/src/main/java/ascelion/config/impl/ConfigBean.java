@@ -11,9 +11,9 @@ public interface ConfigBean
 
 	String getPath();
 
-	String getExpression();
-
-	void setExpression( String value );
-
 	String getValue();
+
+	String getRawValue();
+
+	void setValue( String value );
 }

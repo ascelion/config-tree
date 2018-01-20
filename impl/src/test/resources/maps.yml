@@ -26,13 +26,14 @@ db2:
   port: 5432
   user: micro
   pass: testtest
-  escaped1: val1\\val2
-  escaped2: val1\:val2
-#  escaped3: \\${xxx
+  escaped1: val1\val2
+  escaped2: val1:-val2
+  escaped3: \${xxx
+  escaped4: xxx\}
   javax:
     persistence:
       jdbc:
         user: ${db2.user}
         password: ${db2.pass}
-        url: jdbc\:postgresql\://${db2.host}\:${db2.port}/${db2.name}
+        url: jdbc:postgresql://${db2.host}:${db2.port}/${db2.name}
         driver: org.postgresql.Driver

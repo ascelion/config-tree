@@ -3,105 +3,133 @@ package ascelion.config.impl;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
+
+import ascelion.config.api.ConfigNotFoundException;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 import static org.apache.commons.text.StringEscapeUtils.unescapeJava;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.ToString;
 
-@ToString( of = { "expression", "cached", "value" } )
+@ToString( of = { "expression", "cached", "value" }, doNotUseGetters = true )
 final class Expression
 {
+
+	@ToString
+	static class Result
+	{
+
+		static Function<String, Result> wrap( UnaryOperator<String> fun )
+		{
+			return x -> {
+				x = fun.apply( x );
+
+				if( x == null ) {
+					return new Result();
+				}
+				else {
+					return new Result( x );
+				}
+			};
+		}
+
+		final boolean unresolved;
+		final String value;
+
+		Result()
+		{
+			this.unresolved = true;
+			this.value = null;
+		}
+
+		Result( String value )
+		{
+			this.unresolved = false;
+			this.value = value;
+		}
+	}
 
 	static private final char[] PREFIX = "${".toCharArray();
 	static private final char[] DEFAULT = ":-".toCharArray();
 	static private final char[] SUFFIX = "}".toCharArray();
 	static private final char ESCAPE = '\\';
 
-	private final UnaryOperator<String> lookup;
+	private final Function<String, Result> lookup;
 	@Getter( AccessLevel.PACKAGE )
 	private String expression;
-	private volatile String value;
-	private volatile boolean cached;
-	private final ReadWriteLock rwl = new ReentrantReadWriteLock();
+	private String value;
+	@Getter( AccessLevel.PACKAGE )
+	private String defValue;
+	private boolean cached;
+	@Getter( AccessLevel.PACKAGE )
+	private boolean changed;
+	@Getter( AccessLevel.PACKAGE )
+	private String lastVariable;
 	private final Set<String> names = new LinkedHashSet<>();
 
-	Expression( String expression, UnaryOperator<String> lookup )
+	Expression( UnaryOperator<String> lookup )
+	{
+		this( Result.wrap( lookup ), null );
+	}
+
+	Expression( UnaryOperator<String> lookup, String expression )
+	{
+		this( Result.wrap( lookup ), expression );
+	}
+
+	Expression( Function<String, Result> lookup )
+	{
+		this( lookup, null );
+	}
+
+	Expression( Function<String, Result> lookup, String expression )
 	{
 		this.lookup = lookup;
 
 		setValue( expression );
 	}
 
-	Expression( UnaryOperator<String> lookup )
-	{
-		this.lookup = lookup;
-	}
-
 	void setValue( String expression )
 	{
-		this.rwl.writeLock().lock();
+		this.expression = expression;
+		this.cached = isEmpty();
+		this.changed = false;
+		this.value = null;
+	}
 
-		try {
-			this.expression = expression;
-			this.cached = isBlank( expression );
-			this.value = null;
-		}
-		finally {
-			this.rwl.writeLock().unlock();
-		}
+	boolean isEmpty()
+	{
+		return isBlank( this.expression );
 	}
 
 	String getValue()
 	{
-		this.rwl.readLock().lock();
-
-		try {
-			if( this.cached ) {
-				return this.value;
-			}
-		}
-		finally {
-			this.rwl.readLock().unlock();
-		}
-
-		this.rwl.writeLock().lock();
-
-		try {
-			if( this.cached ) {
-				return this.value;
-			}
-
-			final Buffer buf = new Buffer( this.expression );
-
-			this.value = unescapeJava( replace( buf ) );
-			this.cached = true;
-
+		if( this.cached ) {
 			return this.value;
 		}
-		finally {
-			this.rwl.writeLock().unlock();
+		if( this.cached ) {
+			return this.value;
 		}
+
+		final Buffer buf = new Buffer( this.expression );
+
+		this.value = unescapeJava( replace( buf ) );
+		this.cached = true;
+
+		return this.value;
 	}
 
 	void expire()
 	{
-		this.rwl.writeLock().lock();
-
-		try {
-			this.cached = false;
-			this.value = null;
-		}
-		finally {
-			this.rwl.writeLock().unlock();
-		}
+		this.cached = false;
+		this.value = null;
 	}
 
 	private String replace( Buffer buf )
@@ -126,32 +154,36 @@ final class Expression
 
 							final int defIx = place.find( DEFAULT, ESCAPE );
 							final String var;
-							final String def;
 
 							if( defIx < 0 ) {
 								var = place.toString();
-								def = null;
+								this.defValue = null;
 							}
 							else {
 								var = place.toString( 0, defIx );
-								def = place.toString( defIx + DEFAULT.length, place.count - defIx - DEFAULT.length );
+								this.defValue = place.toString( defIx + DEFAULT.length, place.count - defIx - DEFAULT.length );
 							}
 
 							addName( var );
 
-							String val = this.lookup.apply( var );
+							final Result res = this.lookup.apply( var );
+							String val = res.value;
+							if( res.unresolved ) {
+								if( this.defValue == null ) {
+									throw new ConfigNotFoundException( var );
+								}
 
-							if( val == null ) {
-								val = def;
+								val = this.defValue;
 							}
-							if( val != null ) {
-								val = replace( new Buffer( val ) );
 
-								final int end = o2 + SUFFIX.length;
-								final int dif = buf.replace( o1, end - o1, val );
+							val = replace( new Buffer( trimToEmpty( val ) ) );
 
-								o1 = end + dif - 1;
-							}
+							final int end = o2 + SUFFIX.length;
+							final int dif = buf.replace( o1, end - o1, val );
+
+							o1 = end + dif - 1;
+
+							this.changed = true;
 
 							delName( var );
 
@@ -175,6 +207,8 @@ final class Expression
 
 			throw new ConfigLoopException( m );
 		}
+
+		this.lastVariable = name;
 	}
 
 	private void delName( String name )

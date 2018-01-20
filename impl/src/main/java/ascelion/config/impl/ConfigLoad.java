@@ -1,7 +1,6 @@
 
 package ascelion.config.impl;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,48 +13,17 @@ import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
+import ascelion.config.impl.ConfigNodeImpl.ConfigNodeTA;
 import ascelion.logging.LOG;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import org.apache.commons.io.FilenameUtils;
 
 public final class ConfigLoad
 {
-
-	static class ConfigNodeTA extends TypeAdapter<ConfigNodeImpl>
-	{
-
-		@Override
-		public void write( JsonWriter out, ConfigNodeImpl node ) throws IOException
-		{
-			final String expression = node.getExpression();
-			final Collection<ConfigNode> tree = node.getNodes();
-
-			if( expression != null ) {
-				out.name( "expression" ).value( expression );
-			}
-			if( tree.size() > 0 ) {
-				out.beginObject();
-				for( final ConfigNode child : tree ) {
-					out.name( child.getName() );
-					write( out, (ConfigNodeImpl) child );
-				}
-				out.endObject();
-			}
-		}
-
-		@Override
-		public ConfigNodeImpl read( JsonReader in ) throws IOException
-		{
-			throw new UnsupportedOperationException();
-		}
-	}
 
 	static private final LOG L = LOG.get();
 

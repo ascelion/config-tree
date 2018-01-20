@@ -5,7 +5,6 @@ import java.lang.reflect.Type;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
-import ascelion.config.api.ConfigNode.Kind;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -37,7 +36,7 @@ final class NullableConverter<T> implements ConfigConverter<T>
 	@Override
 	public T create( Type t, ConfigNode u, int unwrap )
 	{
-		if( u == null || u.getKind() == Kind.NULL ) {
+		if( u == null ) {
 			return null;
 		}
 

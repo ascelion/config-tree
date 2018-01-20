@@ -36,28 +36,20 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 
 		final Map<String, T> m = new TreeMap<>();
 
-		switch( u.getKind() ) {
-			case NULL:
-			break;
+		if( Utils.isContainer( this.type ) ) {
+			final Collection<ConfigNode> nodes = u.getNodes();
 
-			case LINK:
-			case NODE:
-				if( Utils.isContainer( this.type ) ) {
-					u.<Collection<ConfigNode>> getValue()
-						.forEach( n -> {
-							m.put( unwrap( n.getPath(), unwrap ), this.conv.create( this.type, n, unwrap ) );
-						} );
-				}
-				else {
-					asMap( u )
-						.forEach( ( k, v ) -> {
-							m.put( unwrap( k, unwrap ), this.conv.create( this.type, v ) );
-						} );
-				}
-			break;
-
-			default:
-				throw new UnsupportedOperationException();
+			if( nodes != null ) {
+				nodes.forEach( n -> {
+					m.put( unwrap( n.getPath(), unwrap ), this.conv.create( this.type, n, unwrap ) );
+				} );
+			}
+		}
+		else {
+			asMap( u )
+				.forEach( ( k, v ) -> {
+					m.put( unwrap( k, unwrap ), this.conv.create( this.type, v ) );
+				} );
 		}
 
 		return unmodifiableMap( m );
@@ -84,20 +76,14 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 
 	private void fillMap( ConfigNode node, Map<String, String> m )
 	{
-		switch( node.getKind() ) {
-			case NULL:
-			break;
+		if( node.getValue() != null ) {
+			m.put( node.getPath(), node.getValue() );
+		}
 
-			case ITEM: {
-				m.put( node.getPath(), node.getValue() );
-			}
-			break;
+		final Collection<ConfigNode> nodes = node.getNodes();
 
-			case LINK:
-			case NODE: {
-				node.<Collection<ConfigNode>> getValue()
-					.forEach( n -> fillMap( n, m ) );
-			}
+		if( nodes != null ) {
+			nodes.forEach( n -> fillMap( n, m ) );
 		}
 	}
 

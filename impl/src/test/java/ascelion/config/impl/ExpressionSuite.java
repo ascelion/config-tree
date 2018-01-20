@@ -15,7 +15,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.apache.commons.text.StrLookup;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,7 +44,7 @@ public class ExpressionSuite
 					.replace( "\\", "^" );
 
 				if( names.add( tn ) ) {
-					data.add( new Object[] { tn, td } );
+					data.add( new Object[] { format( "%02d-%s", names.size(), tn ), td } );
 				}
 				else {
 					throw new RuntimeException( format( "%d: duplicated name: %s", names.size(), tn ) );
@@ -64,6 +63,7 @@ public class ExpressionSuite
 	private final String expectedCT;
 	private final Map<String, String> properties;
 	private final Class<? extends Exception> exception;
+	private final Class<? extends Exception> exceptionCT;
 
 	public ExpressionSuite( String unused, Map<String, Object> td ) throws ClassNotFoundException
 	{
@@ -71,54 +71,53 @@ public class ExpressionSuite
 		this.properties = (Map<String, String>) td.get( "properties" );
 		this.expected = (String) td.get( "expected" );
 		this.expectedCT = (String) td.get( "expectedCT" );
-
-		final String exception = (String) td.get( "exception" );
-
-		if( exception != null ) {
-			this.exception = (Class<? extends Exception>) Class.forName( exception );
-		}
-		else {
-			this.exception = null;
-		}
+		this.exception = getException( td, "exception" );
+		this.exceptionCT = getException( td, "exceptionCT" );
 	}
 
-	@Before
-	public void setUp()
+	Class<? extends Exception> getException( Map<String, Object> td, String name ) throws ClassNotFoundException
 	{
-		if( this.exception != null ) {
-			this.xx.expect( this.exception );
+		final String exception = (String) td.get( name );
+
+		if( exception != null ) {
+			return (Class<? extends Exception>) Class.forName( exception );
+		}
+		else {
+			return null;
 		}
 	}
 
 	@Test
 	public void commonsText()
 	{
-		try {
-			final StrSub sub = new StrSub();
-
-			sub.setEscapeChar( '\\' );
-			sub.setPreserveEscapes( true );
-			sub.setEnableSubstitutionInVariables( true );
-			sub.setVariableResolver( StrLookup.mapLookup( this.properties ) );
-
-			final String text = unescapeJava( sub.replace( this.expression ) );
-
-			if( this.expectedCT != null ) {
-				assertThat( text, is( this.expectedCT ) );
-			}
-			else {
-				assertThat( text, is( this.expected ) );
-			}
+		if( this.exceptionCT != null ) {
+			this.xx.expect( this.exceptionCT );
 		}
-		catch( final IllegalStateException e ) {
-			throw new ConfigLoopException( e.getMessage() );
+		final StrSub sub = new StrSub();
+
+		sub.setEscapeChar( '\\' );
+		sub.setPreserveEscapes( true );
+		sub.setEnableSubstitutionInVariables( true );
+		sub.setVariableResolver( StrLookup.mapLookup( this.properties ) );
+
+		final String text = unescapeJava( sub.replace( this.expression ) );
+
+		if( this.expectedCT != null ) {
+			assertThat( text, is( this.expectedCT ) );
+		}
+		else {
+			assertThat( text, is( this.expected ) );
 		}
 	}
 
 	@Test
 	public void expression()
 	{
-		final Expression exp = new Expression( this.expression, this::lookup );
+		if( this.exception != null ) {
+			this.xx.expect( this.exception );
+		}
+
+		final Expression exp = new Expression( this::lookup, this.expression );
 		final String text = exp.getValue();
 
 		assertThat( text, is( this.expected ) );

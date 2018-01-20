@@ -13,8 +13,8 @@ databases:
     portName: ${db1.port}
     user: ${db1.user}
     password: ${db1.pass}
-    url: jdbc\:postgresql\://${db1.host}\:${db1.port}/${db1.name}
-    home: http\://www.postgresql.org
+    url: jdbc:postgresql://${db1.host}:${db1.port}/${db1.name}
+    home: http://www.postgresql.org
     properties:
       prop1: value1
       prop2: value2
@@ -26,7 +26,7 @@ databases:
     serverName: test2
     user: test2
     password: test2test2
-    url: jdbc\:postgresql\:test2
+    url: jdbc:postgresql:test2
 
   db3: ${databases.db1}
   db4: ${databases.db2}

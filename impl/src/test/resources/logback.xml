@@ -23,7 +23,7 @@
 	</appender>
 
 	<logger name="org.reflections" level="INFO" />
-	<logger name="ascelion" level="INFO" />
+	<logger name="ascelion.config" level="ALL" />
 
 	<root level="INFO">
 		<appender-ref ref="FILE" />

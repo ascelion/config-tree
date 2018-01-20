@@ -3,6 +3,7 @@ package ascelion.config.impl;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -13,22 +14,57 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigNotFoundException;
 
 import static ascelion.config.impl.Utils.keys;
 import static ascelion.config.impl.Utils.path;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
 final class ConfigNodeImpl implements ConfigNode
 {
 
-	private final ConfigNode root;
+	static class ConfigNodeTA extends TypeAdapter<ConfigNodeImpl>
+	{
+
+		@Override
+		public void write( JsonWriter out, ConfigNodeImpl node ) throws IOException
+		{
+			final String expression = node.expression.getExpression();
+			final Map<String, ConfigNodeImpl> tree = node.nodes;
+
+			out.beginObject();
+			if( expression != null ) {
+				out.name( "expression" ).value( expression );
+			}
+			if( tree != null ) {
+				for( final ConfigNode child : tree.values() ) {
+					out.name( child.getName() );
+					write( out, (ConfigNodeImpl) child );
+				}
+			}
+			out.endObject();
+		}
+
+		@Override
+		public ConfigNodeImpl read( JsonReader in ) throws IOException
+		{
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	private final ConfigNodeImpl root;
 	private final String name;
 	private final String path;
 	private final PropertyChangeSupport pcs;
-	private final Map<String, ConfigNodeImpl> nodes = new TreeMap<>();
-	private final Expression expression = new Expression( this::lookup );
+	private final Expression expression;
+	private Map<String, ConfigNodeImpl> nodes;
 
 	ConfigNodeImpl()
 	{
@@ -36,6 +72,7 @@ final class ConfigNodeImpl implements ConfigNode
 		this.name = null;
 		this.path = null;
 		this.pcs = new PropertyChangeSupport( this );
+		this.expression = new Expression( this::lookup );
 	}
 
 	private ConfigNodeImpl( ConfigNodeImpl parent, String name )
@@ -44,6 +81,7 @@ final class ConfigNodeImpl implements ConfigNode
 		this.path = path( path( parent ), name );
 		this.root = parent.root;
 		this.pcs = parent.pcs;
+		this.expression = new Expression( this.root::lookup );
 
 		parent.nodes.put( name, this );
 	}
@@ -61,15 +99,89 @@ final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public Kind getKind()
+	public String getValue()
 	{
-		throw new UnsupportedOperationException();
+		return this.expression.getValue();
 	}
 
 	@Override
-	public <T> T getValue()
+	public String getRawValue()
 	{
-		return (T) this.expression.getValue();
+		return this.expression.getExpression();
+	}
+
+	@Override
+	public Collection<ConfigNode> getNodes()
+	{
+		if( this.nodes != null ) {
+			return unmodifiableCollection( this.nodes.values() );
+		}
+		if( this.expression.isEmpty() ) {
+			return null;
+		}
+
+		String path = this.expression.getValue();
+
+		if( !this.expression.isChanged() ) {
+			return null;
+		}
+
+		if( isEmpty( path ) ) {
+			path = this.expression.getLastVariable();
+		}
+
+		try {
+			return this.root.getNode( path ).getNodes();
+		}
+		catch( final ConfigNotFoundException e ) {
+			return null;
+		}
+	}
+
+	@Override
+	public String getValue( String path )
+	{
+		final Expression expr = new Expression( this.root::lookup, path );
+		final ConfigNodeImpl node = findNode( expr.getValue(), false );
+
+		if( node != null ) {
+			return node.getValue();
+		}
+
+		if( expr.isChanged() ) {
+			return expr.getValue();
+		}
+
+		throw new ConfigNotFoundException( path );
+	}
+
+	@Override
+	public ConfigNode getNode( final String path )
+	{
+		final Expression expr = new Expression( this.root::lookup, path );
+		String eval = expr.getValue();
+
+		if( expr.isChanged() && isEmpty( eval ) ) {
+			eval = expr.getLastVariable();
+		}
+
+		final ConfigNodeImpl node = findNode( eval, false );
+
+		if( node == null ) {
+			if( this.expression.isEmpty() ) {
+				throw new ConfigNotFoundException( path );
+			}
+
+			eval = this.expression.getValue();
+
+			if( this.expression.isChanged() && isEmpty( eval ) ) {
+				eval = this.expression.getLastVariable();
+			}
+
+			return this.root.getNode( eval ).getNode( path );
+		}
+
+		return node;
 	}
 
 	@Override
@@ -80,31 +192,6 @@ final class ConfigNodeImpl implements ConfigNode
 		getKeys( this, keys );
 
 		return unmodifiableSet( keys );
-	}
-
-	@Override
-	public ConfigNode getNode( String path )
-	{
-		return findNode( path, false );
-	}
-
-	public String getExpression()
-	{
-		return this.expression.getExpression();
-	}
-
-	@Override
-	public <T> T getValue( String path )
-	{
-		final ConfigNode node = findNode( path, false );
-
-		return node != null ? node.getValue() : null;
-	}
-
-	@Override
-	public Collection<ConfigNode> getNodes()
-	{
-		return unmodifiableCollection( this.nodes.values() );
 	}
 
 	@Override
@@ -124,15 +211,13 @@ final class ConfigNodeImpl implements ConfigNode
 	{
 		final StringBuilder sb = new StringBuilder();
 
-		if( this.expression != null ) {
-			sb.append( "item: " ).append( this.expression );
-		}
-		if( this.nodes.size() > 0 ) {
-			if( sb.length() > 0 ) {
-				sb.append( ", " );
-			}
+		sb.append( "path: " ).append( this.path );
 
-			sb.append( "tree: " )
+		if( this.expression != null ) {
+			sb.append( ", item: " ).append( this.expression );
+		}
+		if( this.nodes != null && this.nodes.size() > 0 ) {
+			sb.append( ", tree: " )
 				.append( this.nodes.entrySet().stream().map( Objects::toString ).collect( joining( ", ", "{", "}" ) ) );
 		}
 
@@ -182,17 +267,17 @@ final class ConfigNodeImpl implements ConfigNode
 
 	private void getKeys( ConfigNodeImpl node, Set<String> keys )
 	{
-		if( node.expression != null ) {
-			keys.add( this.path );
+		if( !node.expression.isEmpty() ) {
+			keys.add( node.path );
 		}
 
-		node.nodes.values().forEach( c -> getKeys( c, keys ) );
+		if( node.nodes != null ) {
+			node.nodes.values().forEach( c -> getKeys( c, keys ) );
+		}
 	}
 
 	private ConfigNodeImpl findNode( String path, boolean create )
 	{
-		path = new Expression( path, this::lookup ).getValue();
-
 		final String[] keys = keys( path );
 		ConfigNodeImpl node = this;
 
@@ -210,15 +295,21 @@ final class ConfigNodeImpl implements ConfigNode
 	private ConfigNodeImpl child( String name, boolean create )
 	{
 		if( create ) {
+			if( this.nodes == null ) {
+				this.nodes = new TreeMap<>();
+			}
+
 			return this.nodes.computeIfAbsent( name, x -> new ConfigNodeImpl( this, name ) );
 		}
 		else {
-			return this.nodes.get( name );
+			return this.nodes != null ? this.nodes.get( name ) : null;
 		}
 	}
 
-	private String lookup( String path )
+	private Expression.Result lookup( String path )
 	{
-		return this.root.getValue( path );
+		final ConfigNode node = findNode( path, false );
+
+		return node != null ? new Expression.Result( node.getRawValue() ) : new Expression.Result();
 	}
 }

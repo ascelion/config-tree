@@ -46,15 +46,15 @@ class ConfigBeanImpl extends NotificationBroadcasterSupport implements ConfigBea
 	}
 
 	@Override
-	public String getExpression()
+	public String getRawValue()
 	{
-		return Objects.toString( this.node.getExpression(), null );
+		return Objects.toString( this.node.getRawValue(), null );
 	}
 
 	@Override
-	public void setExpression( String value )
+	public void setValue( String value )
 	{
-		final String oldValue = getExpression();
+		final String oldValue = getRawValue();
 
 		if( !Objects.equals( value, oldValue ) ) {
 			try {

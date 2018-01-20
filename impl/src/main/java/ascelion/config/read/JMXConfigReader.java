@@ -68,7 +68,7 @@ public class JMXConfigReader implements ConfigReader
 	{
 		final ConfigBean cb = JMX.newMXBeanProxy( this.mbs, name, ConfigBean.class );
 
-		map.put( cb.getPath(), cb.getExpression() );
+		map.put( cb.getPath(), cb.getRawValue() );
 	}
 
 }

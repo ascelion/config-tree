@@ -90,7 +90,7 @@ public class InterfaceConverterTest
 	@AfterClass
 	static public void testMap()
 	{
-		final Collection<ConfigNode> nodes = CJ.root().getNode( "databases" ).getValue();
+		final Collection<ConfigNode> nodes = CJ.root().getNode( "databases" ).getNodes();
 
 		nodes.forEach( node -> {
 			verify( CV.create( DataSourceDefinition.class, node, 0 ) );

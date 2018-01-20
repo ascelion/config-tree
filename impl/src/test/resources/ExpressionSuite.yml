@@ -9,10 +9,12 @@
   expected: '{<x>}'
 
 - expression: ${y}
-  expected: ${y}
+  expectedCT: ${y}
+  exception: ascelion.config.api.ConfigNotFoundException
 
 - expression: '{${y}}'
-  expected: '{${y}}'
+  expectedCT: '{${y}}'
+  exception: ascelion.config.api.ConfigNotFoundException
 
 - expression: '{{${x}}}'
   properties:
@@ -41,24 +43,26 @@
 
 - expression: '${${a:-b}:-${c}}'
   properties:
-    a: ${b:${c}}
+    a: ${b:-${c}}
     c: d
   expected: 'd'
 
 - expression: ${item0.${prop.value}.item2}
-  expected: ${item0.${prop.value}.item2}
+  expectedCT: ${item0.${prop.value}.item2}
+  exception: ascelion.config.api.ConfigNotFoundException
 
 - expression: '${X}'
   properties:
     X: a-${Y}-b
     Y: a-${Z}-b
     Z: a-${X}-b
+  exceptionCT: java.lang.IllegalStateException
   exception: ascelion.config.impl.ConfigLoopException
 
 - expression: '\${x'
   expected: '${x'
 
-- expression: 'abc-${def-${ghi:-jkl}-${mno:pqr}:-${stu}-v}-xyz'
+- expression: 'abc-${def-${ghi:-jkl}-${mno:-pqr}:-${stu}-v}-xyz'
   properties:
     ghi: GHI
     stu: STU
@@ -67,6 +71,7 @@
 - expression: ${x\:-a}
   expectedCT: a
   expected: ${x:-a}
+  exception: ascelion.config.api.ConfigNotFoundException
 
 - expression: ${x
   expected: ${x
@@ -116,7 +121,7 @@
   properties:
     C: c
   expectedCT: ${A${B${C}D}E}
-  expected: ${A${BcD}E}
+  exception: ascelion.config.api.ConfigNotFoundException
 
 - expression: ${X:-\$\{Y\}}
   expected: ${Y}
