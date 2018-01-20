@@ -42,7 +42,7 @@ public class JMXTest
 		private final MBeanServer serv = ManagementFactory.getPlatformMBeanServer();
 	}
 
-	@ConfigValue( "version:${java.version}" )
+	@ConfigValue( "version:-${java.version}" )
 	private String version;
 
 	@Inject

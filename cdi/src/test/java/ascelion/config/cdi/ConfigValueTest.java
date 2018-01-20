@@ -35,10 +35,10 @@ public class ConfigValueTest
 	static class Bean1
 	{
 
-		@ConfigValue( "value1:20" )
+		@ConfigValue( "value1:-20" )
 		Integer value1;
 
-		@ConfigValue( "value2:314" )
+		@ConfigValue( "value2:-314" )
 		int value2;
 
 		final String value3;
@@ -47,12 +47,12 @@ public class ConfigValueTest
 
 		String value5;
 
-		Bean1( @ConfigValue( "value3:def_value3" ) String value3 )
+		Bean1( @ConfigValue( "value3:-def_value3" ) String value3 )
 		{
 			this.value3 = value3;
 		}
 
-		void setValues( @ConfigValue( "value4:${value5:def_value4}" ) String value4, @ConfigValue( "value5:def_value5" ) String value5 )
+		void setValues( @ConfigValue( "value4:-${value5:-def_value4}" ) String value4, @ConfigValue( "value5:-def_value5" ) String value5 )
 		{
 			this.value4 = value4;
 			this.value5 = value5;
@@ -79,7 +79,7 @@ public class ConfigValueTest
 
 		final BigDecimal amount;
 
-		Bean3( @ConfigValue( "amount:30" ) BigDecimal amount )
+		Bean3( @ConfigValue( "amount:-30" ) BigDecimal amount )
 		{
 			this.amount = amount;
 		}
@@ -94,16 +94,16 @@ public class ConfigValueTest
 	@Inject
 	private Bean3 bean3;
 
-	@ConfigValue( "log.file1:${user.dir}/file1.log" )
+	@ConfigValue( "log.file1:-${user.dir}/file1.log" )
 	private String logFile1;
 
-	@ConfigValue( "log.file2:${user.dir}/file2.log" )
+	@ConfigValue( "log.file2:-${user.dir}/file2.log" )
 	private File logFile2;
 
-	@ConfigValue( "log.categories:2,3,4,5" )
+	@ConfigValue( "log.categories:-2,3,4,5" )
 	private List<Integer> logCategories1;
 
-	@ConfigValue( "log.categories:2,3,4,5" )
+	@ConfigValue( "log.categories:-2,3,4,5" )
 	private Set<Integer> logCategories2;
 
 	@ConfigValue( value = "file.map1.values" )

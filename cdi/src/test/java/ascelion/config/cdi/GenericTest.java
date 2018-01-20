@@ -52,7 +52,7 @@ public class GenericTest
 	static class BaseBean<T>
 	{
 
-		@ConfigValue( ":-314" )
+		@ConfigValue( ":--314" )
 		T prop0;
 
 		T value0;
@@ -88,7 +88,7 @@ public class GenericTest
 		@ConfigValue( "prop1" )
 		long xValue1;
 
-		IBean( @ConfigValue( "prop0:-2" ) int value0 )
+		IBean( @ConfigValue( "prop0:--2" ) int value0 )
 		{
 			super( value0 );
 		}
@@ -100,7 +100,7 @@ public class GenericTest
 		@ConfigValue( "prop1" )
 		String xValue1;
 
-		LBean( @ConfigValue( "prop0:-4" ) long value0 )
+		LBean( @ConfigValue( "prop0:--4" ) long value0 )
 		{
 			super( value0 );
 		}
@@ -112,7 +112,7 @@ public class GenericTest
 		@ConfigValue( "prop1" )
 		int xValue1;
 
-		SBean( @ConfigValue( "prop0:-6" ) String value0 )
+		SBean( @ConfigValue( "prop0:--6" ) String value0 )
 		{
 			super( value0 );
 		}
