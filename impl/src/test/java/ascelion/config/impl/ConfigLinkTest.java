@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
+import ascelion.config.conv.Converters;
 
 import static ascelion.config.impl.Utils.asArray;
 import static ascelion.config.impl.Utils.asSet;
@@ -95,7 +95,7 @@ public class ConfigLinkTest
 	}
 
 	static private final ConfigJava CJ = new ConfigJava();
-	static private final ConfigConverter<?> CV = CJ.getConverter();
+	static private final Converters CV = CJ.getConverter();
 
 	@BeforeClass
 	static public void setUpClass()

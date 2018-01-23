@@ -2,7 +2,6 @@
 package ascelion.config.conv;
 
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
@@ -13,34 +12,30 @@ import static java.lang.String.format;
 final class InterfaceConverter<T> implements ConfigConverter<T>
 {
 
-	private final ConfigConverter<?> conv;
+	final Class<T> type;
+	final Converters conv;
 
-	public InterfaceConverter( ConfigConverter<?> conv )
+	InterfaceConverter( Class<T> type, Converters cvs )
 	{
-		this.conv = conv;
+		if( !type.isInterface() ) {
+			throw new ConfigException( format( "Not a concrete interface: %s", type.getTypeName() ) );
+		}
+
+		this.type = type;
+		this.conv = cvs;
 	}
 
 	@Override
-	public T create( Type t, ConfigNode u, int unwrap )
+	public T create( ConfigNode u, int unwrap )
 	{
-		if( !( t instanceof Class ) ) {
-			throw new ConfigException( format( "Not a concrete interface: %s", t.getTypeName() ) );
-		}
+		final Class<?>[] types = new Class[] { this.type };
+		final ClassLoader cld = this.type.getClassLoader();
 
-		final Class<?> cls = (Class<?>) t;
-
-		if( !cls.isInterface() ) {
-			throw new ConfigException( format( "Not a concrete interface: %s", t.getTypeName() ) );
-		}
-
-		final Class<?>[] types = new Class[] { cls };
-		final ClassLoader cld = cls.getClassLoader();
-
-		return (T) Proxy.newProxyInstance( cld, types, new InterfaceValue( cls, this.conv, u ) );
+		return (T) Proxy.newProxyInstance( cld, types, new InterfaceValue( this.type, this.conv, u ) );
 	}
 
 	@Override
-	public T create( Type t, String u )
+	public T create( String u )
 	{
 		throw new UnsupportedOperationException();
 	}

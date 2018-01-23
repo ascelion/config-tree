@@ -70,17 +70,17 @@ class ConfigProd
 
 		L.trace( "%s -> %s ", a.value(), ip.getAnnotated() );
 
-		final ConfigConverter<?> c = ofNullable( this.converters.get( a.converter() ) ).map( i -> i.instance ).orElse( this.conv );
+		final ConfigConverter<?> c = ofNullable( this.converters.get( a.converter() ) ).map( i -> i.instance ).orElse( this.conv.getConverter( t ) );
 
 		try {
-			return c.create( t, this.root.getNode( a.value() ), a.unwrap() );
+			return c.create( this.root.getNode( a.value() ), a.unwrap() );
 		}
 		catch( final ConfigNotFoundException e1 ) {
 			try {
-				return c.create( t, this.root.getValue( a.value() ) );
+				return c.create( this.root.getValue( a.value() ) );
 			}
 			catch( final ConfigNotFoundException e2 ) {
-				return c.create( t, null, a.unwrap() );
+				return c.create( null, a.unwrap() );
 			}
 		}
 	}

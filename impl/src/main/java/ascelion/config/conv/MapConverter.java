@@ -15,20 +15,16 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-class MapConverter<T> implements ConfigConverter<Map<String, T>>
+class MapConverter<T> extends WrapConverter<Map<String, T>, T>
 {
-
-	private final Type type;
-	private final ConfigConverter<T> conv;
 
 	MapConverter( Type type, ConfigConverter<T> conv )
 	{
-		this.type = type;
-		this.conv = conv;
+		super( type, conv );
 	}
 
 	@Override
-	public Map<String, T> create( Type t, ConfigNode u, int unwrap )
+	public Map<String, T> create( ConfigNode u, int unwrap )
 	{
 		if( u == null ) {
 			return emptyMap();
@@ -41,14 +37,14 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 
 			if( nodes != null ) {
 				nodes.forEach( n -> {
-					m.put( unwrap( n.getPath(), unwrap ), this.conv.create( this.type, n, unwrap ) );
+					m.put( unwrap( n.getPath(), unwrap ), this.conv.create( n, unwrap ) );
 				} );
 			}
 		}
 		else {
 			asMap( u )
 				.forEach( ( k, v ) -> {
-					m.put( unwrap( k, unwrap ), this.conv.create( this.type, v ) );
+					m.put( unwrap( k, unwrap ), this.conv.create( v ) );
 				} );
 		}
 
@@ -56,7 +52,7 @@ class MapConverter<T> implements ConfigConverter<Map<String, T>>
 	}
 
 	@Override
-	public Map<String, T> create( Type t, String u )
+	public Map<String, T> create( String u )
 	{
 		if( isBlank( u ) ) {
 			return emptyMap();

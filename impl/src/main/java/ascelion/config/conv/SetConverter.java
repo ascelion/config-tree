@@ -11,25 +11,21 @@ import static ascelion.config.impl.Utils.values;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 
-class SetConverter<T> implements ConfigConverter<Set<T>>
+class SetConverter<T> extends WrapConverter<Set<T>, T>
 {
-
-	private final Type type;
-	private final ConfigConverter<T> conv;
 
 	SetConverter( Type type, ConfigConverter<T> conv )
 	{
-		this.type = type;
-		this.conv = conv;
+		super( type, conv );
 	}
 
 	@Override
-	public Set<T> create( Type t, String u )
+	public Set<T> create( String u )
 	{
 		final String[] v = values( u );
 
 		return unmodifiableSet( Stream.of( v )
-			.map( x -> this.conv.create( this.type, x ) )
+			.map( x -> this.conv.create( x ) )
 			.collect( toSet() ) );
 	}
 }

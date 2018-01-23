@@ -5,9 +5,9 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigSource;
+import ascelion.config.conv.Converters;
 
 import static ascelion.config.impl.Utils.asArray;
 import static ascelion.config.impl.Utils.asSet;
@@ -59,7 +59,7 @@ public class InterfaceLinkTest
 	}
 
 	static private final ConfigJava CJ = new ConfigJava();
-	static private final ConfigConverter<?> CV = CJ.getConverter();
+	static private final Converters CV = CJ.getConverter();
 
 	@BeforeClass
 	static public void setUpClass()

@@ -32,13 +32,14 @@ import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 
+import static ascelion.config.conv.EnumConverter.enumeration;
 import static ascelion.config.conv.NullableConverter.nullable;
 import static ascelion.config.conv.PrimitiveConverter.primitive;
 import static io.leangen.geantyref.GenericTypeReflector.getTypeName;
 import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
 import static java.lang.String.format;
 
-public final class Converters implements ConfigConverter<Object>
+public final class Converters
 {
 
 	static final TypeVariable<? extends Class<?>> CV_TYPE = ConfigConverter.class.getTypeParameters()[0];
@@ -92,8 +93,6 @@ public final class Converters implements ConfigConverter<Object>
 
 	public Converters()
 	{
-		put( Enum.class, nullable( ( t, u ) -> Enum.valueOf( (Class) t, u ) ) );
-
 		addNullable( Class.class, ExtraConverters::createClass );
 
 		addNullable( Boolean.class, ExtraConverters::createBoolean );
@@ -196,28 +195,17 @@ public final class Converters implements ConfigConverter<Object>
 		}
 	}
 
-	@Override
 	public Object create( Type t, ConfigNode u, int unwrap )
 	{
-		return getConverter( t ).create( t, u, unwrap );
+		return getConverter( t ).create( u, unwrap );
 	}
 
-	@Override
 	public Object create( Type t, String u )
 	{
-		return getConverter( t ).create( t, u );
+		return getConverter( t ).create( u );
 	}
 
-	ConfigNode node( String path )
-	{
-		if( this.root == null || this.root.get() == null ) {
-			throw new IllegalStateException( "No configuration provided to Converters" );
-		}
-
-		return this.root.get().getNode( path );
-	}
-
-	ConfigConverter<?> getConverter( Type type )
+	public ConfigConverter<?> getConverter( Type type )
 	{
 		final Lock rdLock = this.RW_LOCK.readLock();
 
@@ -271,6 +259,15 @@ public final class Converters implements ConfigConverter<Object>
 		}
 	}
 
+	ConfigNode node( String path )
+	{
+		if( this.root == null || this.root.get() == null ) {
+			throw new IllegalStateException( "No configuration provided to Converters" );
+		}
+
+		return this.root.get().getNode( path );
+	}
+
 	private ConfigConverter<?> inferConverter( Type type )
 	{
 		if( type instanceof ParameterizedType ) {
@@ -305,13 +302,16 @@ public final class Converters implements ConfigConverter<Object>
 		if( type instanceof Class ) {
 			final Class<?> cls = (Class<?>) type;
 
+			if( cls.isEnum() ) {
+				return enumeration( (Class<? extends Enum>) cls );
+			}
 			if( cls.isArray() ) {
 				final Class<?> ct = cls.getComponentType();
 
 				return new ArrayConverter( ct, getConverter( ct ) );
 			}
 			if( cls.isInterface() ) {
-				return new InterfaceConverter<>( this );
+				return new InterfaceConverter( cls, this );
 			}
 
 			final ConfigConverter<?> fc = fromClass( cls );
@@ -329,7 +329,7 @@ public final class Converters implements ConfigConverter<Object>
 		try {
 			final Constructor<?> c = cls.getConstructor( String.class );
 
-			return ( t, u ) -> {
+			return ( u ) -> {
 				try {
 					return c.newInstance( u );
 				}
@@ -352,7 +352,7 @@ public final class Converters implements ConfigConverter<Object>
 					continue;
 				}
 
-				return ( t, u ) -> {
+				return ( u ) -> {
 					try {
 						return m.invoke( null, u );
 					}
@@ -373,17 +373,17 @@ public final class Converters implements ConfigConverter<Object>
 
 	private void add( Type type, Function<String, ?> func )
 	{
-		put( type, ( t, u ) -> func.apply( u ) );
+		put( type, ( u ) -> func.apply( u ) );
 	}
 
 	private void addNullable( Type type, Function<String, ?> func )
 	{
-		put( type, nullable( ( t, u ) -> func.apply( u ) ) );
+		put( type, nullable( ( u ) -> func.apply( u ) ) );
 	}
 
 	private void addPrimitive( Type type, Function<String, ?> func )
 	{
-		put( type, primitive( ( t, u ) -> func.apply( u ) ) );
+		put( type, primitive( ( u ) -> func.apply( u ) ) );
 	}
 
 	private void add( ConfigConverter<?> c )

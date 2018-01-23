@@ -1,7 +1,6 @@
 
 package ascelion.config.cdi;
 
-import java.lang.reflect.Type;
 import java.util.Map;
 
 import javax.inject.Singleton;
@@ -31,7 +30,7 @@ public class CustomSourceTest
 	{
 
 		@Override
-		public String create( Type t, String u )
+		public String create( String u )
 		{
 			return isBlank( u ) ? null : "CUSTOM: " + u;
 		}

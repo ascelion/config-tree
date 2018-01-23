@@ -31,13 +31,13 @@ final class InterfaceValue implements InvocationHandler
 
 	private final Class<?> type;
 	private final ConfigNode node;
-	private final ConfigConverter<?> conv;
+	private final Converters cvs;
 
-	InterfaceValue( Class<?> type, ConfigConverter<?> conv, ConfigNode node )
+	InterfaceValue( Class<?> type, Converters cvs, ConfigNode node )
 	{
 		this.type = type;
 		this.node = node;
-		this.conv = conv;
+		this.cvs = cvs;
 
 		Stream.of( type.getMethods() )
 			.filter( m -> m.getParameterTypes().length == 0 )
@@ -67,11 +67,11 @@ final class InterfaceValue implements InvocationHandler
 				}
 
 				if( n != null ) {
-					return this.conv.create( t, n, a.unwrap() );
+					return this.cvs.create( t, n, a.unwrap() );
 				}
 			}
 
-			return this.conv.create( t, null, a.unwrap() );
+			return this.cvs.create( t, null, a.unwrap() );
 		}
 
 		throw new NoSuchMethodError( format( "%s#%s", this.type.getName(), method.getName() ) );

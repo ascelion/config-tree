@@ -10,32 +10,28 @@ import ascelion.config.api.ConfigNode;
 
 import static ascelion.config.impl.Utils.values;
 
-class ArrayConverter<T> implements ConfigConverter<T[]>
+class ArrayConverter<T> extends WrapConverter<T[], T>
 {
-
-	private final Type type;
-	private final ConfigConverter<T> conv;
 
 	ArrayConverter( Type type, ConfigConverter<T> conv )
 	{
-		this.type = type;
-		this.conv = conv;
+		super( type, conv );
 	}
 
 	@Override
-	public T[] create( Type t, String u )
+	public T[] create( String u )
 	{
 		final String[] v = values( u );
 
 		return Stream.of( v )
-			.map( x -> this.conv.create( this.type, x ) )
+			.map( x -> this.conv.create( x ) )
 			.toArray( this::newArray );
 	}
 
 	@Override
-	public T[] create( Type t, ConfigNode u, int unwrap )
+	public T[] create( ConfigNode u, int unwrap )
 	{
-		return create( t, u != null ? u.<String> getValue() : null );
+		return create( u != null ? u.<String> getValue() : null );
 	}
 
 	private T[] newArray( int n )

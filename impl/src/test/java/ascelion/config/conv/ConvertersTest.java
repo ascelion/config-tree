@@ -64,28 +64,9 @@ public class ConvertersTest
 	{
 
 		@Override
-		public Base create( Type t, String u )
+		public Base create( String u )
 		{
-			if( t == Base.class ) {
-				return new Base( this );
-			}
-			if( t == Derived1.class ) {
-				return new Derived1( this );
-			}
-			if( t == Derived2.class ) {
-				return new Derived2( this );
-			}
-			if( t == Derived21.class ) {
-				return new Derived21( this );
-			}
-
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean isNullHandled()
-		{
-			return true;
+			return new Base( this );
 		}
 	}
 
@@ -93,7 +74,7 @@ public class ConvertersTest
 	{
 
 		@Override
-		public Derived1 create( Type t, String u )
+		public Derived1 create( String u )
 		{
 			return new Derived1( this );
 		}
@@ -109,7 +90,7 @@ public class ConvertersTest
 	{
 
 		@Override
-		public Derived2 create( Type t, String u )
+		public Derived2 create( String u )
 		{
 			return new Derived2( this );
 		}
@@ -159,9 +140,9 @@ public class ConvertersTest
 		assertThat( this.cached.size(), is( count + 4 ) );
 
 		assertThat( ob, is( instanceOf( Base.class ) ) );
-		assertThat( o1, is( instanceOf( Derived1.class ) ) );
-		assertThat( o2, is( instanceOf( Derived2.class ) ) );
-		assertThat( o21, is( instanceOf( Derived21.class ) ) );
+		assertThat( o1, is( instanceOf( Base.class ) ) );
+		assertThat( o2, is( instanceOf( Base.class ) ) );
+		assertThat( o21, is( instanceOf( Base.class ) ) );
 
 		assertThat( ob.cvt, is( sameInstance( cb ) ) );
 		assertThat( o1.cvt, is( sameInstance( cb ) ) );

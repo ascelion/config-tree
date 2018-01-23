@@ -9,28 +9,24 @@ import ascelion.config.api.ConfigNode;
 
 import static java.util.Optional.ofNullable;
 
-final class OptionalConverter<T> implements ConfigConverter<Optional<T>>
+final class OptionalConverter<T> extends WrapConverter<Optional<T>, T>
 {
-
-	private final Type type;
-	private final ConfigConverter<T> conv;
 
 	OptionalConverter( Type type, ConfigConverter<T> conv )
 	{
-		this.type = type;
-		this.conv = conv;
+		super( type, conv );
 	}
 
 	@Override
-	public Optional<T> create( Type t, ConfigNode u, int unwrap )
+	public Optional<T> create( ConfigNode u, int unwrap )
 	{
-		return ofNullable( this.conv.create( this.type, u, unwrap ) );
+		return ofNullable( this.conv.create( u, unwrap ) );
 	}
 
 	@Override
-	public Optional<T> create( Type t, String u )
+	public Optional<T> create( String u )
 	{
-		return ofNullable( this.conv.create( this.type, u ) );
+		return ofNullable( this.conv.create( u ) );
 	}
 
 	@Override

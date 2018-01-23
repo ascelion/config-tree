@@ -1,8 +1,6 @@
 
 package ascelion.config.conv;
 
-import java.lang.reflect.Type;
-
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 
@@ -24,22 +22,22 @@ final class PrimitiveConverter<T> implements ConfigConverter<T>
 	private final ConfigConverter<T> conv;
 
 	@Override
-	public T create( Type t, String u )
+	public T create( String u )
 	{
 		if( isBlank( u ) ) {
-			return this.conv.create( t, "0" );
+			return this.conv.create( "0" );
 		}
 
-		return this.conv.create( t, u );
+		return this.conv.create( u );
 	}
 
 	@Override
-	public T create( Type t, ConfigNode u, int unwrap )
+	public T create( ConfigNode u, int unwrap )
 	{
 		if( u == null ) {
-			return this.conv.create( t, "0" );
+			return this.conv.create( "0" );
 		}
 
-		return this.conv.create( t, u, unwrap );
+		return this.conv.create( u, unwrap );
 	}
 }
