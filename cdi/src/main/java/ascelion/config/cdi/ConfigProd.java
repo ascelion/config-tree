@@ -75,8 +75,13 @@ class ConfigProd
 		try {
 			return c.create( t, this.root.getNode( a.value() ), a.unwrap() );
 		}
-		catch( final ConfigNotFoundException e ) {
-			return c.create( t, this.root.getValue( a.value() ) );
+		catch( final ConfigNotFoundException e1 ) {
+			try {
+				return c.create( t, this.root.getValue( a.value() ) );
+			}
+			catch( final ConfigNotFoundException e2 ) {
+				return c.create( t, null, a.unwrap() );
+			}
 		}
 	}
 
