@@ -1,34 +1,37 @@
 
 package ascelion.config.eclipse;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import ascelion.config.impl.ConfigLoad;
+import ascelion.config.impl.ConfigScanner;
 import ascelion.config.impl.ConfigSourceLiteral;
 import ascelion.config.read.ENVConfigReader;
 import ascelion.config.read.PRPConfigReader;
 import ascelion.config.read.SYSConfigReader;
 
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.eclipse.microprofile.config.spi.Converter;
 
 public class ConfigBuilderImpl implements ConfigBuilder
 {
 
+	static private final References<ConfigScanner> SCANNERS = new References<>();
+
 	private final ConfigLoad ld = new ConfigLoad();
 	private boolean discoverSources;
 	private boolean discoverConverters;
-	private ClassLoader cld = ConfigBuilderImpl.class.getClassLoader();
+	private ClassLoader cld;
 	private final Collection<ConfigSource> sources = new ArrayList<>();
 	private final Map<Type, ConverterInfo<?>> converters = new HashMap<>();
 
@@ -63,9 +66,9 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	}
 
 	@Override
-	public ConfigBuilder forClassLoader( ClassLoader loader )
+	public ConfigBuilder forClassLoader( ClassLoader cld )
 	{
-		this.cld = loader;
+		this.cld = cld;
 
 		return this;
 	}
@@ -82,7 +85,7 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	public ConfigBuilder withConverters( Converter<?>... converters )
 	{
 		for( final Converter<?> c : converters ) {
-			addConverter( typeOf( c.getClass() ), ConverterInfo.getPriority( c.getClass() ), c );
+			addConverter( ConverterInfo.typeOf( c.getClass() ), ConverterInfo.getPriority( c.getClass() ), c );
 		}
 
 		return this;
@@ -102,9 +105,17 @@ public class ConfigBuilderImpl implements ConfigBuilder
 		final ConfigImpl cf = new ConfigImpl();
 
 		if( this.discoverSources ) {
+			cf.addSources( ServiceLoader.load( ConfigSource.class, this.cld ) );
+			ServiceLoader.load( ConfigSourceProvider.class, this.cld )
+				.forEach( csp -> cf.addSources( csp.getConfigSources( this.cld ) ) );
 		}
 
-		this.sources.forEach( cf::add );
+		if( this.discoverConverters ) {
+			cf.addConverters( ServiceLoader.load( Converter.class, this.cld ) );
+		}
+
+		cf.addSources( this.sources );
+		cf.addConverters( this.converters.values() );
 
 		return cf;
 	}
@@ -119,31 +130,5 @@ public class ConfigBuilderImpl implements ConfigBuilder
 				return i;
 			}
 		} );
-	}
-
-	private Type typeOf( Class<?> cls )
-	{
-		final String base = cls.getName();
-
-		for( ; cls != Object.class; cls = cls.getSuperclass() ) {
-			final Type[] giv = cls.getGenericInterfaces();
-
-			for( final Type gi : giv ) {
-				if( gi instanceof ParameterizedType ) {
-					final ParameterizedType pt = (ParameterizedType) gi;
-
-					if( pt.getRawType().equals( Converter.class ) ) {
-						final Type[] tav = pt.getActualTypeArguments();
-
-						if( tav.length == 1 ) {
-							return tav[0];
-						}
-
-					}
-				}
-			}
-		}
-
-		throw new IllegalStateException( format( "Cannot infer type from %s", base ) );
 	}
 }

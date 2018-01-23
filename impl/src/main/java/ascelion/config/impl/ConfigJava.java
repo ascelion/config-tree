@@ -32,15 +32,6 @@ public final class ConfigJava
 		this.cvs.setRootNode( this::root );
 	}
 
-	public ConfigJava()
-	{
-	}
-
-	public ConfigJava( ClassLoader cld )
-	{
-		this.sc.addClassLoader( cld );
-	}
-
 	public void add( ConfigReader rd )
 	{
 		this.ld.addReader( rd );

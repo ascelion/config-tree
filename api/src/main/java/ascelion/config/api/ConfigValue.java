@@ -26,7 +26,7 @@ public @interface ConfigValue
 	// TODO
 //	@Retention( RUNTIME )
 //	@Target( { METHOD, FIELD, PARAMETER, TYPE } )
-//	@interface Default
+//	@interface Value
 //	{
 //	}
 

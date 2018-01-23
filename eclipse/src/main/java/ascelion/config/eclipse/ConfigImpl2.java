@@ -4,10 +4,8 @@ package ascelion.config.eclipse;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import ascelion.config.api.ConfigReader;
 import ascelion.config.conv.Converters;
 
 import static java.util.Collections.unmodifiableCollection;
@@ -17,7 +15,7 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
 
-public class ConfigImpl implements Config
+public class ConfigImpl2 implements Config
 {
 
 	private final Collection<ConfigSource> sources = new ArrayList<>();
@@ -66,14 +64,6 @@ public class ConfigImpl implements Config
 	}
 
 	void addConverters( Iterable<? extends Converter> converters )
-	{
-	}
-
-	void addReaders( Set<Class<? extends ConfigReader>> readers )
-	{
-	}
-
-	void addSources( Set<ascelion.config.api.ConfigSource> sources )
 	{
 	}
 

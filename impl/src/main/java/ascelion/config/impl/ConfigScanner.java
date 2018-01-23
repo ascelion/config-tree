@@ -46,6 +46,13 @@ public class ConfigScanner
 		this( false );
 	}
 
+	public ConfigScanner( ClassLoader cld )
+	{
+		this( false );
+
+		this.cs.addClassLoader( cld );
+	}
+
 	public ConfigScanner( boolean verbose )
 	{
 		this.cs = new FastClasspathScanner( PACKAGES );
@@ -53,11 +60,6 @@ public class ConfigScanner
 		this.cs.verbose( verbose );
 
 		addFilter( c -> !c.isAnonymousClass() );
-	}
-
-	public void addClassLoader( ClassLoader cld )
-	{
-		this.cs.addClassLoader( cld );
 	}
 
 	public Set<ConfigSource> getSources()
