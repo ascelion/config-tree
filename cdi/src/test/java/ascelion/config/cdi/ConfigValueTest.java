@@ -47,6 +47,8 @@ public class ConfigValueTest
 
 		String value5;
 
+		String value6;
+
 		Bean1( @ConfigValue( "value3:-def_value3" ) String value3 )
 		{
 			this.value3 = value3;
@@ -56,6 +58,11 @@ public class ConfigValueTest
 		{
 			this.value4 = value4;
 			this.value5 = value5;
+		}
+
+		void setValue6( @ConfigValue String value6 )
+		{
+			this.value6 = value6;
 		}
 	}
 
@@ -145,6 +152,7 @@ public class ConfigValueTest
 		assertThat( this.bean1.value3, is( "def_value3" ) );
 		assertThat( this.bean1.value4, is( "def_value4" ) );
 		assertThat( this.bean1.value5, is( "def_value5" ) );
+		assertThat( this.bean1.value6, is( "__value6__" ) );
 
 		assertThat( this.bean2, is( notNullValue() ) );
 

@@ -1,6 +1,7 @@
 
 package ascelion.config.cdi;
 
+import java.beans.Introspector;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,6 +15,7 @@ import javax.enterprise.inject.literal.InjectLiteral;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedCallable;
 import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.inject.Inject;
 
@@ -64,9 +66,11 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 			.filter( e -> !e.isAnnotationPresent( Produces.class ) )
 			.filter( e -> e.getParameters().stream().anyMatch( p -> p.isAnnotationPresent( ConfigValue.class ) ) )
 			.forEach( e -> {
-				e.getParameters().forEach( p -> {
-					updateAnnotation( p, null );
-				} );
+				e.getParameters()
+					.forEach( p -> {
+						updateAnnotation( p );
+					} );
+
 				addInject( e );
 			} );
 	}
@@ -80,14 +84,49 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 		}
 	}
 
-	private void updateAnnotation( Annotated am, String name )
+	private void updateAnnotation( AnnotatedParameter<? super X> am )
 	{
-		ConfigValue cv = am.getAnnotation( ConfigValue.class );
+		final ConfigValue cv = am.getAnnotation( ConfigValue.class );
 
 		if( cv == null ) {
 			return;
 		}
 
+		String name = null;
+
+		if( cv.value().isEmpty() ) {
+			if( am.getJavaParameter().isNamePresent() ) {
+				name = am.getJavaParameter().getName();
+			}
+			else {
+				final AnnotatedCallable<? super X> dc = am.getDeclaringCallable();
+
+				if( dc.getParameters().size() == 1 ) {
+					name = dc.getJavaMember().getName();
+
+					if( name.startsWith( "set" ) ) {
+						name = Introspector.decapitalize( name.substring( 3 ) );
+					}
+				}
+			}
+		}
+
+		updateAnnotation( am, cv, name );
+	}
+
+	private <X> void updateAnnotation( AnnotatedField<? super X> am, String name )
+	{
+		final ConfigValue cv = am.getAnnotation( ConfigValue.class );
+
+		if( cv == null ) {
+			return;
+		}
+
+		updateAnnotation( am, cv, name );
+	}
+
+	private void updateAnnotation( Annotated am, ConfigValue cv, String name )
+	{
 		final ConfigPrefix cp = getAnnotation( ConfigPrefix.class );
 		boolean transform = false;
 		String val = cv.value();
