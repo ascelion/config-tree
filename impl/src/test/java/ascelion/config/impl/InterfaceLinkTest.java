@@ -64,7 +64,7 @@ public class InterfaceLinkTest
 	@BeforeClass
 	static public void setUpClass()
 	{
-		CJ.add( s -> s.value().startsWith( "file" ) );
+		CJ.addFilter( s -> s.value().startsWith( "file" ) );
 	}
 
 	private final Type type;

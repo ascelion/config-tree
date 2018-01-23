@@ -43,7 +43,7 @@ public class InterfaceConverterTest
 	@BeforeClass
 	static public void setUpClass()
 	{
-		CJ.add( s -> s.value().startsWith( "interface" ) || "SYS".equals( s.type() ) );
+		CJ.addFilter( s -> s.value().startsWith( "interface" ) || "SYS".equals( s.type() ) );
 	}
 
 	private final String path;

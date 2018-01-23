@@ -9,7 +9,7 @@ import static java.util.stream.Collectors.toMap;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
-class SYSConfigSource implements ConfigSource
+final class SYSConfigSource implements ConfigSource
 {
 
 	private final Map<String, String> properties;

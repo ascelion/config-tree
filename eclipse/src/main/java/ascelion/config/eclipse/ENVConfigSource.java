@@ -7,7 +7,7 @@ import static java.util.Collections.unmodifiableMap;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
-class ENVConfigSource implements ConfigSource
+final class ENVConfigSource implements ConfigSource
 {
 
 	private final Map<String, String> properties;

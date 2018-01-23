@@ -14,8 +14,9 @@ sourceSets {
 dependencies {
 	compile project( ':impl' )
 
-	compile 'org.eclipse.microprofile.config:microprofile-config-api:1.1'
-
+	compile 'org.eclipse.microprofile.config:microprofile-config-api:1.2'
+	compile 'javax.annotation:javax.annotation-api'
+	
 	testCompile 'junit:junit'
 	testCompile 'org.mockito:mockito-core'
 	testCompile 'org.hamcrest:hamcrest-library'

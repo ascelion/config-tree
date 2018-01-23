@@ -3,7 +3,6 @@ package ascelion.config.read;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -11,7 +10,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import ascelion.config.api.ConfigReader;
-import ascelion.config.api.ConfigSource;
 
 import static ascelion.config.impl.Utils.path;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
@@ -21,7 +19,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 @ConfigReader.Type( value = XMLConfigReader.TYPE )
-public class XMLConfigReader implements ConfigReader
+public class XMLConfigReader extends ResourceReader
 {
 
 	static public final String TYPE = "XML";
@@ -104,16 +102,13 @@ public class XMLConfigReader implements ConfigReader
 	}
 
 	@Override
-	public Map<String, ?> readConfiguration( ConfigSource source, InputStream is ) throws IOException
+	void readConfiguration( Map<String, Object> map, InputStream is ) throws IOException
 	{
 		try {
-			final Map<String, String> m = new HashMap<>();
 			final SAXParserFactory f = SAXParserFactory.newInstance();
 			final SAXParser p = f.newSAXParser();
 
-			p.parse( is, new Handler( m ) );
-
-			return m;
+			p.parse( is, new Handler( (Map) map ) );
 		}
 		catch( final ParserConfigurationException | SAXException x ) {
 			throw new IOException( x );

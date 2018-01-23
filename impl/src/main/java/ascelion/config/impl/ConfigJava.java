@@ -56,7 +56,7 @@ public final class ConfigJava
 		this.cvs.register( type, cv );
 	}
 
-	public void add( Predicate<ConfigSource> filter )
+	public void addFilter( Predicate<ConfigSource> filter )
 	{
 		this.filters.add( filter );
 	}

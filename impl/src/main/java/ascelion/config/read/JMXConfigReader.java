@@ -35,20 +35,21 @@ public class JMXConfigReader implements ConfigReader
 	{
 		final Map<String, String> map = new HashMap<>();
 
-		try {
-			this.mbs.queryNames( new ObjectName( source.value() + ":*" ), null )
-				.forEach( name -> putValue( map, name ) );
-			;
-		}
-		catch( final MalformedObjectNameException e ) {
-			throw new ConfigException( format( "Cannot get domain %s", source.value() ) );
+		if( enabled() ) {
+			try {
+				this.mbs.queryNames( new ObjectName( source.value() + ":*" ), null )
+					.forEach( name -> putValue( map, name ) );
+				;
+			}
+			catch( final MalformedObjectNameException e ) {
+				throw new ConfigException( format( "Cannot get domain %s", source.value() ) );
+			}
 		}
 
 		return map;
 	}
 
-	@Override
-	public boolean enabled()
+	private boolean enabled()
 	{
 		try {
 			return this.mbs != null

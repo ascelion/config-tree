@@ -1,10 +1,12 @@
 
 package ascelion.config.eclipse;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import ascelion.config.api.ConfigNode;
-
+import static java.util.Collections.unmodifiableCollection;
 import static java.util.Optional.ofNullable;
 
 import org.eclipse.microprofile.config.Config;
@@ -13,17 +15,12 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 public class ConfigImpl implements Config
 {
 
-	private final ConfigNode root;
-
-	public ConfigImpl( ConfigNode root )
-	{
-		this.root = root;
-	}
+	private final Collection<ConfigSource> sources = new ArrayList<>();
 
 	@Override
 	public <T> T getValue( String propertyName, Class<T> propertyType )
 	{
-		return (T) this.root.getValue();
+		return null;
 	}
 
 	@Override
@@ -35,13 +32,18 @@ public class ConfigImpl implements Config
 	@Override
 	public Iterable<String> getPropertyNames()
 	{
-		return this.root.getKeys();
+		return this.sources.stream().flatMap( c -> c.getPropertyNames().stream() ).collect( Collectors.toSet() );
 	}
 
 	@Override
 	public Iterable<ConfigSource> getConfigSources()
 	{
-		return null;
+		return unmodifiableCollection( this.sources );
+	}
+
+	void add( ConfigSource cs )
+	{
+		this.sources.add( cs );
 	}
 
 }

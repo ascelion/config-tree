@@ -1,10 +1,8 @@
 
 package ascelion.config.impl;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
@@ -87,44 +85,15 @@ public final class ConfigLoad
 		final String type = getType( source );
 		final ConfigReader rd = getReader( type );
 
-		if( rd.enabled() ) {
-			try {
-				L.trace( "Reading: type %s from '%s'", type, source.value() );
+		try {
+			L.trace( "Reading: type %s from '%s'", type, source.value() );
 
-				root.setValue( rd.readConfiguration( source ) );
-			}
-			catch( final UnsupportedOperationException x ) {
-				readFromURL( source, type, rd, root );
-			}
-			catch( final ConfigException e ) {
-				L.error( "Cannot read config source: " + source.value() );
-
-				throw e;
-			}
+			root.setValue( rd.readConfiguration( source ) );
 		}
-	}
+		catch( final ConfigException e ) {
+			L.error( "Cannot read config source: " + source.value() );
 
-	private void readFromURL( ConfigSource source, String type, ConfigReader rd, ConfigNodeImpl root )
-	{
-		final List<URL> all = ConfigReader.getResources( source.value() );
-
-		if( all.isEmpty() ) {
-			L.warn( "Cannot find configuration source %s", source.value() );
-		}
-		else {
-			for( final URL u : all ) {
-				L.trace( "Reading: type %s from '%s'", type, u );
-
-				try {
-					root.setValue( rd.readConfiguration( source, u ) );
-				}
-				catch( final ConfigException e ) {
-					L.error( "Cannot read config source: " + source.value() );
-
-					throw e;
-				}
-			}
-			;
+			throw e;
 		}
 	}
 

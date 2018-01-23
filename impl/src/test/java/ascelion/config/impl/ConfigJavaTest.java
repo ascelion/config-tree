@@ -75,7 +75,7 @@ public class ConfigJavaTest
 	@BeforeClass
 	static public void setUpClass()
 	{
-		CJ.add( s -> s.value().startsWith( "file" ) || "SYS".equals( s.type() ) );
+		CJ.addFilter( s -> s.value().startsWith( "file" ) || "SYS".equals( s.type() ) );
 	}
 
 	@Test

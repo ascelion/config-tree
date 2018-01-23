@@ -1,18 +1,17 @@
 
-package ascelion.config.impl;
+package ascelion.config.read;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.TreeMap;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.read.INIConfigReader;
-import ascelion.config.read.PRPConfigReader;
-import ascelion.config.read.XMLConfigReader;
-import ascelion.config.read.YMLConfigReader;
+import ascelion.config.impl.ConfigLoad;
+import ascelion.config.impl.ConfigSourceLiteral;
 
 import static ascelion.config.impl.Utils.asArray;
 import static java.lang.String.format;
@@ -25,7 +24,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 @RunWith( Parameterized.class )
-public class ConfigReaderTest
+public class ResourceReaderTest
 {
 
 	@Parameterized.Parameters( name = "{0}" )
@@ -40,36 +39,33 @@ public class ConfigReaderTest
 	}
 
 	@Parameterized.Parameter( 0 )
-	public Class<? extends ConfigReader> cls;
+	public Class<? extends ResourceReader> cls;
 
 	@ConfigReader.Type( "STREAM" )
 	static class ConfigStreamReader implements ConfigReader
 	{
 
 		final InputStream stream;
-		final ConfigReader delegate;
+		final ResourceReader delegate;
 
-		ConfigStreamReader( InputStream stream, ConfigReader delegate )
+		ConfigStreamReader( InputStream stream, ResourceReader delegate )
 		{
 			this.stream = stream;
 			this.delegate = delegate;
 		}
 
 		@Override
-		public boolean enabled()
-		{
-			return this.delegate.enabled();
-		}
-
-		@Override
 		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
 		{
+			final Map<String, Object> map = new TreeMap<>();
 			try {
-				return this.delegate.readConfiguration( source, this.stream );
+				this.delegate.readConfiguration( map, this.stream );
 			}
 			catch( final IOException e ) {
 				throw new ConfigException( e.getMessage() );
 			}
+
+			return map;
 		}
 	}
 

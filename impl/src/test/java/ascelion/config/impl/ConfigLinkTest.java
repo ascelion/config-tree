@@ -100,7 +100,7 @@ public class ConfigLinkTest
 	@BeforeClass
 	static public void setUpClass()
 	{
-		CJ.add( s -> s.value().startsWith( "file" ) || SOURCE_TYPE.equals( s.type() ) );
+		CJ.addFilter( s -> s.value().startsWith( "file" ) || SOURCE_TYPE.equals( s.type() ) );
 	}
 
 	private final Type type;
