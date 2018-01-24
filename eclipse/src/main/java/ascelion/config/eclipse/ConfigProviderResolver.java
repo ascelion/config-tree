@@ -2,10 +2,21 @@
 package ascelion.config.eclipse;
 
 import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigBuilder;
 
-public class ConfigProviderResolver extends org.eclipse.microprofile.config.spi.ConfigProviderResolver
+public final class ConfigProviderResolver extends org.eclipse.microprofile.config.spi.ConfigProviderResolver
 {
+
+	static ClassLoader classLoader( ClassLoader cld )
+	{
+		if( cld == null ) {
+			cld = Thread.currentThread().getContextClassLoader();
+		}
+		if( cld == null ) {
+			cld = ConfigProviderResolver.class.getClassLoader();
+		}
+
+		return cld;
+	}
 
 	static private final References<Config> CONFIGS = new References<>();
 
@@ -22,7 +33,7 @@ public class ConfigProviderResolver extends org.eclipse.microprofile.config.spi.
 	}
 
 	@Override
-	public ConfigBuilder getBuilder()
+	public ConfigBuilderImpl getBuilder()
 	{
 		return new ConfigBuilderImpl();
 	}
@@ -48,5 +59,4 @@ public class ConfigProviderResolver extends org.eclipse.microprofile.config.spi.
 			.forClassLoader( cld )
 			.build();
 	}
-
 }

@@ -12,15 +12,18 @@ import ascelion.config.conv.Converters;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Optional.ofNullable;
 
-import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.eclipse.microprofile.config.spi.Converter;
 
-public class ConfigImpl implements Config
+final class ConfigImpl implements ConfigInternal
 {
 
 	private final Collection<ConfigSource> sources = new ArrayList<>();
-	private final Converters cvs = new Converters();
+	private final Converters cvs;
+
+	ConfigImpl( Converters cvs )
+	{
+		this.cvs = cvs;
+	}
 
 	@Override
 	public <T> T getValue( String propertyName, Class<T> propertyType )
@@ -46,6 +49,7 @@ public class ConfigImpl implements Config
 		return unmodifiableCollection( this.sources );
 	}
 
+	@Override
 	public String getValue( String propertyName )
 	{
 		for( final ConfigSource cs : this.sources ) {
@@ -59,6 +63,7 @@ public class ConfigImpl implements Config
 		return null;
 	}
 
+	@Override
 	public <T> T convert( String value, Type type )
 	{
 		try {
@@ -75,15 +80,6 @@ public class ConfigImpl implements Config
 	void addSources( Iterable<? extends ConfigSource> sources )
 	{
 		sources.forEach( this.sources::add );
-	}
-
-	void addConverters( Iterable<? extends Converter> converters )
-	{
-		for( final Converter<?> c : converters ) {
-			final Type t = ConverterInfo.typeOf( c.getClass() );
-
-			this.cvs.register( t, c::convert );
-		}
 	}
 
 	void addSource( ConfigSource source )

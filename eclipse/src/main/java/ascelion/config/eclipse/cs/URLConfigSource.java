@@ -24,7 +24,7 @@ public abstract class URLConfigSource implements ConfigSource
 	private final ReadWriteLock rwl = new ReentrantReadWriteLock();
 	private final Map<String, String> properties = new TreeMap<>();
 	private final URL resource;
-	private long updated = 0;
+	private long updated = -1;
 
 	public URLConfigSource( URL resource )
 	{

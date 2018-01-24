@@ -161,39 +161,39 @@ public final class Converters
 		}
 	}
 
-	public void register( Type t, Supplier<ConfigConverter<?>> s )
-	{
-		final Lock rdLock = this.RW_LOCK.readLock();
-
-		rdLock.lock();
-
-		try {
-			if( this.cached.containsKey( t ) ) {
-				return;
-			}
-
-			rdLock.unlock();
-
-			try {
-				final Lock wrLock = this.RW_LOCK.writeLock();
-
-				wrLock.lock();
-
-				try {
-					put( t, s.get() );
-				}
-				finally {
-					wrLock.unlock();
-				}
-			}
-			finally {
-				rdLock.lock();
-			}
-		}
-		finally {
-			rdLock.unlock();
-		}
-	}
+//	public void register( Type t, Supplier<ConfigConverter<?>> s )
+//	{
+//		final Lock rdLock = this.RW_LOCK.readLock();
+//
+//		rdLock.lock();
+//
+//		try {
+//			if( this.cached.containsKey( t ) ) {
+//				return;
+//			}
+//
+//			rdLock.unlock();
+//
+//			try {
+//				final Lock wrLock = this.RW_LOCK.writeLock();
+//
+//				wrLock.lock();
+//
+//				try {
+//					put( t, s.get() );
+//				}
+//				finally {
+//					wrLock.unlock();
+//				}
+//			}
+//			finally {
+//				rdLock.lock();
+//			}
+//		}
+//		finally {
+//			rdLock.unlock();
+//		}
+//	}
 
 	public Object create( Type t, ConfigNode u, int unwrap )
 	{

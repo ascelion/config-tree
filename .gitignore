@@ -6,3 +6,4 @@ bin/
 !.skip-build
 *.log
 geronimo-config/
+test-output/

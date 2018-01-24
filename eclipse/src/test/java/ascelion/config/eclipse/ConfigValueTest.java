@@ -28,6 +28,10 @@ public class ConfigValueTest
 		@Inject
 		@ConfigProperty( name = "java.version" )
 		String javaVersion;
+
+		@Inject
+		@ConfigProperty( name = "user.home" )
+		String userHome;
 	}
 
 	@Inject
@@ -39,5 +43,6 @@ public class ConfigValueTest
 		final Values v = this.vi.get();
 
 		assertThat( v.javaVersion, is( System.getProperty( "java.version" ) ) );
+		assertThat( v.userHome, is( System.getProperty( "user.home" ) ) );
 	}
 }

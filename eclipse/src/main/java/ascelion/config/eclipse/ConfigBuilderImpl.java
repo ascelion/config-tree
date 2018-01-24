@@ -1,11 +1,8 @@
 
 package ascelion.config.eclipse;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ServiceLoader;
 
 import ascelion.config.eclipse.cs.ENVConfigSource;
@@ -14,23 +11,25 @@ import ascelion.config.eclipse.cs.SYSConfigSource;
 
 import static java.util.Arrays.asList;
 
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.eclipse.microprofile.config.spi.Converter;
 
-public class ConfigBuilderImpl implements ConfigBuilder
+final class ConfigBuilderImpl implements ConfigBuilder
 {
+
+	private final Collection<ConfigSource> sources = new ArrayList<>();
+	private final Collection<ConverterInfo<?>> converters = new ArrayList<>();
 
 	private boolean defaultSources;
 	private boolean discoverSources;
 	private boolean discoverConverters;
-	private ClassLoader cld = getClass().getClassLoader();
-	private final Collection<ConfigSource> sources = new ArrayList<>();
-	private final Map<Type, ConverterInfo<?>> converters = new HashMap<>();
+	private ClassLoader cld;
 
 	@Override
-	public ConfigBuilderImpl addDefaultSources()
+	public ConfigBuilder addDefaultSources()
 	{
 		this.defaultSources = true;
 
@@ -38,7 +37,7 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	}
 
 	@Override
-	public ConfigBuilderImpl addDiscoveredSources()
+	public ConfigBuilder addDiscoveredSources()
 	{
 		this.discoverSources = true;
 
@@ -46,7 +45,7 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	}
 
 	@Override
-	public ConfigBuilderImpl addDiscoveredConverters()
+	public ConfigBuilder addDiscoveredConverters()
 	{
 		this.discoverConverters = true;
 
@@ -54,17 +53,15 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	}
 
 	@Override
-	public ConfigBuilderImpl forClassLoader( ClassLoader cld )
+	public ConfigBuilder forClassLoader( ClassLoader cld )
 	{
-		if( cld != null ) {
-			this.cld = cld;
-		}
+		this.cld = cld;
 
 		return this;
 	}
 
 	@Override
-	public ConfigBuilderImpl withSources( ConfigSource... sources )
+	public ConfigBuilder withSources( ConfigSource... sources )
 	{
 		this.sources.addAll( asList( sources ) );
 
@@ -72,10 +69,10 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	}
 
 	@Override
-	public ConfigBuilderImpl withConverters( Converter<?>... converters )
+	public ConfigBuilder withConverters( Converter<?>... converters )
 	{
 		for( final Converter<?> c : converters ) {
-			addConverter( ConverterInfo.typeOf( c.getClass() ), ConverterInfo.getPriority( c.getClass() ), c );
+			this.converters.add( new ConverterInfo<>( c ) );
 		}
 
 		return this;
@@ -84,46 +81,38 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	@Override
 	public <T> ConfigBuilderImpl withConverter( Class<T> type, int priority, Converter<T> converter )
 	{
-		addConverter( type, priority, converter );
+		this.converters.add( new ConverterInfo<>( converter, priority, type ) );
 
 		return this;
 	}
 
 	@Override
-	public ConfigImpl build()
+	public Config build()
 	{
-		final ConfigImpl cf = new ConfigImpl();
+		final ClassLoader cld = ConfigProviderResolver.classLoader( this.cld );
+		final ConverterReg cr = new ConverterReg();
+
+		this.converters.forEach( cr::addConverter );
+
+		if( this.discoverConverters ) {
+			cr.discover( cld );
+		}
+
+		final ConfigImpl cf = new ConfigImpl( cr.get() );
 
 		cf.addSources( this.sources );
-		cf.addConverters( this.converters.values() );
 
 		if( this.defaultSources ) {
 			cf.addSource( new SYSConfigSource() );
 			cf.addSource( new ENVConfigSource() );
-			cf.addSources( new PRPConfigSourceProvider().getConfigSources( this.cld ) );
+			cf.addSources( new PRPConfigSourceProvider().getConfigSources( cld ) );
 		}
 		if( this.discoverSources ) {
-			cf.addSources( ServiceLoader.load( ConfigSource.class, this.cld ) );
-			ServiceLoader.load( ConfigSourceProvider.class, this.cld )
-				.forEach( csp -> cf.addSources( csp.getConfigSources( this.cld ) ) );
-		}
-
-		if( this.discoverConverters ) {
-			cf.addConverters( ServiceLoader.load( Converter.class, this.cld ) );
+			cf.addSources( ServiceLoader.load( ConfigSource.class, cld ) );
+			ServiceLoader.load( ConfigSourceProvider.class, cld )
+				.forEach( csp -> cf.addSources( csp.getConfigSources( cld ) ) );
 		}
 
 		return cf;
-	}
-
-	private <T> void addConverter( Type type, int priority, Converter<T> converter )
-	{
-		this.converters.compute( type, ( t, i ) -> {
-			if( i == null || i.priority < priority ) {
-				return new ConverterInfo<>( converter, priority );
-			}
-			else {
-				return i;
-			}
-		} );
 	}
 }

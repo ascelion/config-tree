@@ -10,12 +10,38 @@ import static java.lang.String.format;
 
 import org.eclipse.microprofile.config.spi.Converter;
 
-final class ConverterInfo<T> implements Converter<T>
+final class ConverterInfo<T>
 {
 
-	static int getPriority( Class<?> cls )
+	static Type typeOf( Converter<?> c )
 	{
-		for( ; cls != Object.class; cls = cls.getSuperclass() ) {
+		final Class<? extends Converter> base = c.getClass();
+
+		for( Class<?> cls = base; cls != Object.class; cls = cls.getSuperclass() ) {
+			final Type[] giv = cls.getGenericInterfaces();
+
+			for( final Type gi : giv ) {
+				if( gi instanceof ParameterizedType ) {
+					final ParameterizedType pt = (ParameterizedType) gi;
+
+					if( pt.getRawType().equals( Converter.class ) ) {
+						final Type[] tav = pt.getActualTypeArguments();
+
+						if( tav.length == 1 ) {
+							return tav[0];
+						}
+
+					}
+				}
+			}
+		}
+
+		throw new IllegalStateException( format( "Cannot infer type from %s", base ) );
+	}
+
+	static int getPriority( Converter<?> c )
+	{
+		for( Class<?> cls = c.getClass(); cls != Object.class; cls = cls.getSuperclass() ) {
 			final Priority ap = cls.getAnnotation( Priority.class );
 
 			if( ap != null ) {
@@ -26,44 +52,20 @@ final class ConverterInfo<T> implements Converter<T>
 		return 100;
 	}
 
-	final Converter<T> delegate;
+	final Converter<T> converter;
 	final int priority;
+	final Type type;
 
-	ConverterInfo( Converter<T> delegate, int priority )
+	ConverterInfo( Converter<T> c )
 	{
-		this.delegate = delegate;
+		this( c, getPriority( c ), typeOf( c ) );
+	}
+
+	ConverterInfo( Converter<T> converter, int priority, Type type )
+	{
+		this.converter = converter;
 		this.priority = priority;
+		this.type = type;
 	}
 
-	@Override
-	public T convert( String value )
-	{
-		return this.delegate.convert( value );
-	}
-
-	static Type typeOf( Class<? extends Converter> cls )
-	{
-		final String base = cls.getName();
-	
-		for( Class<?> c = cls; c != Object.class; c = c.getSuperclass() ) {
-			final Type[] giv = c.getGenericInterfaces();
-	
-			for( final Type gi : giv ) {
-				if( gi instanceof ParameterizedType ) {
-					final ParameterizedType pt = (ParameterizedType) gi;
-	
-					if( pt.getRawType().equals( Converter.class ) ) {
-						final Type[] tav = pt.getActualTypeArguments();
-	
-						if( tav.length == 1 ) {
-							return tav[0];
-						}
-	
-					}
-				}
-			}
-		}
-	
-		throw new IllegalStateException( format( "Cannot infer type from %s", base ) );
-	}
 }

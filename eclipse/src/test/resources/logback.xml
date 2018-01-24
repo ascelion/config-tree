@@ -5,8 +5,10 @@
 			<pattern>%d{HH:mm:ss.SSS} %-5level %-40logger{40} [%thread] %msg%n</pattern>
 		</encoder>
 	</appender>
- 
-	<logger name="ascelion.config" level="ALL"/>
+
+	<logger name="org.jboss.weld" level="INFO" />
+
+	<logger name="ascelion.config" level="ALL" />
 
 	<root level="INFO">
 		<appender-ref ref="CONSOLE" />
