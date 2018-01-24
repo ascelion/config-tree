@@ -9,7 +9,7 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.ConfigJava;
 
-import static ascelion.config.impl.Utils.asArray;
+import static ascelion.config.conv.Utils.asArray;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.notNullValue;

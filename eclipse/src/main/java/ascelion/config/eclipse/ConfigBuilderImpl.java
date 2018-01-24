@@ -8,16 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import ascelion.config.impl.ConfigLoad;
-import ascelion.config.impl.ConfigScanner;
-import ascelion.config.impl.ConfigSourceLiteral;
-import ascelion.config.read.ENVConfigReader;
-import ascelion.config.read.PRPConfigReader;
-import ascelion.config.read.SYSConfigReader;
+import ascelion.config.eclipse.cs.ENVConfigSource;
+import ascelion.config.eclipse.cs.PRPConfigSourceProvider;
+import ascelion.config.eclipse.cs.SYSConfigSource;
 
 import static java.util.Arrays.asList;
 
-import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
@@ -26,31 +22,23 @@ import org.eclipse.microprofile.config.spi.Converter;
 public class ConfigBuilderImpl implements ConfigBuilder
 {
 
-	static private final References<ConfigScanner> SCANNERS = new References<>();
-
-	private final ConfigLoad ld = new ConfigLoad();
+	private boolean defaultSources;
 	private boolean discoverSources;
 	private boolean discoverConverters;
-	private ClassLoader cld;
+	private ClassLoader cld = getClass().getClassLoader();
 	private final Collection<ConfigSource> sources = new ArrayList<>();
 	private final Map<Type, ConverterInfo<?>> converters = new HashMap<>();
 
 	@Override
-	public ConfigBuilder addDefaultSources()
+	public ConfigBuilderImpl addDefaultSources()
 	{
-		this.ld.addReader( new PRPConfigReader() );
-		this.ld.addReader( new ENVConfigReader() );
-		this.ld.addReader( new SYSConfigReader() );
-
-		this.ld.addSource( new ConfigSourceLiteral( "META-INF/microprofile-config.properties", 100, PRPConfigReader.TYPE ) );
-		this.ld.addSource( new ConfigSourceLiteral( "", 300, ENVConfigReader.TYPE ) );
-		this.ld.addSource( new ConfigSourceLiteral( "", 400, SYSConfigReader.TYPE ) );
+		this.defaultSources = true;
 
 		return this;
 	}
 
 	@Override
-	public ConfigBuilder addDiscoveredSources()
+	public ConfigBuilderImpl addDiscoveredSources()
 	{
 		this.discoverSources = true;
 
@@ -58,7 +46,7 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	}
 
 	@Override
-	public ConfigBuilder addDiscoveredConverters()
+	public ConfigBuilderImpl addDiscoveredConverters()
 	{
 		this.discoverConverters = true;
 
@@ -66,15 +54,17 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	}
 
 	@Override
-	public ConfigBuilder forClassLoader( ClassLoader cld )
+	public ConfigBuilderImpl forClassLoader( ClassLoader cld )
 	{
-		this.cld = cld;
+		if( cld != null ) {
+			this.cld = cld;
+		}
 
 		return this;
 	}
 
 	@Override
-	public ConfigBuilder withSources( ConfigSource... sources )
+	public ConfigBuilderImpl withSources( ConfigSource... sources )
 	{
 		this.sources.addAll( asList( sources ) );
 
@@ -82,7 +72,7 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	}
 
 	@Override
-	public ConfigBuilder withConverters( Converter<?>... converters )
+	public ConfigBuilderImpl withConverters( Converter<?>... converters )
 	{
 		for( final Converter<?> c : converters ) {
 			addConverter( ConverterInfo.typeOf( c.getClass() ), ConverterInfo.getPriority( c.getClass() ), c );
@@ -92,7 +82,7 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	}
 
 	@Override
-	public <T> ConfigBuilder withConverter( Class<T> type, int priority, Converter<T> converter )
+	public <T> ConfigBuilderImpl withConverter( Class<T> type, int priority, Converter<T> converter )
 	{
 		addConverter( type, priority, converter );
 
@@ -100,10 +90,18 @@ public class ConfigBuilderImpl implements ConfigBuilder
 	}
 
 	@Override
-	public Config build()
+	public ConfigImpl build()
 	{
 		final ConfigImpl cf = new ConfigImpl();
 
+		cf.addSources( this.sources );
+		cf.addConverters( this.converters.values() );
+
+		if( this.defaultSources ) {
+			cf.addSource( new SYSConfigSource() );
+			cf.addSource( new ENVConfigSource() );
+			cf.addSources( new PRPConfigSourceProvider().getConfigSources( this.cld ) );
+		}
 		if( this.discoverSources ) {
 			cf.addSources( ServiceLoader.load( ConfigSource.class, this.cld ) );
 			ServiceLoader.load( ConfigSourceProvider.class, this.cld )
@@ -113,9 +111,6 @@ public class ConfigBuilderImpl implements ConfigBuilder
 		if( this.discoverConverters ) {
 			cf.addConverters( ServiceLoader.load( Converter.class, this.cld ) );
 		}
-
-		cf.addSources( this.sources );
-		cf.addConverters( this.converters.values() );
 
 		return cf;
 	}

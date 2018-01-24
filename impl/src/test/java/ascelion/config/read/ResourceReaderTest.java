@@ -13,7 +13,7 @@ import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.ConfigLoad;
 import ascelion.config.impl.ConfigSourceLiteral;
 
-import static ascelion.config.impl.Utils.asArray;
+import static ascelion.config.conv.Utils.asArray;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;

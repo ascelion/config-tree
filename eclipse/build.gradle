@@ -11,24 +11,32 @@ sourceSets {
 	}
 }
 
+configurations {
+	tckTestEclipse
+}
+
 dependencies {
-	compile project( ':impl' )
+	compile project( ':conv' )
 
-	compile 'org.eclipse.microprofile.config:microprofile-config-api:1.2'
+	compile 'javax.enterprise:cdi-api'
 	compile 'javax.annotation:javax.annotation-api'
-	
-	testCompile 'junit:junit'
-	testCompile 'org.mockito:mockito-core'
-	testCompile 'org.hamcrest:hamcrest-library'
-	
-	testRuntime 'org.slf4j:jul-to-slf4j'
-	testRuntime 'org.slf4j:jcl-over-slf4j'
-	testRuntime 'org.slf4j:log4j-over-slf4j'
-	testRuntime 'ch.qos.logback:logback-classic'
+	compile 'org.eclipse.microprofile.config:microprofile-config-api'
+	compile 'ascelion.shared:cdi-utils'
+	compile 'ascelion.shared:fmt-log'
 
-	tckTestCompile 'org.eclipse.microprofile.config:microprofile-config-tck:1.1'
-	tckTestRuntime 'org.jboss.arquillian.container:arquillian-weld-embedded:2.0.0.Beta5'
-	tckTestRuntime 'org.jboss.weld.se:weld-se-shaded:3.0.2.Final'
+	testCompile 'ascelion.shared:cdi-unit-impl'
+	testCompile 'ascelion.shared:cdi-unit-weld'
+
+	tckTestCompile 'org.testng:testng'
+	tckTestCompile 'org.hamcrest:hamcrest-library'
+	tckTestCompile 'org.jboss.arquillian.testng:arquillian-testng-container'
+	tckTestRuntime 'org.jboss.arquillian.container:arquillian-weld-embedded'
+	tckTestRuntime 'org.jboss.weld.se:weld-se-shaded'
+	tckTestRuntime 'ch.qos.logback:logback-classic'
+
+	tckTestEclipse configurations.tckTestCompile
+	tckTestEclipse configurations.tckTestRuntime
+	tckTestEclipse files( "$buildDir/classes/java/tckTest/internal" )
 }
 
 test {
@@ -39,7 +47,13 @@ tckTest {
 //	enabled = false
 
 	useTestNG() {
+		testReportDirName = file( "$buildDir/test-output" )
 		suites 'src/test/tck-suite.xml'
 	}
 }
 
+eclipse {
+	classpath {
+		plusConfigurations += [ configurations.tckTestEclipse ]
+	}
+}

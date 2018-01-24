@@ -1,13 +1,12 @@
 
 package ascelion.config.eclipse;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import ascelion.config.api.ConfigReader;
 import ascelion.config.conv.Converters;
 
 import static java.util.Collections.unmodifiableCollection;
@@ -26,20 +25,7 @@ public class ConfigImpl implements Config
 	@Override
 	public <T> T getValue( String propertyName, Class<T> propertyType )
 	{
-		for( final ConfigSource cs : this.sources ) {
-			final String value = cs.getValue( propertyName );
-
-			if( value != null ) {
-				return convert( value, propertyType );
-			}
-		}
-
-		return null;
-	}
-
-	private <T> T convert( String value, Class<T> propertyType )
-	{
-		return (T) this.cvs.create( propertyType, value );
+		return convert( getValue( propertyName ), propertyType );
 	}
 
 	@Override
@@ -60,6 +46,32 @@ public class ConfigImpl implements Config
 		return unmodifiableCollection( this.sources );
 	}
 
+	public String getValue( String propertyName )
+	{
+		for( final ConfigSource cs : this.sources ) {
+			final String value = cs.getValue( propertyName );
+
+			if( value != null ) {
+				return value;
+			}
+		}
+
+		return null;
+	}
+
+	public <T> T convert( String value, Type type )
+	{
+		try {
+			return (T) this.cvs.create( type, value );
+		}
+		catch( final IllegalArgumentException e ) {
+			throw e;
+		}
+		catch( final RuntimeException e ) {
+			throw new IllegalArgumentException( value, e );
+		}
+	}
+
 	void addSources( Iterable<? extends ConfigSource> sources )
 	{
 		sources.forEach( this.sources::add );
@@ -67,14 +79,16 @@ public class ConfigImpl implements Config
 
 	void addConverters( Iterable<? extends Converter> converters )
 	{
+		for( final Converter<?> c : converters ) {
+			final Type t = ConverterInfo.typeOf( c.getClass() );
+
+			this.cvs.register( t, c::convert );
+		}
 	}
 
-	void addReaders( Set<Class<? extends ConfigReader>> readers )
+	void addSource( ConfigSource source )
 	{
-	}
-
-	void addSources( Set<ascelion.config.api.ConfigSource> sources )
-	{
+		this.sources.add( source );
 	}
 
 }

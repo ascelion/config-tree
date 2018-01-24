@@ -7,6 +7,8 @@ dependencyRecommendations {
 	mavenBom module: 'ascelion.shared:cdi-unit-bom:2.0.0-SNAPSHOT'
 	mavenBom module: 'ascelion.shared:fmt-log-bom:2.0.0-SNAPSHOT'
 	mavenBom module: 'ascelion.shared:junit-bom:1.1.6-SNAPSHOT'
+	
+	mavenBom module: 'org.jboss.arquillian:arquillian-bom:1.1.14.Final'
 }
 
 ascelion {

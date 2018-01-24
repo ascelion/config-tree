@@ -16,8 +16,8 @@ import java.util.stream.Stream;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
 
-import static ascelion.config.impl.Utils.keys;
-import static ascelion.config.impl.Utils.path;
+import static ascelion.config.conv.Utils.keys;
+import static ascelion.config.conv.Utils.path;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;

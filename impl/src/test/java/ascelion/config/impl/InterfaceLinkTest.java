@@ -9,8 +9,8 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.conv.Converters;
 
-import static ascelion.config.impl.Utils.asArray;
-import static ascelion.config.impl.Utils.asSet;
+import static ascelion.config.conv.Utils.asArray;
+import static ascelion.config.conv.Utils.asSet;
 import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static java.lang.String.format;

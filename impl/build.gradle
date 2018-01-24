@@ -2,10 +2,10 @@ apply plugin: 'java'
 
 dependencies {
 	compile project( ':api' )
+	compile project( ':conv' )
 
 	compile 'ascelion.shared:fmt-log'
 
-	compile 'org.apache.commons:commons-lang3'
 	compile 'org.apache.commons:commons-text'
 	compile 'commons-io:commons-io'
 
@@ -16,7 +16,6 @@ dependencies {
 	compile 'com.google.code.gson:gson'
 
 	compile 'io.github.lukehutch:fast-classpath-scanner'
-	compile 'io.leangen.geantyref:geantyref'
 
 	testCompile 'org.antlr:antlr4-runtime'
 	testCompile 'ascelion.shared:junit-ext'

@@ -10,9 +10,9 @@ import java.util.Set;
 
 import ascelion.tests.WhiteBox;
 
-import static ascelion.config.impl.Utils.asArray;
-import static ascelion.config.impl.Utils.isArray;
-import static ascelion.config.impl.Utils.isPrimitive;
+import static ascelion.config.conv.Utils.asArray;
+import static ascelion.config.conv.Utils.isArray;
+import static ascelion.config.conv.Utils.isPrimitive;
 import static io.leangen.geantyref.TypeFactory.arrayOf;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static org.hamcrest.CoreMatchers.is;

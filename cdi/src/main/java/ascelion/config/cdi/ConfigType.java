@@ -23,7 +23,7 @@ import ascelion.cdi.type.AnnotatedTypeW;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigValue;
-import ascelion.config.impl.ConfigValueLiteral;
+import ascelion.config.conv.ConfigValueLiteral;
 
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;

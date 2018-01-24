@@ -9,7 +9,7 @@ import java.util.Set;
 
 import ascelion.config.api.ConfigSource;
 
-import static ascelion.config.impl.Utils.asArray;
+import static ascelion.config.conv.Utils.asArray;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
