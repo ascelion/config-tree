@@ -2,6 +2,7 @@
 package ascelion.config.conv;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -160,40 +161,6 @@ public final class Converters
 		}
 	}
 
-//	public void register( Type t, Supplier<ConfigConverter<?>> s )
-//	{
-//		final Lock rdLock = this.RW_LOCK.readLock();
-//
-//		rdLock.lock();
-//
-//		try {
-//			if( this.cached.containsKey( t ) ) {
-//				return;
-//			}
-//
-//			rdLock.unlock();
-//
-//			try {
-//				final Lock wrLock = this.RW_LOCK.writeLock();
-//
-//				wrLock.lock();
-//
-//				try {
-//					put( t, s.get() );
-//				}
-//				finally {
-//					wrLock.unlock();
-//				}
-//			}
-//			finally {
-//				rdLock.lock();
-//			}
-//		}
-//		finally {
-//			rdLock.unlock();
-//		}
-//	}
-
 	public Object create( Type t, ConfigNode u, int unwrap )
 	{
 		return getConverter( t ).create( u, unwrap );
@@ -292,12 +259,12 @@ public final class Converters
 
 			return getConverter( rt );
 		}
-//		if( type instanceof GenericArrayType ) {
-//			final GenericArrayType at = (GenericArrayType) type;
-//			final Type ct = at.getGenericComponentType();
-//
-//			return new ArrayConverter<>( ct, getConverter( ct ) );
-//		}
+		if( type instanceof GenericArrayType ) {
+			final GenericArrayType at = (GenericArrayType) type;
+			final Type ct = at.getGenericComponentType();
+
+			return new ArrayConverter<>( ct, getConverter( ct ) );
+		}
 		if( type instanceof Class ) {
 			final Class<?> cls = (Class<?>) type;
 

@@ -103,9 +103,9 @@ final class ConfigBuilderImpl implements ConfigBuilder
 		cf.addSources( this.sources );
 
 		if( this.defaultSources ) {
-			cf.addSource( new SYSConfigSource() );
 			cf.addSource( new ENVConfigSource() );
 			cf.addSources( new PRPConfigSourceProvider().getConfigSources( cld ) );
+			cf.addSource( new SYSConfigSource() );
 		}
 		if( this.discoverSources ) {
 			cf.addSources( ServiceLoader.load( ConfigSource.class, cld ) );

@@ -2,6 +2,7 @@
 package ascelion.config.conv;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigConverter;
@@ -12,13 +13,9 @@ import static ascelion.config.conv.Utils.values;
 class ArrayConverter<T> extends WrapConverter<Object, T>
 {
 
-	private final Class<?> type;
-
-	ArrayConverter( Class<?> type, ConfigConverter<T> conv )
+	ArrayConverter( Type type, ConfigConverter<T> conv )
 	{
 		super( type, conv );
-
-		this.type = type;
 	}
 
 	@Override
@@ -32,7 +29,7 @@ class ArrayConverter<T> extends WrapConverter<Object, T>
 	{
 		final String[] v = values( u );
 
-		if( this.type.isPrimitive() ) {
+		if( ( this.type instanceof Class ) && ( (Class) this.type ).isPrimitive() ) {
 			final Object a = newArray( v.length );
 
 			for( int k = 0; k < v.length; k++ ) {
@@ -50,6 +47,6 @@ class ArrayConverter<T> extends WrapConverter<Object, T>
 
 	private Object newArray( int n )
 	{
-		return Array.newInstance( this.type, n );
+		return this.type instanceof Class ? Array.newInstance( (Class<?>) this.type, n ) : Array.newInstance( Object.class, n );
 	}
 }

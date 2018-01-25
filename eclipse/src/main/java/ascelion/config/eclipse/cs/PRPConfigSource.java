@@ -16,12 +16,12 @@ final class PRPConfigSource extends URLConfigSource
 	}
 
 	@Override
-	void readConfiguration( Map<String, String> map, InputStream is ) throws IOException
+	Map<String, String> readConfiguration( InputStream is ) throws IOException
 	{
 		final Properties props = new Properties();
 
 		props.load( is );
 
-		map.putAll( (Map) props );
+		return (Map) props;
 	}
 }

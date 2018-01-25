@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -22,9 +21,9 @@ public abstract class URLConfigSource implements ConfigSource
 	static private final LOG L = LOG.get();
 
 	private final ReadWriteLock rwl = new ReentrantReadWriteLock();
-	private final Map<String, String> properties = new TreeMap<>();
+	private Map<String, String> properties;
 	private final URL resource;
-	private long updated = -1;
+	private long updated = 0;
 
 	public URLConfigSource( URL resource )
 	{
@@ -70,29 +69,29 @@ public abstract class URLConfigSource implements ConfigSource
 	private void load()
 	{
 		try {
-			final long lastModified = this.resource.openConnection().getLastModified();
+			long lastModified = this.resource.openConnection().getLastModified();
 
-			if( lastModified > this.updated ) {
+			if( this.properties == null || lastModified > this.updated ) {
 				this.rwl.readLock().unlock();
 
 				try {
 					this.rwl.writeLock().lock();
 
+					lastModified = this.resource.openConnection().getLastModified();
+
+					if( this.properties != null && lastModified <= this.updated ) {
+						return;
+					}
+
 					try {
 						try( InputStream is = this.resource.openStream() ) {
-							final Map<String, String> map = new TreeMap<>();
-
-							readConfiguration( map, is );
-
-							this.properties.clear();
-							this.properties.putAll( map );
-
+							this.properties = readConfiguration( is );
 							this.updated = lastModified;
 
 							if( L.isTraceEnabled() ) {
 								final StringWriter w = new StringWriter();
 
-								map.forEach( ( k, v ) -> w.append( format( "%s = %s\n", k, v ) ) );
+								this.properties.forEach( ( k, v ) -> w.append( format( "%s = %s\n", k, v ) ) );
 
 								L.trace( "LastUpdated %tF, %s\n%s", this.updated, getName(), w );
 							}
@@ -108,9 +107,9 @@ public abstract class URLConfigSource implements ConfigSource
 			}
 		}
 		catch( final IOException e ) {
-			e.printStackTrace();
+			L.warn( "Cannot read from %s", getName() );
 		}
 	}
 
-	abstract void readConfiguration( Map<String, String> map, InputStream is ) throws IOException;
+	abstract Map<String, String> readConfiguration( InputStream is ) throws IOException;
 }
