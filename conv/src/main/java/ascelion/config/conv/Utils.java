@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,12 +19,15 @@ import ascelion.config.api.ConfigNode;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import org.apache.commons.lang3.StringUtils;
 
 public final class Utils
 {
+
+	private static final String ARRAY_SEPARATOR_REGEX = "(?<!\\\\)" + Pattern.quote( "," );
 
 	static public <X> X[] asArray( X... x )
 	{
@@ -42,7 +46,17 @@ public final class Utils
 
 	static public String[] values( String value )
 	{
-		return isNotBlank( value ) ? value.split( "\\s*[;,]\\s*" ) : new String[0];
+		if( isBlank( value ) ) {
+			return new String[0];
+		}
+
+		final String[] v = value.split( ARRAY_SEPARATOR_REGEX );
+
+		for( int k = 0; k < v.length; k++ ) {
+			v[k] = v[k].trim().replace( "\\,", "," ).replace( "\\;", ";" );
+		}
+
+		return v;
 	}
 
 	static public String[] keys( String path )

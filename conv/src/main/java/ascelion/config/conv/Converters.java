@@ -2,7 +2,6 @@
 package ascelion.config.conv;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -44,7 +43,7 @@ public final class Converters
 
 	static final TypeVariable<? extends Class<?>> CV_TYPE = ConfigConverter.class.getTypeParameters()[0];
 
-	static private final String[] CREATE = { "valueOf", "parse", "create", "from", "fromValue" };
+	static private final String[] CREATE_METHODS = { "valueOf", "parse", "create", "from", "fromValue" };
 
 	private final Map<Type, ConfigConverter<?>> cached = new TreeMap<>( Converters::compare );
 
@@ -276,29 +275,29 @@ public final class Converters
 
 			if( rt.equals( Set.class ) ) {
 				final Type ct = pt.getActualTypeArguments()[0];
-				return new SetConverter( ct, getConverter( ct ) );
+				return new SetConverter<>( ct, getConverter( ct ) );
 			}
 			if( rt.equals( List.class ) ) {
 				final Type ct = pt.getActualTypeArguments()[0];
-				return new ListConverter( ct, getConverter( ct ) );
+				return new ListConverter<>( ct, getConverter( ct ) );
 			}
 			if( rt.equals( Map.class ) ) {
 				final Type ct = pt.getActualTypeArguments()[1];
-				return new MapConverter( ct, getConverter( ct ) );
+				return new MapConverter<>( ct, getConverter( ct ) );
 			}
 			if( rt.equals( Optional.class ) ) {
 				final Type ct = pt.getActualTypeArguments()[0];
-				return new OptionalConverter( ct, getConverter( ct ) );
+				return new OptionalConverter<>( ct, getConverter( ct ) );
 			}
 
 			return getConverter( rt );
 		}
-		if( type instanceof GenericArrayType ) {
-			final GenericArrayType at = (GenericArrayType) type;
-			final Type ct = at.getGenericComponentType();
-
-			return new ArrayConverter( ct, getConverter( ct ) );
-		}
+//		if( type instanceof GenericArrayType ) {
+//			final GenericArrayType at = (GenericArrayType) type;
+//			final Type ct = at.getGenericComponentType();
+//
+//			return new ArrayConverter<>( ct, getConverter( ct ) );
+//		}
 		if( type instanceof Class ) {
 			final Class<?> cls = (Class<?>) type;
 
@@ -308,10 +307,10 @@ public final class Converters
 			if( cls.isArray() ) {
 				final Class<?> ct = cls.getComponentType();
 
-				return new ArrayConverter( ct, getConverter( ct ) );
+				return new ArrayConverter<>( ct, getConverter( ct ) );
 			}
 			if( cls.isInterface() ) {
-				return new InterfaceConverter( cls, this );
+				return new InterfaceConverter<>( cls, this );
 			}
 
 			final ConfigConverter<?> fc = fromClass( cls );
@@ -326,8 +325,33 @@ public final class Converters
 
 	private ConfigConverter<?> fromClass( final Class<?> cls )
 	{
+		ConfigConverter<?> c;
+
+		if( ( c = fromConstructor( cls, String.class ) ) != null ) {
+			return c;
+		}
+		if( ( c = fromConstructor( cls, CharSequence.class ) ) != null ) {
+			return c;
+		}
+
+		for( final String name : CREATE_METHODS ) {
+			if( ( c = fromMethod( cls, name, String.class ) ) != null ) {
+				return c;
+			}
+			if( ( c = fromMethod( cls, name, CharSequence.class ) ) != null ) {
+				return c;
+			}
+		}
+
+		return null;
+	}
+
+	ConfigConverter<?> fromConstructor( final Class<?> cls, Class<?> paramType )
+	{
 		try {
-			final Constructor<?> c = cls.getConstructor( String.class );
+			final Constructor<?> c = cls.getDeclaredConstructor( paramType );
+
+			c.setAccessible( true );
 
 			return ( u ) -> {
 				try {
@@ -342,33 +366,36 @@ public final class Converters
 			};
 		}
 		catch( final NoSuchMethodException e ) {
+			return null;
 		}
+	}
 
-		for( final String create : CREATE ) {
-			try {
-				final Method m = cls.getMethod( create, String.class );
+	ConfigConverter<?> fromMethod( final Class<?> cls, String name, Class<?> paramType )
+	{
+		try {
+			final Method m = cls.getDeclaredMethod( name, paramType );
 
-				if( !Modifier.isStatic( m.getModifiers() ) ) {
-					continue;
+			if( !Modifier.isStatic( m.getModifiers() ) ) {
+				return null;
+			}
+
+			m.setAccessible( true );
+
+			return ( u ) -> {
+				try {
+					return m.invoke( null, u );
 				}
-
-				return ( u ) -> {
-					try {
-						return m.invoke( null, u );
-					}
-					catch( final IllegalAccessException e ) {
-						throw new ConfigException( u, e );
-					}
-					catch( final InvocationTargetException e ) {
-						throw new ConfigException( u, e.getCause() );
-					}
-				};
-			}
-			catch( final NoSuchMethodException e ) {
-			}
+				catch( final IllegalAccessException e ) {
+					throw new ConfigException( u, e );
+				}
+				catch( final InvocationTargetException e ) {
+					throw new ConfigException( u, e.getCause() );
+				}
+			};
 		}
-
-		return null;
+		catch( final NoSuchMethodException e ) {
+			return null;
+		}
 	}
 
 	private void add( Type type, Function<String, ?> func )

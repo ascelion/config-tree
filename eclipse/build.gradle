@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 sourceSets {
-	tck {
+	tckTest {
 		java {
 			srcDirs 'microprofile/tck/src/main/java'
 		}
@@ -23,36 +23,29 @@ dependencies {
 	testCompile 'ascelion.shared:cdi-unit-impl'
 	testCompile 'ascelion.shared:cdi-unit-weld'
 
-//	tckRuntime 'org.eclipse.microprofile.config:microprofile-config-tck'
-	tckCompile 'javax.enterprise:cdi-api'
-	tckCompile 'javax.annotation:javax.annotation-api'
-	tckCompile 'org.eclipse.microprofile.config:microprofile-config-api'
-	tckCompile 'org.testng:testng'
-	tckCompile 'org.hamcrest:hamcrest-library'
-	tckCompile 'org.jboss.arquillian.testng:arquillian-testng-container'
-	tckRuntime 'org.jboss.arquillian.container:arquillian-weld-embedded'
-	tckRuntime 'org.jboss.weld.se:weld-se-shaded'
-	tckRuntime 'ch.qos.logback:logback-classic'
+	tckTestCompileOnly 'org.eclipse.microprofile.config:microprofile-config-tck'
+	tckTestCompile 'org.testng:testng'
+	tckTestCompile 'org.hamcrest:hamcrest-library'
+	tckTestCompile 'org.jboss.arquillian.testng:arquillian-testng-container'
+	tckTestRuntime 'org.jboss.arquillian.container:arquillian-weld-embedded'
+	tckTestRuntime 'org.jboss.weld.se:weld-se-shaded'
+	tckTestRuntime 'ch.qos.logback:logback-classic'
 }
 
-task tck( type: Test ) {
+testReportDirName = file( "$buildDir/test-output" )
+
+tckTest {
 	scanForTestClasses = false
 
 	classpath += files( 'src/test/resources' )
-//	classpath += files( 'microprofile/tck/src/main/resources/internal' )
-	classpath += sourceSets.main.output
-	classpath += sourceSets.test.output
-	classpath += configurations.runtime
-	classpath += configurations.tckRuntime
 
 	useTestNG() {
-		testReportDirName = file( "$buildDir/test-output" )
 		suites 'tck-suite.xml'
 	}
 }
 
 eclipse {
 	classpath {
-		plusConfigurations += [configurations.tckRuntime]
+		plusConfigurations += [configurations.tckTestRuntime]
 	}
 }
