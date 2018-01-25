@@ -4,13 +4,18 @@ package ascelion.config.eclipse;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.function.Function;
+
+import ascelion.logging.LOG;
 
 import static java.util.Collections.synchronizedMap;
 
 final class References<T>
 {
+
+	static private final LOG L = LOG.get();
 
 	private final Map<ClassLoader, WeakReference<T>> references = synchronizedMap( new WeakHashMap<ClassLoader, WeakReference<T>>() );
 
@@ -23,6 +28,8 @@ final class References<T>
 
 	T get( ClassLoader cld, Function<ClassLoader, T> sup )
 	{
+		Objects.requireNonNull( cld, "The classLoader cannot be null" );
+
 		T obj = ref( cld );
 
 		if( obj == null ) {
@@ -32,7 +39,11 @@ final class References<T>
 				if( obj == null ) {
 					obj = sup.apply( cld );
 
-					this.references.put( cld, new WeakReference<>( obj ) );
+					final WeakReference<T> ref = new WeakReference<>( obj );
+
+					L.trace( "PUT %s / %s / %s", cld, ref, obj );
+
+					this.references.put( cld, ref );
 				}
 
 				purge( null );
@@ -58,6 +69,8 @@ final class References<T>
 			final T obj = ent.getValue().get();
 
 			if( obj == null || obj == t ) {
+				L.trace( "DEL %s / %s / %s", ent.getKey(), ent.getValue(), obj );
+
 				it.remove();
 			}
 		}

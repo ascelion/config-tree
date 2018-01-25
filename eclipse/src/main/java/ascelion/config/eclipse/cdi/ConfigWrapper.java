@@ -25,7 +25,7 @@ final class ConfigWrapper implements ConfigInternal
 	private ConfigWrapper( Config config )
 	{
 		this.delegate = config;
-		this.cvs = new ConverterReg().discover( getClass().getClassLoader() ).get();
+		this.cvs = new ConverterReg().discover( null ).get();
 	}
 
 	@Override

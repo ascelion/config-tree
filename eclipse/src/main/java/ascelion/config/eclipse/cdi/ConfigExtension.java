@@ -73,22 +73,25 @@ public class ConfigExtension implements Extension
 			final Set<String> missing = new TreeSet<>();
 			final ConfigInternal cf = ConfigFactory.getConfig();
 
-			for( final InjectionPoint ip : this.validate ) {
-				final Object pv = ConfigPropertyFactory.getValue( ip, cf );
+			try {
+				for( final InjectionPoint ip : this.validate ) {
+					final Object pv = ConfigPropertyFactory.getValue( ip, cf );
 
-				if( pv == null ) {
-					missing.add( ConfigPropertyFactory.propertyName( ip ) );
+					if( pv == null ) {
+						missing.add( ConfigPropertyFactory.propertyName( ip ) );
+					}
+				}
+
+				if( missing.size() > 0 ) {
+					final String text = "Configuration problem, the following properties are not defined: " +
+						missing.stream().collect( joining( ", " ) );
+
+					event.addDeploymentProblem( new DeploymentException( text ) );
 				}
 			}
-
-			if( missing.size() > 0 ) {
-				final String text = "Configuration problem, the following properties are note defined: " +
-					missing.stream().collect( joining( ", " ) );
-
-				event.addDeploymentProblem( new DeploymentException( text ) );
+			finally {
+				ConfigFactory.release( cf );
 			}
-
-			ConfigFactory.release( cf );
 		}
 	}
 

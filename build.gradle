@@ -1,8 +1,4 @@
-buildscript {
-	dependencies {
-		classpath 'ascelion.gradle.plugins:gradle-ascelion-plugin:1.1.1-SNAPSHOT'
-	}
-}
+buildscript { dependencies { classpath 'ascelion.gradle.plugins:gradle-ascelion-plugin:1.1.1-SNAPSHOT' } }
 
 allprojects {
 	group = 'ascelion.shared'
@@ -13,9 +9,7 @@ allprojects {
 subprojects {
 	apply plugin: 'java'
 
-	tasks.withType( JavaCompile ) {
-		options.compilerArgs << '-parameters'
-	}
+	tasks.withType( JavaCompile ) { options.compilerArgs << '-parameters' }
 	plugins.withType( JavaPlugin ) {
 		sourceSets.all {
 			dependencies.add( it.compileOnlyConfigurationName, 'org.projectlombok:lombok' )
@@ -28,3 +22,15 @@ subprojects {
 	ascelion.java.main.artifactId = fullName
 }
 
+task( name: 'test-report', type: TestReport) { rep ->
+	destinationDir = file("$buildDir/reports/allTests")
+
+	subprojects { sub ->
+		sub.tasks.withType( Test ) { tst ->
+			ignoreFailures = true
+			reports.html.enabled = false
+			
+			rep.reportOn tst
+		}
+	}
+}

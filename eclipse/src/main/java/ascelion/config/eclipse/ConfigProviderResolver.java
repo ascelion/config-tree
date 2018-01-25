@@ -1,6 +1,8 @@
 
 package ascelion.config.eclipse;
 
+import java.util.Objects;
+
 import org.eclipse.microprofile.config.Config;
 
 public final class ConfigProviderResolver extends org.eclipse.microprofile.config.spi.ConfigProviderResolver
@@ -23,12 +25,14 @@ public final class ConfigProviderResolver extends org.eclipse.microprofile.confi
 	@Override
 	public Config getConfig()
 	{
-		return getConfig( null );
+		return getConfig( classLoader( null ) );
 	}
 
 	@Override
 	public Config getConfig( ClassLoader cld )
 	{
+		Objects.requireNonNull( cld, "The classLoader cannot be null" );
+
 		return CONFIGS.get( cld, this::buildConfig );
 	}
 
@@ -41,6 +45,8 @@ public final class ConfigProviderResolver extends org.eclipse.microprofile.confi
 	@Override
 	public void registerConfig( Config config, ClassLoader cld )
 	{
+		Objects.requireNonNull( cld, "The classLoader cannot be null" );
+
 		CONFIGS.put( cld, config );
 	}
 

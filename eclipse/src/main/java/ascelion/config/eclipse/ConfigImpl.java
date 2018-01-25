@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ascelion.config.conv.Converters;
+import ascelion.logging.LOG;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -19,6 +20,8 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 
 final class ConfigImpl implements ConfigInternal
 {
+
+	static private final LOG L = LOG.get();
 
 	private final Collection<ConfigSource> sources = new ArrayList<>();
 	private final Converters cvs;
@@ -34,6 +37,8 @@ final class ConfigImpl implements ConfigInternal
 		final String value = getValue( propertyName );
 
 		if( value == null ) {
+			L.trace( "Configuration not found: %s", propertyName );
+
 			throw new NoSuchElementException( "Configuration not found: " + propertyName );
 		}
 
