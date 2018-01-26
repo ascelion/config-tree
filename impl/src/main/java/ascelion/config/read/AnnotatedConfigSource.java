@@ -4,11 +4,14 @@ package ascelion.config.read;
 import java.util.Map;
 
 import ascelion.config.api.ConfigReader;
+import ascelion.logging.LOG;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 final class AnnotatedConfigSource implements ConfigSource
 {
+
+	static private final LOG L = LOG.get();
 
 	private final ConfigReader rd;
 	private Map<String, String> properties;
@@ -26,6 +29,8 @@ final class AnnotatedConfigSource implements ConfigSource
 	public synchronized Map<String, String> getProperties()
 	{
 		if( this.properties == null || this.rd.isModified( this.source ) ) {
+			L.trace( "Reading '%s'", this.source );
+
 			this.properties = this.rd.readConfiguration( this.source );
 		}
 

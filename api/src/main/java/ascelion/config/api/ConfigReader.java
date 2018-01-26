@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.util.Nonbinding;
+import javax.inject.Qualifier;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -17,6 +19,8 @@ public interface ConfigReader
 
 	@Retention( RUNTIME )
 	@Target( TYPE )
+	@Qualifier
+	@ApplicationScoped
 	@interface Type
 	{
 

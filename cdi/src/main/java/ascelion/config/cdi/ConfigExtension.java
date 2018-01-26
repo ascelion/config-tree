@@ -32,6 +32,7 @@ import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.conv.Converters;
+import ascelion.config.impl.ConfigSources;
 import ascelion.config.read.INIConfigReader;
 import ascelion.config.read.JMXConfigReader;
 import ascelion.config.read.PRPConfigReader;
@@ -63,9 +64,10 @@ public class ConfigExtension implements Extension
 		addType( INIConfigReader.class, bm, event );
 		addType( JMXConfigReader.class, bm, event );
 		addType( PRPConfigReader.class, bm, event );
-//		addType( VALConfigReader.class, bm, event );
 		addType( XMLConfigReader.class, bm, event );
 		addType( YMLConfigReader.class, bm, event );
+
+		ConfigSources.setInstance( new CDIConfigSources() );
 	}
 
 	<X> void collectConfigSourceList( @Observes ProcessAnnotatedType<X> event )

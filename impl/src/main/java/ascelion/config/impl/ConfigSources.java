@@ -129,7 +129,7 @@ public abstract class ConfigSources
 
 	private Iterable<ConfigSource> buildSources( ClassLoader cld )
 	{
-		final Collection<ConfigSource> sources = new ArrayList<>();
+		final Collection<ConfigSource> sources = new HashSet<>();
 
 		sources.addAll( this.addedSources );
 		loadSources( cld ).forEach( sources::add );

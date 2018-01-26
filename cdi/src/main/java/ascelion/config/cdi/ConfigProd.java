@@ -22,7 +22,6 @@ import javax.management.MBeanServer;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
-import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.conv.Converters;
 import ascelion.config.impl.ConfigLoad;
@@ -44,9 +43,6 @@ class ConfigProd
 	private ConfigExtension ext;
 	@Inject
 	private Converters conv;
-	@Inject
-	@Any
-	private Instance<ConfigReader> rdi;
 	@Inject
 	@Any
 	private Instance<ConfigConverter> cvi;
@@ -110,18 +106,7 @@ class ConfigProd
 			this.converters.put( c, info );
 		} );
 
-		this.rdi.forEach( this.load::addReader );
-		this.ext.sources().forEach( this.load::addSource );
-
 		this.root = this.load.load();
-
-//		this.ext.sources().stream()
-//			.filter( s -> s.type().equals( JMXConfigReader.TYPE ) )
-//			.forEach( s -> {
-//				final JMXSupport sup = new JMXSupport( this.mbsi.get(), s.value() );
-//
-//				sup.buildEntries( this.root );
-//			} );
 	}
 
 	@PreDestroy

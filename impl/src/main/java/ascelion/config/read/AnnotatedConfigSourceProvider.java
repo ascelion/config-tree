@@ -86,6 +86,8 @@ public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 
 		ConfigSources.instance().getReaders( cld )
 			.forEach( rd -> {
+				L.trace( "Found reader: %s -> %s", rd.getClass().getName(), rd.types() );
+
 				for( final String t : rd.types() ) {
 					readers.put( t.toUpperCase(), rd );
 				}
@@ -98,17 +100,29 @@ public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 
 				if( rd != null ) {
 					if( cs.value().length() > 0 ) {
-						AnnotatedConfigSourceProvider.getResources( cs.value(), cld )
-							.forEach( u -> {
+						final List<URL> resources = AnnotatedConfigSourceProvider.getResources( cs.value(), cld );
+
+						if( resources.isEmpty() ) {
+							L.trace( "Found source: %s(%d) -> %s", st, cs.priority(), cs.value() );
+
+							built.add( new AnnotatedConfigSource( rd, cs.value(), cs.priority() ) );
+						}
+						else {
+							resources.forEach( u -> {
+								L.trace( "Found source: %s(%d) -> %s", st, cs.priority(), u );
+
 								built.add( new AnnotatedConfigSource( rd, u.toExternalForm(), cs.priority() ) );
 							} );
+						}
 					}
 					else {
+						L.trace( "Found source: %s(%d)", st, cs.priority() );
+
 						built.add( new AnnotatedConfigSource( rd, cs.value(), cs.priority() ) );
 					}
 				}
 				else {
-
+					L.warn( "No reader for %s(%d) -> %s", st, cs.priority(), cs.value() );
 				}
 			} );
 

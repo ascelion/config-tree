@@ -3,7 +3,7 @@ package ascelion.config.cdi;
 
 import java.util.Map;
 
-import javax.inject.Singleton;
+import javax.enterprise.context.ApplicationScoped;
 
 import ascelion.cdi.junit.CdiUnit;
 import ascelion.config.api.ConfigConverter;
@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 public class CustomSourceTest
 {
 
-	@Singleton
+	@ApplicationScoped
 	static class CustomConverter implements ConfigConverter<String>
 	{
 
