@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
+import ascelion.config.eclipse.ext.Expression;
 
 import static ascelion.config.conv.Utils.keys;
 import static ascelion.config.conv.Utils.path;

@@ -19,9 +19,11 @@ dependencies {
 	compile 'org.eclipse.microprofile.config:microprofile-config-api'
 	compile 'ascelion.shared:cdi-utils'
 	compile 'ascelion.shared:fmt-log'
+	compile 'org.apache.commons:commons-text'
 
 	testCompile 'ascelion.shared:cdi-unit-impl'
 	testCompile 'ascelion.shared:cdi-unit-weld'
+	testCompile 'org.yaml:snakeyaml'
 
 	tckTestCompileOnly 'org.eclipse.microprofile.config:microprofile-config-tck'
 	tckTestCompile 'org.testng:testng'

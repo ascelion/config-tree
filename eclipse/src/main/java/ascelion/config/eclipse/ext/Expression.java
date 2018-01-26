@@ -1,5 +1,5 @@
 
-package ascelion.config.impl;
+package ascelion.config.eclipse.ext;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -14,16 +14,15 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 import static org.apache.commons.text.StringEscapeUtils.unescapeJava;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.ToString;
 
 @ToString( of = { "expression", "cached", "value" }, doNotUseGetters = true )
-final class Expression
+public final class Expression
 {
 
 	@ToString
-	static class Result
+	public static class Result
 	{
 
 		static Function<String, Result> wrap( UnaryOperator<String> fun )
@@ -43,13 +42,13 @@ final class Expression
 		final boolean unresolved;
 		final String value;
 
-		Result()
+		public Result()
 		{
 			this.unresolved = true;
 			this.value = null;
 		}
 
-		Result( String value )
+		public Result( String value )
 		{
 			this.unresolved = false;
 			this.value = value;
@@ -62,41 +61,41 @@ final class Expression
 	static private final char ESCAPE = '\\';
 
 	private final Function<String, Result> lookup;
-	@Getter( AccessLevel.PACKAGE )
+	@Getter
 	private String expression;
 	private String value;
-	@Getter( AccessLevel.PACKAGE )
+	@Getter
 	private String defValue;
 	private boolean cached;
-	@Getter( AccessLevel.PACKAGE )
+	@Getter
 	private boolean changed;
-	@Getter( AccessLevel.PACKAGE )
+	@Getter
 	private String lastVariable;
 	private final Set<String> names = new LinkedHashSet<>();
 
-	Expression( UnaryOperator<String> lookup )
+	public Expression( UnaryOperator<String> lookup )
 	{
 		this( Result.wrap( lookup ), null );
 	}
 
-	Expression( UnaryOperator<String> lookup, String expression )
+	public Expression( UnaryOperator<String> lookup, String expression )
 	{
 		this( Result.wrap( lookup ), expression );
 	}
 
-	Expression( Function<String, Result> lookup )
+	public Expression( Function<String, Result> lookup )
 	{
 		this( lookup, null );
 	}
 
-	Expression( Function<String, Result> lookup, String expression )
+	public Expression( Function<String, Result> lookup, String expression )
 	{
 		this.lookup = lookup;
 
 		setValue( expression );
 	}
 
-	void setValue( String expression )
+	public void setValue( String expression )
 	{
 		this.expression = expression;
 		this.cached = isEmpty();
@@ -104,12 +103,12 @@ final class Expression
 		this.value = null;
 	}
 
-	boolean isEmpty()
+	public boolean isEmpty()
 	{
 		return isBlank( this.expression );
 	}
 
-	String getValue()
+	public String getValue()
 	{
 		if( this.cached ) {
 			return this.value;
@@ -126,7 +125,7 @@ final class Expression
 		return this.value;
 	}
 
-	void expire()
+	public void expire()
 	{
 		this.cached = false;
 		this.value = null;
@@ -205,7 +204,7 @@ final class Expression
 		if( !this.names.add( name ) ) {
 			final String m = format( "Recursive definition for ${%s}: %s", name, this.names.stream().collect( joining( " -> " ) ) );
 
-			throw new ConfigLoopException( m );
+			throw new IllegalStateException( m );
 		}
 
 		this.lastVariable = name;

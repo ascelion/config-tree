@@ -13,7 +13,7 @@ import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.InjectionPoint;
 
-import ascelion.config.eclipse.ConfigInternal;
+import ascelion.config.eclipse.ext.ConfigExt;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -22,7 +22,7 @@ final class ConfigPropertyFactory
 
 	@Typed
 	@ConfigProperty
-	static Object getValue( InjectionPoint ip, ConfigInternal cf )
+	static Object getValue( InjectionPoint ip, ConfigExt cf )
 	{
 		final String pn = propertyName( ip );
 		String pv = cf.getValue( pn );

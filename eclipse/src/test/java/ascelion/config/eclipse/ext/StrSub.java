@@ -1,5 +1,5 @@
 
-package ascelion.config.impl;
+package ascelion.config.eclipse.ext;
 
 import java.util.ArrayList;
 import java.util.Enumeration;

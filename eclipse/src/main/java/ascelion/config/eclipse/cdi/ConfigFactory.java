@@ -5,7 +5,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 
-import ascelion.config.eclipse.ConfigInternal;
+import ascelion.config.eclipse.ext.ConfigExt;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -15,7 +15,7 @@ class ConfigFactory
 
 	@Produces
 	@ApplicationScoped
-	static ConfigInternal getConfig()
+	static ConfigExt getConfig()
 	{
 		return ConfigWrapper.wrap( ConfigProviderResolver.instance().getConfig() );
 	}

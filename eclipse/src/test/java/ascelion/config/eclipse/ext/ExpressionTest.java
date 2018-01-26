@@ -1,5 +1,5 @@
 
-package ascelion.config.impl;
+package ascelion.config.eclipse.ext;
 
 import java.util.function.UnaryOperator;
 
@@ -121,7 +121,7 @@ public class ExpressionTest
 		assertThat( val, is( "${x}" ) );
 	}
 
-	@Test( expected = ConfigLoopException.class )
+	@Test( expected = IllegalStateException.class )
 	public void runLoop()
 	{
 		final int[] count = { 0 };

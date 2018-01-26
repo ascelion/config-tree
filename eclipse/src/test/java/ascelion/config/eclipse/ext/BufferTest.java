@@ -1,5 +1,7 @@
 
-package ascelion.config.impl;
+package ascelion.config.eclipse.ext;
+
+import ascelion.config.eclipse.ext.Buffer;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;

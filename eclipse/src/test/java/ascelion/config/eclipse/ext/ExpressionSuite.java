@@ -1,5 +1,5 @@
 
-package ascelion.config.impl;
+package ascelion.config.eclipse.ext;
 
 import java.io.IOException;
 import java.io.InputStream;

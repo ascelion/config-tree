@@ -1,11 +1,9 @@
 
 package ascelion.config.eclipse;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,17 +16,16 @@ import static java.util.Optional.ofNullable;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
-final class ConfigImpl implements ConfigInternal
+final class ConfigImpl extends AbstractConfig
 {
 
 	static private final LOG L = LOG.get();
 
 	private final Collection<ConfigSource> sources = new ArrayList<>();
-	private final Converters cvs;
 
 	ConfigImpl( Converters cvs )
 	{
-		this.cvs = cvs;
+		super( cvs );
 	}
 
 	@Override
@@ -69,30 +66,6 @@ final class ConfigImpl implements ConfigInternal
 	public Iterable<ConfigSource> getConfigSources()
 	{
 		return () -> sources().iterator();
-	}
-
-	@Override
-	public String getValue( String propertyName )
-	{
-		return sources()
-			.map( cs -> cs.getValue( propertyName ) )
-			.filter( Objects::nonNull )
-			.findFirst()
-			.orElse( null );
-	}
-
-	@Override
-	public <T> T convert( String value, Type type )
-	{
-		try {
-			return (T) this.cvs.create( type, value );
-		}
-		catch( final IllegalArgumentException e ) {
-			throw e;
-		}
-		catch( final RuntimeException e ) {
-			throw new IllegalArgumentException( value, e );
-		}
 	}
 
 	void addSources( Iterable<? extends ConfigSource> sources )

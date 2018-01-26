@@ -26,7 +26,7 @@ import javax.enterprise.inject.spi.ProducerFactory;
 import ascelion.cdi.bean.BeanAttributesBuilder;
 import ascelion.cdi.bean.BeanBuilder;
 import ascelion.cdi.type.AnnotatedTypeW;
-import ascelion.config.eclipse.ConfigInternal;
+import ascelion.config.eclipse.ext.ConfigExt;
 
 import static java.util.stream.Collectors.joining;
 
@@ -71,7 +71,7 @@ public class ConfigExtension implements Extension
 	{
 		if( this.validate.size() > 0 ) {
 			final Set<String> missing = new TreeSet<>();
-			final ConfigInternal cf = ConfigFactory.getConfig();
+			final ConfigExt cf = ConfigFactory.getConfig();
 
 			try {
 				for( final InjectionPoint ip : this.validate ) {
@@ -101,7 +101,7 @@ public class ConfigExtension implements Extension
 		final AnnotatedMethod<? super ConfigPropertyFactory> prodMethod;
 
 		try {
-			prodMethod = declType.getMethod( "getValue", InjectionPoint.class, ConfigInternal.class );
+			prodMethod = declType.getMethod( "getValue", InjectionPoint.class, ConfigExt.class );
 		}
 		catch( final NoSuchMethodException e ) {
 			event.addDefinitionError( e );

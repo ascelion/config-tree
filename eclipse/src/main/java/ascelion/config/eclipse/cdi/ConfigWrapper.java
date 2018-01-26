@@ -1,31 +1,30 @@
 
 package ascelion.config.eclipse.cdi;
 
-import java.lang.reflect.Type;
 import java.util.Optional;
 
-import ascelion.config.conv.Converters;
-import ascelion.config.eclipse.ConfigInternal;
+import ascelion.config.eclipse.AbstractConfig;
 import ascelion.config.eclipse.ConverterReg;
+import ascelion.config.eclipse.ext.ConfigExt;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
-final class ConfigWrapper implements ConfigInternal
+final class ConfigWrapper extends AbstractConfig
 {
 
-	static ConfigInternal wrap( Config cf )
+	static ConfigExt wrap( Config cf )
 	{
-		return cf instanceof ConfigInternal ? (ConfigInternal) cf : new ConfigWrapper( cf );
+		return cf instanceof ConfigExt ? (ConfigExt) cf : new ConfigWrapper( cf );
 	}
 
 	final Config delegate;
-	private final Converters cvs;
 
 	private ConfigWrapper( Config config )
 	{
+		super( new ConverterReg().discover( null ).get() );
+
 		this.delegate = config;
-		this.cvs = new ConverterReg().discover( null ).get();
 	}
 
 	@Override
@@ -52,15 +51,4 @@ final class ConfigWrapper implements ConfigInternal
 		return this.delegate.getConfigSources();
 	}
 
-	@Override
-	public String getValue( String propertyName )
-	{
-		return getValue( propertyName, String.class );
-	}
-
-	@Override
-	public <T> T convert( String value, Type type )
-	{
-		return (T) this.cvs.create( type, value );
-	}
 }

@@ -160,7 +160,7 @@ public class ConfigNodeTest
 		assertThat( this.root.getValue( "a.b" ), is( "ab" ) );
 	}
 
-	@Test( expected = ConfigLoopException.class )
+	@Test( expected = IllegalStateException.class )
 	public void loop1()
 	{
 		this.root.setValue( "prop", "${prop}" );
@@ -175,7 +175,7 @@ public class ConfigNodeTest
 		}
 	}
 
-	@Test( expected = ConfigLoopException.class )
+	@Test( expected = IllegalStateException.class )
 	public void loop2()
 	{
 		this.root.setValue( "prop", "1-${value1}-${value2}-2" );
@@ -193,7 +193,7 @@ public class ConfigNodeTest
 		}
 	}
 
-	@Test( expected = ConfigLoopException.class )
+	@Test( expected = IllegalStateException.class )
 	public void loop3()
 	{
 		this.root.setValue( "prop", "${prop1:${prop2:${prop3:${prop}}}}" );

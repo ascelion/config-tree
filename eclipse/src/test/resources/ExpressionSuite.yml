@@ -57,7 +57,7 @@
     Y: a-${Z}-b
     Z: a-${X}-b
   exceptionCT: java.lang.IllegalStateException
-  exception: ascelion.config.impl.ConfigLoopException
+  exception: java.lang.IllegalStateException
 
 - expression: '\${x'
   expected: '${x'
