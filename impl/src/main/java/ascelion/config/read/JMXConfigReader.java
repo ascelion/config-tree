@@ -14,7 +14,6 @@ import javax.management.ObjectName;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
-import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.ConfigBean;
 
 import static java.lang.String.format;
@@ -29,20 +28,27 @@ public class JMXConfigReader implements ConfigReader
 	private Instance<MBeanServer> mbsi;
 
 	private MBeanServer mbs;
+	private boolean modified;
 
 	@Override
-	public Map<String, ?> readConfiguration( ConfigSource source )
+	public boolean isModified( String source )
+	{
+		return this.mbs == null || this.modified;
+	}
+
+	@Override
+	public Map<String, String> readConfiguration( String source )
 	{
 		final Map<String, String> map = new HashMap<>();
 
 		if( enabled() ) {
 			try {
-				this.mbs.queryNames( new ObjectName( source.value() + ":*" ), null )
+				this.mbs.queryNames( new ObjectName( source + ":*" ), null )
 					.forEach( name -> putValue( map, name ) );
 				;
 			}
 			catch( final MalformedObjectNameException e ) {
-				throw new ConfigException( format( "Cannot get domain %s", source.value() ) );
+				throw new ConfigException( format( "Cannot get domain %s", source ) );
 			}
 		}
 

@@ -16,7 +16,7 @@ final class PRPConfigSource extends URLConfigSource
 	}
 
 	@Override
-	Map<String, String> readConfiguration( InputStream is ) throws IOException
+	protected Map<String, String> readConfiguration( InputStream is ) throws IOException
 	{
 		final Properties props = new Properties();
 

@@ -32,7 +32,7 @@ public class PrefixTest
 	{
 
 		@Override
-		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
+		public Map<String, String> readConfiguration( String source ) throws ConfigException
 		{
 			final Map<String, String> map = new HashMap<>();
 

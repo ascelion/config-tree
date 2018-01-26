@@ -1,6 +1,8 @@
 
 package ascelion.config.eclipse;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Objects;
 
 import org.eclipse.microprofile.config.Config;
@@ -8,10 +10,10 @@ import org.eclipse.microprofile.config.Config;
 public final class ConfigProviderResolver extends org.eclipse.microprofile.config.spi.ConfigProviderResolver
 {
 
-	static ClassLoader classLoader( ClassLoader cld )
+	static public ClassLoader classLoader( ClassLoader cld )
 	{
 		if( cld == null ) {
-			cld = Thread.currentThread().getContextClassLoader();
+			cld = AccessController.doPrivileged( (PrivilegedAction<ClassLoader>) () -> Thread.currentThread().getContextClassLoader() );
 		}
 		if( cld == null ) {
 			cld = ConfigProviderResolver.class.getClassLoader();
@@ -20,7 +22,7 @@ public final class ConfigProviderResolver extends org.eclipse.microprofile.confi
 		return cld;
 	}
 
-	static private final References<Config> CONFIGS = new References<>();
+	private final References<Config> configs = new References<>();
 
 	@Override
 	public Config getConfig()
@@ -33,7 +35,7 @@ public final class ConfigProviderResolver extends org.eclipse.microprofile.confi
 	{
 		Objects.requireNonNull( cld, "The classLoader cannot be null" );
 
-		return CONFIGS.get( cld, this::buildConfig );
+		return this.configs.get( cld, this::buildConfig );
 	}
 
 	@Override
@@ -47,13 +49,13 @@ public final class ConfigProviderResolver extends org.eclipse.microprofile.confi
 	{
 		Objects.requireNonNull( cld, "The classLoader cannot be null" );
 
-		CONFIGS.put( cld, config );
+		this.configs.put( cld, config );
 	}
 
 	@Override
 	public void releaseConfig( Config config )
 	{
-		CONFIGS.remove( config );
+		this.configs.remove( config );
 	}
 
 	private Config buildConfig( ClassLoader cld )

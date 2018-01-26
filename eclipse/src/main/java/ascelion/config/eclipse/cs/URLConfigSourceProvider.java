@@ -19,7 +19,7 @@ public abstract class URLConfigSourceProvider implements ConfigSourceProvider
 	private final String resource;
 	private final boolean checkFile;
 
-	URLConfigSourceProvider( String resource, boolean checkFile )
+	public URLConfigSourceProvider( String resource, boolean checkFile )
 	{
 		this.resource = resource;
 		this.checkFile = checkFile;

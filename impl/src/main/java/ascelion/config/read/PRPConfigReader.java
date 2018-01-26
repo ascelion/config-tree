@@ -15,11 +15,12 @@ public class PRPConfigReader extends ResourceReader
 	static public final String TYPE = "PRP";
 
 	@Override
-	void readConfiguration( Map<String, Object> map, InputStream is ) throws IOException
+	protected Map<String, String> readConfiguration( InputStream is ) throws IOException
 	{
 		final Properties prp = new Properties();
 
 		prp.load( is );
-		map.putAll( (Map) prp );
+
+		return (Map) prp;
 	}
 }

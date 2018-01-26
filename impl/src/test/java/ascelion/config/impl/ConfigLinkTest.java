@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
@@ -23,6 +22,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -44,7 +44,7 @@ public class ConfigLinkTest
 	{
 
 		@Override
-		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
+		public Map<String, String> readConfiguration( String source )
 		{
 			return singletonMap( "java.version", System.getProperty( "java.version" ) );
 		}
@@ -100,7 +100,9 @@ public class ConfigLinkTest
 	@BeforeClass
 	static public void setUpClass()
 	{
-		CJ.addFilter( s -> s.value().startsWith( "file" ) || SOURCE_TYPE.equals( s.type() ) );
+		ConfigProviderResolver.setInstance( null );
+		ConfigSources.setInstance( null );
+		ConfigSources.instance().addSourceFilter( cs -> cs.value().startsWith( "file" ) );
 	}
 
 	private final Type type;

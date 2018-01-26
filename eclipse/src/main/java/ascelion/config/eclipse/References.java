@@ -12,21 +12,21 @@ import ascelion.logging.LOG;
 
 import static java.util.Collections.synchronizedMap;
 
-final class References<T>
+public final class References<T>
 {
 
 	static private final LOG L = LOG.get();
 
 	private final Map<ClassLoader, WeakReference<T>> references = synchronizedMap( new WeakHashMap<ClassLoader, WeakReference<T>>() );
 
-	void put( ClassLoader cld, T obj )
+	public void put( ClassLoader cld, T obj )
 	{
 		synchronized( this.references ) {
 			this.references.put( cld, new WeakReference<>( obj ) );
 		}
 	}
 
-	T get( ClassLoader cld, Function<ClassLoader, T> sup )
+	public T get( ClassLoader cld, Function<ClassLoader, T> sup )
 	{
 		Objects.requireNonNull( cld, "The classLoader cannot be null" );
 

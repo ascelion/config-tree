@@ -1,126 +1,65 @@
 
 package ascelion.config.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.stream.Stream;
-
-import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.conv.Utils;
 import ascelion.config.impl.ConfigNodeImpl.ConfigNodeTA;
 import ascelion.logging.LOG;
 
-import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
 import com.google.gson.GsonBuilder;
-import org.apache.commons.io.FilenameUtils;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 
 public final class ConfigLoad
 {
 
 	static private final LOG L = LOG.get();
 
-	private final Map<String, ConfigReader> readers = new TreeMap<>();
-	private final Collection<ConfigSource> sources = new ArrayList<>();
-
 	public void addReader( ConfigReader rd )
 	{
-		final Class<? extends ConfigReader> c = rd.getClass();
-
-		final ConfigReader.Type t = Utils.findAnnotation( ConfigReader.Type.class, c )
-			.orElseThrow( () -> new ConfigException( format( "Cannot find annotation @ConfigReader.Type on class %s", c.getName() ) ) );
-
-		L.trace( "Adding reader %s from %s", t.value(), c.getSimpleName() );
-
-		this.readers.put( t.value().toUpperCase(), rd );
-
-		Stream.of( t.types() ).forEach( x -> this.readers.put( x.toUpperCase(), rd ) );
+		ConfigSources.instance().addReaders( rd );
 	}
 
-	public void addReaders( Collection<? extends ConfigReader> readers )
+	public void addReaders( ConfigReader... rds )
 	{
-		readers.forEach( this::addReader );
+		ConfigSources.instance().addReaders( rds );
 	}
 
-	public void addSource( ConfigSource source )
+	public void addSource( ConfigSource cs )
 	{
-		this.sources.add( source );
+		ConfigSources.instance().addSources( cs );
 	}
 
-	public void addSources( Collection<ConfigSource> sources )
+	public void addSources( ConfigSource... css )
 	{
-		this.sources.addAll( sources );
+		ConfigSources.instance().addSources( css );
 	}
 
 	public ConfigNode load()
 	{
 		final ConfigNodeImpl root = new ConfigNodeImpl();
+		final Config config = ConfigProviderResolver.instance().getConfig();
 
-		this.sources.stream()
-			.sorted( ( s1, s2 ) -> Integer.compare( s1.priority(), s2.priority() ) )
-			.forEach( s -> {
-				load( s, root );
+		try {
+			config.getConfigSources().forEach( cs -> {
+				root.setValue( cs.getProperties() );
 			} );
 
-		if( L.isTraceEnabled() ) {
-			final String s = new GsonBuilder()
-				.setPrettyPrinting()
-				.registerTypeHierarchyAdapter( ConfigNode.class, new ConfigNodeTA() )
-				.create()
-				.toJson( root );
+			if( L.isTraceEnabled() ) {
+				final String s = new GsonBuilder()
+					.setPrettyPrinting()
+					.registerTypeHierarchyAdapter( ConfigNode.class, new ConfigNodeTA() )
+					.create()
+					.toJson( root );
 
-			L.trace( "Config: %s", s );
+				L.trace( "Config: %s", s );
+			}
+		}
+		finally {
+			ConfigProviderResolver.instance().releaseConfig( config );
 		}
 
 		return root;
-	}
-
-	private void load( ConfigSource source, ConfigNodeImpl root )
-	{
-		final String type = getType( source );
-		final ConfigReader rd = getReader( type );
-
-		try {
-			L.trace( "Reading: type %s from '%s'", type, source.value() );
-
-			root.setValue( rd.readConfiguration( source ) );
-		}
-		catch( final ConfigException e ) {
-			L.error( "Cannot read config source: " + source.value() );
-
-			throw e;
-		}
-	}
-
-	private String getType( final ConfigSource source )
-	{
-		String t = source.type();
-
-		if( isBlank( t ) ) {
-			t = FilenameUtils.getExtension( source.value() );
-
-			if( isBlank( t ) ) {
-				throw new ConfigException( format( "No type specified for configuration source %s", source.value() ) );
-			}
-		}
-
-		return t.toUpperCase();
-	}
-
-	private ConfigReader getReader( String type )
-	{
-		final ConfigReader r = this.readers.get( type );
-
-		if( r == null ) {
-			throw new ConfigException( format( "Cannot find any reader for configuration type %s", type ) );
-		}
-
-		return r;
 	}
 }

@@ -41,9 +41,9 @@ public class CustomSourceTest
 	{
 
 		@Override
-		public Map<String, ?> readConfiguration( ConfigSource source )
+		public Map<String, String> readConfiguration( String source )
 		{
-			return new Gson().fromJson( source.value(), Map.class );
+			return new Gson().fromJson( source, Map.class );
 		}
 	}
 

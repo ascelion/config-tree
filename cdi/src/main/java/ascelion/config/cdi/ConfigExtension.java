@@ -32,11 +32,9 @@ import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.conv.Converters;
-import ascelion.config.read.ENVConfigReader;
 import ascelion.config.read.INIConfigReader;
 import ascelion.config.read.JMXConfigReader;
 import ascelion.config.read.PRPConfigReader;
-import ascelion.config.read.SYSConfigReader;
 import ascelion.config.read.XMLConfigReader;
 import ascelion.config.read.YMLConfigReader;
 import ascelion.logging.LOG;
@@ -62,11 +60,9 @@ public class ConfigExtension implements Extension
 	{
 		addType( ConfigProd.class, bm, event );
 		addType( Converters.class, bm, event );
-		addType( ENVConfigReader.class, bm, event );
 		addType( INIConfigReader.class, bm, event );
 		addType( JMXConfigReader.class, bm, event );
 		addType( PRPConfigReader.class, bm, event );
-		addType( SYSConfigReader.class, bm, event );
 //		addType( VALConfigReader.class, bm, event );
 		addType( XMLConfigReader.class, bm, event );
 		addType( YMLConfigReader.class, bm, event );

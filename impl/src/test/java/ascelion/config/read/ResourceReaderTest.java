@@ -4,14 +4,13 @@ package ascelion.config.read;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.TreeMap;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
-import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.ConfigLoad;
 import ascelion.config.impl.ConfigSourceLiteral;
+import ascelion.config.impl.ConfigSources;
 
 import static ascelion.config.conv.Utils.asArray;
 import static java.lang.String.format;
@@ -19,6 +18,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -55,18 +56,23 @@ public class ResourceReaderTest
 		}
 
 		@Override
-		public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
+		public Map<String, String> readConfiguration( String source ) throws ConfigException
 		{
-			final Map<String, Object> map = new TreeMap<>();
 			try {
-				this.delegate.readConfiguration( map, this.stream );
+				return this.delegate.readConfiguration( this.stream );
 			}
 			catch( final IOException e ) {
 				throw new ConfigException( e.getMessage() );
 			}
-
-			return map;
 		}
+	}
+
+	@Before
+	public void setUp()
+	{
+		ConfigProviderResolver.setInstance( null );
+		ConfigSources.setInstance( null );
+		ConfigSources.instance().addSourceFilter( cs -> cs.type().equals( "STREAM" ) );
 	}
 
 	@Test

@@ -17,13 +17,13 @@ class XYZReader implements ConfigReader
 {
 
 	@Override
-	public Map<String, ?> readConfiguration( ConfigSource source ) throws ConfigException
+	public Map<String, String> readConfiguration( String source ) throws ConfigException
 	{
 		final Map<String, String> m = new HashMap<>();
 		final Properties p = new Properties();
 
 		try {
-			p.load( new StringReader( source.value() ) );
+			p.load( new StringReader( source ) );
 		}
 		catch( final IOException e ) {
 			e.printStackTrace();

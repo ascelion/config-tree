@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,7 +65,9 @@ public class InterfaceLinkTest
 	@BeforeClass
 	static public void setUpClass()
 	{
-		CJ.addFilter( s -> s.value().startsWith( "file" ) );
+		ConfigProviderResolver.setInstance( null );
+		ConfigSources.setInstance( null );
+		ConfigSources.instance().addSourceFilter( cs -> cs.value().startsWith( "file" ) );
 	}
 
 	private final Type type;

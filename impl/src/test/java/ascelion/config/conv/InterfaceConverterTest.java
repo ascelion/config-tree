@@ -8,6 +8,7 @@ import java.util.Collection;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.ConfigJava;
+import ascelion.config.impl.ConfigSources;
 
 import static ascelion.config.conv.Utils.asArray;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -15,6 +16,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,7 +45,9 @@ public class InterfaceConverterTest
 	@BeforeClass
 	static public void setUpClass()
 	{
-		CJ.addFilter( s -> s.value().startsWith( "interface" ) || "SYS".equals( s.type() ) );
+		ConfigProviderResolver.setInstance( null );
+		ConfigSources.setInstance( null );
+		ConfigSources.instance().addSourceFilter( cs -> cs.value().startsWith( "interface" ) );
 	}
 
 	private final String path;

@@ -24,10 +24,22 @@ public abstract class URLConfigSource implements ConfigSource
 	private Map<String, String> properties;
 	private final URL resource;
 	private long updated = 0;
+	private Integer ordinal;
 
 	public URLConfigSource( URL resource )
 	{
 		this.resource = resource;
+	}
+
+	public URLConfigSource( URL resource, int ordinal )
+	{
+		this.resource = resource;
+	}
+
+	@Override
+	public final int getOrdinal()
+	{
+		return this.ordinal != null ? this.ordinal : ConfigSource.super.getOrdinal();
 	}
 
 	@Override
@@ -111,5 +123,5 @@ public abstract class URLConfigSource implements ConfigSource
 		}
 	}
 
-	abstract Map<String, String> readConfiguration( InputStream is ) throws IOException;
+	protected abstract Map<String, String> readConfiguration( InputStream is ) throws IOException;
 }

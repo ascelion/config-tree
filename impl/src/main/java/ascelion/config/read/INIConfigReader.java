@@ -4,6 +4,7 @@ package ascelion.config.read;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigReader;
@@ -20,16 +21,19 @@ public class INIConfigReader extends ResourceReader
 	static public final String TYPE = "INI";
 
 	@Override
-	void readConfiguration( Map<String, Object> map, InputStream is ) throws IOException
+	protected Map<String, String> readConfiguration( final InputStream is ) throws IOException
 	{
+		final Map<String, String> map = new TreeMap<>();
 		final Ini ini = new Ini( is );
 
 		ini.forEach( ( k, v ) -> {
 			add( map, "", k, v );
 		} );
+
+		return map;
 	}
 
-	private void add( Map<String, ? super String> map, String prefix, String name, Section section )
+	static void add( Map<String, String> map, String prefix, String name, Section section )
 	{
 		final String pfx = path( prefix, name );
 

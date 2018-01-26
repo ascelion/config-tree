@@ -4,6 +4,7 @@ package ascelion.config.read;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -59,15 +60,10 @@ public class XMLConfigReader extends ResourceReader
 	static class Handler extends DefaultHandler
 	{
 
-		final Map<String, String> map;
+		final Map<String, String> map = new TreeMap<>();
 
 		private Context context;
 		private String content;
-
-		Handler( Map<String, String> map )
-		{
-			this.map = map;
-		}
 
 		@Override
 		public void startElement( String uri, String localName, String qName, Attributes attributes ) throws SAXException
@@ -102,13 +98,16 @@ public class XMLConfigReader extends ResourceReader
 	}
 
 	@Override
-	void readConfiguration( Map<String, Object> map, InputStream is ) throws IOException
+	protected Map<String, String> readConfiguration( InputStream is ) throws IOException
 	{
 		try {
 			final SAXParserFactory f = SAXParserFactory.newInstance();
 			final SAXParser p = f.newSAXParser();
+			final Handler h = new Handler();
 
-			p.parse( is, new Handler( (Map) map ) );
+			p.parse( is, h );
+
+			return h.map;
 		}
 		catch( final ParserConfigurationException | SAXException x ) {
 			throw new IOException( x );

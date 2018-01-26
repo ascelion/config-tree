@@ -111,7 +111,7 @@ class ConfigProd
 		} );
 
 		this.rdi.forEach( this.load::addReader );
-		this.load.addSources( this.ext.sources() );
+		this.ext.sources().forEach( this.load::addSource );
 
 		this.root = this.load.load();
 

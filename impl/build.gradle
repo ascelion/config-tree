@@ -3,6 +3,7 @@ apply plugin: 'java'
 dependencies {
 	compile project( ':api' )
 	compile project( ':conv' )
+	compile project( ':eclipse' )
 
 	compile 'ascelion.shared:fmt-log'
 

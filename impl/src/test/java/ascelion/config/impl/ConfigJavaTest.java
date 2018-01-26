@@ -15,7 +15,8 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.junit.BeforeClass;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -72,10 +73,12 @@ public class ConfigJavaTest
 		this.expected = expected;
 	}
 
-	@BeforeClass
-	static public void setUpClass()
+	@Before
+	public void setUp()
 	{
-		CJ.addFilter( s -> s.value().startsWith( "file" ) || "SYS".equals( s.type() ) );
+		ConfigProviderResolver.setInstance( null );
+		ConfigSources.setInstance( null );
+		ConfigSources.instance().addSourceFilter( cs -> cs.value().startsWith( "file" ) );
 	}
 
 	@Test
