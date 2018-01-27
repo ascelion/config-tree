@@ -12,7 +12,7 @@ import static java.util.Arrays.asList;
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 
-public class DefaultConfigSources extends ConfigSources
+final class DefaultConfigSources extends ConfigSources
 {
 
 	static private final String[] SCAN_PACKAGES = {

@@ -11,8 +11,8 @@ import java.util.function.Predicate;
 
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.eclipse.ConfigProviderResolver;
-import ascelion.config.eclipse.References;
+import ascelion.config.utils.References;
+import ascelion.config.utils.ServiceInstance;
 
 import static java.util.Arrays.asList;
 
@@ -42,10 +42,11 @@ public abstract class ConfigSources
 				final ConfigSources newInstance = loadSpi( cl );
 
 				if( newInstance == null ) {
-					throw new IllegalStateException( "No ConfigSources implementation found!" );
+					instance = new DefaultConfigSources();
 				}
-
-				instance = newInstance;
+				else {
+					instance = newInstance;
+				}
 			}
 		}
 
@@ -62,8 +63,7 @@ public abstract class ConfigSources
 		ConfigSources instance = loadSpi( cl.getParent() );
 
 		if( instance == null ) {
-			final ServiceLoader<ConfigSources> sl = ServiceLoader.load(
-				ConfigSources.class, cl );
+			final ServiceLoader<ConfigSources> sl = ServiceLoader.load( ConfigSources.class, cl );
 			for( final ConfigSources spi : sl ) {
 				if( instance != null ) {
 					throw new IllegalStateException( "Multiple ConfigLoad implementations found: "
@@ -93,7 +93,7 @@ public abstract class ConfigSources
 
 	public Iterable<ConfigSource> getSources( ClassLoader cld )
 	{
-		cld = ConfigProviderResolver.classLoader( cld );
+		cld = ServiceInstance.classLoader( cld, getClass() );
 
 		return this.sources.get( cld, this::buildSources );
 	}
@@ -110,7 +110,7 @@ public abstract class ConfigSources
 
 	public Iterable<ConfigReader> getReaders( ClassLoader cld )
 	{
-		cld = ConfigProviderResolver.classLoader( cld );
+		cld = ServiceInstance.classLoader( cld, getClass() );
 
 		return this.READERS.get( cld, this::buildReaders );
 	}

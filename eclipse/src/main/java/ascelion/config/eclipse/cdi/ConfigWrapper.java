@@ -22,7 +22,7 @@ final class ConfigWrapper extends AbstractConfig
 
 	private ConfigWrapper( Config config )
 	{
-		super( new ConverterReg().discover( null ).get() );
+		super( new ConverterReg().discover( config.getClass().getClassLoader() ).get() );
 
 		this.delegate = config;
 	}

@@ -1,14 +1,15 @@
 
-package ascelion.config.eclipse.ext;
+package ascelion.config.utils;
 
 import java.util.function.UnaryOperator;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ExpressionTest
 {
@@ -121,7 +122,7 @@ public class ExpressionTest
 		assertThat( val, is( "${x}" ) );
 	}
 
-	@Test( expected = IllegalStateException.class )
+	@Test
 	public void runLoop()
 	{
 		final int[] count = { 0 };
@@ -130,6 +131,8 @@ public class ExpressionTest
 		};
 		final Expression exp = new Expression( fun, "${X00}" );
 
-		exp.getValue();
+		assertThrows( IllegalStateException.class, () -> {
+			exp.getValue();
+		} );
 	}
 }

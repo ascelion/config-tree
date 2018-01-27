@@ -5,6 +5,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Objects;
 
+import ascelion.config.utils.References;
+
 import org.eclipse.microprofile.config.Config;
 
 public final class ConfigProviderResolver extends org.eclipse.microprofile.config.spi.ConfigProviderResolver

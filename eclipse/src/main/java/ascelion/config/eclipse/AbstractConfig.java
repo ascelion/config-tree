@@ -5,7 +5,7 @@ import java.lang.reflect.Type;
 
 import ascelion.config.conv.Converters;
 import ascelion.config.eclipse.ext.ConfigExt;
-import ascelion.config.eclipse.ext.Expression;
+import ascelion.config.utils.Expression;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 

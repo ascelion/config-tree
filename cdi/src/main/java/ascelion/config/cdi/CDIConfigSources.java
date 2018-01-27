@@ -8,7 +8,7 @@ import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.ConfigSources;
 
-final class CDIConfigSources extends ConfigSources
+public final class CDIConfigSources extends ConfigSources
 {
 
 	@Override

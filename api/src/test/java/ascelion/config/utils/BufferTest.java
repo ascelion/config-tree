@@ -1,20 +1,18 @@
 
-package ascelion.config.eclipse.ext;
-
-import ascelion.config.eclipse.ext.Buffer;
+package ascelion.config.utils;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestExecutionExceptionHandler;
 
-public class BufferTest
+public class BufferTest implements TestExecutionExceptionHandler
 {
 
-	@Rule
-	public ExpectedException exex = ExpectedException.none();
+	private Class<?> expected;
 
 	@Test
 	public void delete()
@@ -35,10 +33,11 @@ public class BufferTest
 		buf.delete( 0 );
 		assertThat( buf.toString(), is( "" ) );
 
-		this.exex.expect( ArrayIndexOutOfBoundsException.class );
+		this.expected = ArrayIndexOutOfBoundsException.class;
 
-		buf.delete( 0 );
-		assertThat( buf.toString(), is( "" ) );
+		assertThrows( ArrayIndexOutOfBoundsException.class, () -> {
+			buf.delete( 0 );
+		} );
 	}
 
 	@Test
@@ -54,6 +53,16 @@ public class BufferTest
 
 		assertThat( buf.replace( 1, 5, "AB" ), is( -3 ) );
 		assertThat( buf.toString(), is( "aAB" ) );
+	}
+
+	@Override
+	public void handleTestExecutionException( ExtensionContext context, Throwable throwable ) throws Throwable
+	{
+		if( this.expected != null && this.expected.isInstance( throwable ) ) {
+			return;
+		}
+
+		throw throwable;
 	}
 
 }

@@ -1,5 +1,5 @@
 
-package ascelion.config.eclipse.ext;
+package ascelion.config.utils;
 
 import java.util.Arrays;
 

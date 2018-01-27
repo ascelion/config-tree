@@ -13,8 +13,8 @@ import java.util.TreeMap;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
-import ascelion.config.eclipse.References;
 import ascelion.config.impl.ConfigSources;
+import ascelion.config.utils.References;
 import ascelion.logging.LOG;
 
 import static java.util.Collections.list;

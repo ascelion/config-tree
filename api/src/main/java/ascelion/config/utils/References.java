@@ -1,5 +1,5 @@
 
-package ascelion.config.eclipse;
+package ascelion.config.utils;
 
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
@@ -7,15 +7,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
-import ascelion.logging.LOG;
-
+import static java.lang.String.format;
 import static java.util.Collections.synchronizedMap;
 
 public final class References<T>
 {
 
-	static private final LOG L = LOG.get();
+	static private final Logger L = Logger.getLogger( References.class.getName() );
 
 	private final Map<ClassLoader, WeakReference<T>> references = synchronizedMap( new WeakHashMap<ClassLoader, WeakReference<T>>() );
 
@@ -41,7 +41,7 @@ public final class References<T>
 
 					final WeakReference<T> ref = new WeakReference<>( obj );
 
-					L.trace( "PUT %s / %s / %s", cld, ref, obj );
+					L.finest( () -> format( "PUT %s / %s / %s", cld, ref, ref.get() ) );
 
 					this.references.put( cld, ref );
 				}
@@ -53,7 +53,7 @@ public final class References<T>
 		return obj;
 	}
 
-	void remove( T t )
+	public void remove( T t )
 	{
 		synchronized( this.references ) {
 			purge( t );
@@ -69,7 +69,7 @@ public final class References<T>
 			final T obj = ent.getValue().get();
 
 			if( obj == null || obj == t ) {
-				L.trace( "DEL %s / %s / %s", ent.getKey(), ent.getValue(), obj );
+				L.finest( () -> format( "DEL %s / %s / %s", ent.getKey(), ent.getValue(), obj ) );
 
 				it.remove();
 			}
