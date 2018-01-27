@@ -1,6 +1,10 @@
 
 package ascelion.config.cdi;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Destroyed;
+import javax.enterprise.context.Initialized;
+import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
@@ -32,4 +36,15 @@ class CDIConfigRegistry extends ConfigRegistry
 	{
 		return this.ext.sources();
 	}
+
+	void applicationInitialised( @Observes @Initialized( ApplicationScoped.class ) Object event )
+	{
+		ConfigRegistry.setInstance( this );
+	}
+
+	void applicationDestroyed( @Observes @Destroyed( ApplicationScoped.class ) Object event )
+	{
+		ConfigRegistry.setInstance( null );
+	}
+
 }

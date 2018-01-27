@@ -10,11 +10,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -35,7 +33,6 @@ import javax.inject.Inject;
 import ascelion.cdi.bean.BeanAttributesBuilder;
 import ascelion.cdi.bean.BeanBuilder;
 import ascelion.cdi.type.AnnotatedTypeW;
-import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.read.INIConfigReader;
@@ -152,15 +149,15 @@ public class ConfigExtension implements Extension
 		}
 	}
 
-	void afterDeploymentValidation( @Observes AfterDeploymentValidation event, BeanManager bm )
-	{
-		final Set<Bean<?>> beans = bm.getBeans( CDIConfigRegistry.class );
-		final Bean<CDIConfigRegistry> bean = (Bean<CDIConfigRegistry>) bm.resolve( beans );
-		final CreationalContext<CDIConfigRegistry> cx = bm.createCreationalContext( bean );
-		final CDIConfigRegistry reference = (CDIConfigRegistry) bm.getReference( bean, CDIConfigRegistry.class, cx );
-
-		ConfigRegistry.setInstance( reference );
-	}
+//	void afterDeploymentValidation( @Observes AfterDeploymentValidation event, BeanManager bm )
+//	{
+//		final Set<Bean<?>> beans = bm.getBeans( CDIConfigRegistry.class );
+//		final Bean<CDIConfigRegistry> bean = (Bean<CDIConfigRegistry>) bm.resolve( beans );
+//		final CreationalContext<CDIConfigRegistry> cx = bm.createCreationalContext( bean );
+//		final CDIConfigRegistry reference = (CDIConfigRegistry) bm.getReference( bean, CDIConfigRegistry.class, cx );
+//
+//		ConfigRegistry.setInstance( reference );
+//	}
 
 	private void createFactory( AfterBeanDiscovery event, BeanManager bm )
 	{
