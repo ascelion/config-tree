@@ -5,10 +5,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ServiceLoader;
 
+import ascelion.config.conv.ConverterRegistry;
 import ascelion.config.eclipse.cs.ENVConfigSource;
 import ascelion.config.eclipse.cs.PRPConfigSourceProvider;
 import ascelion.config.eclipse.cs.SYSConfigSource;
-import ascelion.config.utils.ServiceInstance;
+import ascelion.config.utils.Utils;
 
 import static java.util.Arrays.asList;
 
@@ -90,16 +91,20 @@ final class ConfigBuilderImpl implements ConfigBuilder
 	@Override
 	public Config build()
 	{
-		final ClassLoader cld = ServiceInstance.classLoader( this.cld, getClass() );
-		final ConverterReg cr = new ConverterReg();
+		final ClassLoader cld = Utils.classLoader( this.cld, getClass() );
+		final ConverterRegistry cr = ConverterRegistry.instance();
 
-		this.converters.forEach( cr::addConverter );
+		this.converters.forEach( i -> {
+			cr.add( cld, i.type, i.converter::convert, i.priority );
+		} );
 
 		if( this.discoverConverters ) {
-			cr.discover( cld );
+			ServiceLoader
+				.load( Converter.class, cld )
+				.forEach( c -> cr.add( cld, ConverterInfo.typeOf( c ), c::convert, Utils.getPriority( c ) ) );
 		}
 
-		final ConfigImpl cf = new ConfigImpl( cr.get() );
+		final ConfigImpl cf = new ConfigImpl();
 
 		cf.addSources( this.sources );
 

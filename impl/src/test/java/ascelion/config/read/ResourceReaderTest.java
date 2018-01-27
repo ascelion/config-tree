@@ -8,9 +8,9 @@ import java.util.Map;
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.impl.ConfigLoad;
 import ascelion.config.impl.ConfigSourceLiteral;
-import ascelion.config.impl.ConfigSources;
 
 import static ascelion.config.conv.Utils.asArray;
 import static java.lang.String.format;
@@ -71,8 +71,8 @@ public class ResourceReaderTest
 	public void setUp()
 	{
 		ConfigProviderResolver.setInstance( null );
-		ConfigSources.setInstance( null );
-		ConfigSources.instance().setSourceFilter( cs -> cs.type().equals( "STREAM" ) );
+		ConfigRegistry.setInstance( null );
+		ConfigRegistry.getInstance().filterSource( cs -> cs.type().equals( "STREAM" ) );
 	}
 
 	@Test

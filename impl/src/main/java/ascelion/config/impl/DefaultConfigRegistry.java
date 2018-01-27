@@ -6,13 +6,14 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 import ascelion.config.api.ConfigReader;
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 
 import static java.util.Arrays.asList;
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 
-final class DefaultConfigSources extends ConfigSources
+public final class DefaultConfigRegistry extends ConfigRegistry
 {
 
 	static private final String[] SCAN_PACKAGES = {

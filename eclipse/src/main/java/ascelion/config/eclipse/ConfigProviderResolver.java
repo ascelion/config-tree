@@ -4,7 +4,7 @@ package ascelion.config.eclipse;
 import java.util.Objects;
 
 import ascelion.config.utils.References;
-import ascelion.config.utils.ServiceInstance;
+import ascelion.config.utils.Utils;
 
 import org.eclipse.microprofile.config.Config;
 
@@ -16,7 +16,7 @@ public final class ConfigProviderResolver extends org.eclipse.microprofile.confi
 	@Override
 	public Config getConfig()
 	{
-		return getConfig( ServiceInstance.classLoader( null, getClass() ) );
+		return getConfig( Utils.classLoader( null, getClass() ) );
 	}
 
 	@Override

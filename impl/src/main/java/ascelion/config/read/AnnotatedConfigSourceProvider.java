@@ -13,7 +13,7 @@ import java.util.TreeMap;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
-import ascelion.config.impl.ConfigSources;
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.utils.References;
 import ascelion.logging.LOG;
 
@@ -84,7 +84,7 @@ public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 		final Collection<ConfigSource> built = new ArrayList<>();
 		final Map<String, ConfigReader> readers = new TreeMap<>();
 
-		ConfigSources.instance().getReaders( cld )
+		ConfigRegistry.getInstance().getReaders( cld )
 			.forEach( rd -> {
 				L.trace( "Found reader: %s -> %s", rd.getClass().getName(), rd.types() );
 
@@ -92,7 +92,7 @@ public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 					readers.put( t.toUpperCase(), rd );
 				}
 			} );
-		ConfigSources.instance()
+		ConfigRegistry.getInstance()
 			.getSources( cld )
 			.forEach( cs -> {
 				final String st = getType( cs );

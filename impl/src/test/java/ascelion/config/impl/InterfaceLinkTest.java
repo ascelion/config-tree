@@ -6,8 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.conv.Converters;
+import ascelion.config.conv.ConverterRegistry;
 
 import static ascelion.config.conv.Utils.asArray;
 import static ascelion.config.conv.Utils.asSet;
@@ -60,14 +61,14 @@ public class InterfaceLinkTest
 	}
 
 	static private final ConfigJava CJ = new ConfigJava();
-	static private final Converters CV = CJ.getConverter();
+	static private final ConverterRegistry CR = ConverterRegistry.instance();
 
 	@BeforeClass
 	static public void setUpClass()
 	{
 		ConfigProviderResolver.setInstance( null );
-		ConfigSources.setInstance( null );
-		ConfigSources.instance().setSourceFilter( cs -> cs.value().startsWith( "file" ) );
+		ConfigRegistry.setInstance( null );
+		ConfigRegistry.getInstance().filterSource( cs -> cs.value().startsWith( "file" ) );
 	}
 
 	private final Type type;
@@ -95,7 +96,7 @@ public class InterfaceLinkTest
 
 	public void verify( final ConfigNode n )
 	{
-		final Object o = CV.create( this.type, n, 2 );
+		final Object o = CR.getConverter( this.type ).create( n, 2 );
 
 		assertThat( o, is( instanceOf( Map.class ) ) );
 

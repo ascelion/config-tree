@@ -30,19 +30,23 @@ final class InterfaceValue implements InvocationHandler
 
 	private final Class<?> type;
 	private final ConfigNode node;
-	private final Converters cvs;
 
-	InterfaceValue( Class<?> type, Converters cvs, ConfigNode node )
+	InterfaceValue( Class<?> type, ConfigNode node )
 	{
 		this.type = type;
 		this.node = node;
-		this.cvs = cvs;
 
 		Stream.of( type.getMethods() )
 			.filter( m -> m.getParameterTypes().length == 0 )
 			.filter( m -> m.getReturnType() != void.class )
 			.forEach( this::addName );
 		;
+	}
+
+	@Override
+	public String toString()
+	{
+		return format( "%s[%s]", this.type.getSimpleName(), this.node.getPath() );
 	}
 
 	@Override
@@ -66,14 +70,19 @@ final class InterfaceValue implements InvocationHandler
 				}
 
 				if( n != null ) {
-					return this.cvs.create( t, n, a.unwrap() );
+					return getConverter( t ).create( n, a.unwrap() );
 				}
 			}
 
-			return this.cvs.create( t, null, a.unwrap() );
+			return getConverter( t ).create( null, a.unwrap() );
 		}
 
 		throw new NoSuchMethodError( format( "%s#%s", this.type.getName(), method.getName() ) );
+	}
+
+	private ConfigConverter<?> getConverter( final Type t )
+	{
+		return ConverterRegistry.instance().getConverter( this.type.getClassLoader(), t );
 	}
 
 	private void addName( Method m )
@@ -95,11 +104,5 @@ final class InterfaceValue implements InvocationHandler
 		anno = new ConfigValueLiteral( name, conv, unwrap );
 
 		this.names.put( m, anno );
-	}
-
-	@Override
-	public String toString()
-	{
-		return format( "%s[%s]", this.type.getSimpleName(), this.node.getPath() );
 	}
 }

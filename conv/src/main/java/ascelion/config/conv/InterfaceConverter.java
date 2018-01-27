@@ -13,16 +13,14 @@ final class InterfaceConverter<T> implements ConfigConverter<T>
 {
 
 	final Class<T> type;
-	final Converters conv;
 
-	InterfaceConverter( Class<T> type, Converters cvs )
+	InterfaceConverter( Class<T> type )
 	{
 		if( !type.isInterface() ) {
 			throw new ConfigException( format( "Not a concrete interface: %s", type.getTypeName() ) );
 		}
 
 		this.type = type;
-		this.conv = cvs;
 	}
 
 	@Override
@@ -31,7 +29,7 @@ final class InterfaceConverter<T> implements ConfigConverter<T>
 		final Class<?>[] types = new Class[] { this.type };
 		final ClassLoader cld = this.type.getClassLoader();
 
-		return (T) Proxy.newProxyInstance( cld, types, new InterfaceValue( this.type, this.conv, u ) );
+		return (T) Proxy.newProxyInstance( cld, types, new InterfaceValue( this.type, u ) );
 	}
 
 	@Override

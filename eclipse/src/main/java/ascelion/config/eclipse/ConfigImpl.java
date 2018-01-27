@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ascelion.config.conv.Converters;
 import ascelion.logging.LOG;
 
 import static java.util.Optional.empty;
@@ -22,11 +21,6 @@ final class ConfigImpl extends AbstractConfig
 	static private final LOG L = LOG.get();
 
 	private final Collection<ConfigSource> sources = new ArrayList<>();
-
-	ConfigImpl( Converters cvs )
-	{
-		super( cvs );
-	}
 
 	@Override
 	public <T> T getValue( String propertyName, Class<T> propertyType )

@@ -7,36 +7,10 @@ import java.util.ServiceLoader;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
-import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
 public final class ServiceInstance<T>
 {
-
-	static public ClassLoader classLoader( ClassLoader cld, Class<?> fallback )
-	{
-		if( cld != null ) {
-			return cld;
-		}
-
-		return doPrivileged( (PrivilegedAction<ClassLoader>) () -> {
-			ClassLoader cl = currentThread().getContextClassLoader();
-
-			if( cl != null ) {
-				return cl;
-			}
-
-			if( fallback != null ) {
-				cl = fallback.getClassLoader();
-
-				if( cl != null ) {
-					return cl;
-				}
-			}
-
-			return ClassLoader.getSystemClassLoader();
-		} );
-	}
 
 	private final Class<T> type;
 	private final String name;
@@ -77,7 +51,7 @@ public final class ServiceInstance<T>
 
 	private T load()
 	{
-		final ClassLoader cld = classLoader( null, this.type );
+		final ClassLoader cld = Utils.classLoader( null, this.type );
 
 		T instance = loadFromProperty( cld );
 		if( instance != null ) {

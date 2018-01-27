@@ -69,6 +69,4 @@ public abstract class ConfigRegistry
 	}
 
 	protected abstract Iterable<ConfigReader> loadReaders( ClassLoader cld );
-
-	protected abstract Iterable<ConfigConverter<?>> loadConverters( ClassLoader cld );
 }

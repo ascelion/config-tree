@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
+import ascelion.config.conv.ConverterRegistry;
 
 import static ascelion.config.conv.Utils.asArray;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
@@ -61,6 +63,7 @@ public class ConfigJavaTest
 	}
 
 	static private final ConfigJava CJ = new ConfigJava();
+	static private final ConverterRegistry CR = ConverterRegistry.instance();
 
 	private final String prop;
 	private final Type type;
@@ -77,14 +80,14 @@ public class ConfigJavaTest
 	public void setUp()
 	{
 		ConfigProviderResolver.setInstance( null );
-		ConfigSources.setInstance( null );
-		ConfigSources.instance().setSourceFilter( cs -> cs.value().startsWith( "file" ) );
+		ConfigRegistry.setInstance( null );
+		ConfigRegistry.getInstance().filterSource( cs -> cs.value().startsWith( "file" ) );
 	}
 
 	@Test
 	public void run()
 	{
-		final Object o = CJ.getConverter().create( this.type, CJ.root().getNode( this.prop ), 0 );
+		final Object o = CR.getConverter( this.type ).create( CJ.root().getNode( this.prop ), 0 );
 
 		assertThat( o, is( this.expected ) );
 	}

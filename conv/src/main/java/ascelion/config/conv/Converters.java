@@ -26,29 +26,26 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
-import ascelion.config.api.ConfigNode;
+import ascelion.config.utils.Utils;
 
 import static ascelion.config.conv.EnumConverter.enumeration;
 import static ascelion.config.conv.NullableConverter.nullable;
 import static ascelion.config.conv.PrimitiveConverter.primitive;
 import static io.leangen.geantyref.GenericTypeReflector.getTypeName;
 import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
+import static java.lang.Integer.MAX_VALUE;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toMap;
 
-public final class Converters
+final class Converters
 {
 
 	static final TypeVariable<? extends Class<?>> CV_TYPE = ConfigConverter.class.getTypeParameters()[0];
 
 	static private final String[] CREATE_METHODS = { "valueOf", "parse", "create", "from", "fromValue" };
-
-	private final Map<Type, ConfigConverter<?>> cached = new TreeMap<>( Converters::compare );
-
-	private final ReadWriteLock RW_LOCK = new ReentrantReadWriteLock();
 
 	static private int compare( Type t1, Type t2 )
 	{
@@ -89,89 +86,103 @@ public final class Converters
 		}
 	}
 
-	private Supplier<ConfigNode> root;
-
-	public Converters()
+	static class CCH<T>
 	{
-		addNullable( Class.class, ExtraConverters::createClass );
 
-		addNullable( Boolean.class, ExtraConverters::createBoolean );
-		addNullable( Byte.class, Byte::parseByte );
-		addNullable( Short.class, Short::parseShort );
-		addNullable( Integer.class, Integer::parseInt );
-		addNullable( Long.class, Long::parseLong );
-		addNullable( Float.class, Float::parseFloat );
-		addNullable( Double.class, Double::parseDouble );
+		final ConfigConverter<T> c;
+		final int p;
 
-		addPrimitive( boolean.class, ExtraConverters::createBoolean );
-		addPrimitive( byte.class, Byte::parseByte );
-		addPrimitive( short.class, Short::parseShort );
-		addPrimitive( int.class, Integer::parseInt );
-		addPrimitive( long.class, Long::parseLong );
-		addPrimitive( float.class, Float::parseFloat );
-		addPrimitive( double.class, Double::parseDouble );
+		CCH( ConfigConverter<T> c )
+		{
+			this( c, MAX_VALUE );
+		}
 
-		add( String.class, u -> u );
-
-		addNullable( Duration.class, Duration::parse );
-		addNullable( Instant.class, Instant::parse );
-		addNullable( LocalDate.class, LocalDate::parse );
-		addNullable( LocalDateTime.class, LocalDateTime::parse );
-		addNullable( LocalTime.class, LocalTime::parse );
-		addNullable( OffsetTime.class, OffsetTime::parse );
-		addNullable( OffsetDateTime.class, OffsetDateTime::parse );
-
-		addNullable( URL.class, ExtraConverters::createURL );
-
-		add( int[].class, ExtraConverters::createIntA );
-		add( long[].class, ExtraConverters::createLongA );
-		add( double[].class, ExtraConverters::createDoubleA );
+		CCH( ConfigConverter<T> c, int p )
+		{
+			this.c = c;
+			this.p = p;
+		}
 	}
 
-	public void setRootNode( Supplier<ConfigNode> root )
+	private final Map<Type, CCH<?>> cached = new TreeMap<>( Converters::compare );
+
+	private final ReadWriteLock RW_LOCK = new ReentrantReadWriteLock();
+
+	Converters()
 	{
-		this.root = root;
+		addNullable( Class.class, ExtraConverters::createClass, MAX_VALUE );
+
+		addNullable( Boolean.class, ExtraConverters::createBoolean, MAX_VALUE );
+		addNullable( Byte.class, Byte::parseByte, MAX_VALUE );
+		addNullable( Short.class, Short::parseShort, MAX_VALUE );
+		addNullable( Integer.class, Integer::parseInt, MAX_VALUE );
+		addNullable( Long.class, Long::parseLong, MAX_VALUE );
+		addNullable( Float.class, Float::parseFloat, MAX_VALUE );
+		addNullable( Double.class, Double::parseDouble, MAX_VALUE );
+
+		addPrimitive( boolean.class, ExtraConverters::createBoolean, MAX_VALUE );
+		addPrimitive( byte.class, Byte::parseByte, MAX_VALUE );
+		addPrimitive( short.class, Short::parseShort, MAX_VALUE );
+		addPrimitive( int.class, Integer::parseInt, MAX_VALUE );
+		addPrimitive( long.class, Long::parseLong, MAX_VALUE );
+		addPrimitive( float.class, Float::parseFloat, MAX_VALUE );
+		addPrimitive( double.class, Double::parseDouble, MAX_VALUE );
+
+		add( String.class, u -> u, MAX_VALUE );
+
+		addNullable( Duration.class, Duration::parse, MAX_VALUE );
+		addNullable( Instant.class, Instant::parse, MAX_VALUE );
+		addNullable( LocalDate.class, LocalDate::parse, MAX_VALUE );
+		addNullable( LocalDateTime.class, LocalDateTime::parse, MAX_VALUE );
+		addNullable( LocalTime.class, LocalTime::parse, MAX_VALUE );
+		addNullable( OffsetTime.class, OffsetTime::parse, MAX_VALUE );
+		addNullable( OffsetDateTime.class, OffsetDateTime::parse, MAX_VALUE );
+
+		addNullable( URL.class, ExtraConverters::createURL, MAX_VALUE );
+
+		add( int[].class, ExtraConverters::createIntA, MAX_VALUE );
+		add( long[].class, ExtraConverters::createLongA, MAX_VALUE );
+		add( double[].class, ExtraConverters::createDoubleA, MAX_VALUE );
 	}
 
-	public void register( ConfigConverter<?> c )
+	void register( ConfigConverter<?> c )
+	{
+		final Class<? extends ConfigConverter> cls = c.getClass();
+		final Type t = getTypeParameter( cls, CV_TYPE );
+
+		if( t == null ) {
+			throw new IllegalArgumentException( format( "No type information for converter %s", cls.getName() ) );
+		}
+
+		register( t, c, Utils.getPriority( c ) );
+	}
+
+	void register( Type t, ConfigConverter<?> c )
+	{
+		register( t, c, Utils.getPriority( c ) );
+	}
+
+	void register( Type t, ConfigConverter<?> c, int p )
 	{
 		final Lock wrLock = this.RW_LOCK.writeLock();
 
 		wrLock.lock();
 
 		try {
-			add( c );
+			put( t, c, p );
 		}
 		finally {
 			wrLock.unlock();
 		}
 	}
 
-	public void register( Type t, ConfigConverter<?> c )
+	Map<Type, ConfigConverter<?>> getConverters()
 	{
-		final Lock wrLock = this.RW_LOCK.writeLock();
-
-		wrLock.lock();
-
-		try {
-			put( t, c );
-		}
-		finally {
-			wrLock.unlock();
-		}
+		return this.cached.entrySet().stream()
+			.collect( toMap( e -> e.getKey(), e -> e.getValue().c ) );
 	}
 
-	public Object create( Type t, ConfigNode u, int unwrap )
-	{
-		return getConverter( t ).create( u, unwrap );
-	}
-
-	public Object create( Type t, String u )
-	{
-		return getConverter( t ).create( u );
-	}
-
-	public ConfigConverter<?> getConverter( Type type )
+	ConfigConverter<?> getConverter( Type type )
 	{
 		final Lock rdLock = this.RW_LOCK.readLock();
 
@@ -179,7 +190,7 @@ public final class Converters
 
 		try {
 			if( this.cached.containsKey( type ) ) {
-				return this.cached.get( type );
+				return this.cached.get( type ).c;
 			}
 
 			rdLock.unlock();
@@ -191,24 +202,24 @@ public final class Converters
 
 				try {
 					if( this.cached.containsKey( type ) ) {
-						return this.cached.get( type );
+						return this.cached.get( type ).c;
 					}
 
-					ConfigConverter<?> c = this.cached.entrySet().stream()
+					final CCH<?> h = this.cached.entrySet().stream()
 						.filter( e -> isBaseOf( e.getKey(), type ) )
-						.map( e -> (ConfigConverter<?>) e.getValue() )
+						.map( e -> e.getValue() )
 						.findFirst()
 						.orElse( null );
 
-					if( c != null ) {
-						put( type, c );
+					if( h != null ) {
+						this.cached.put( type, h );
 
-						return c;
+						return h.c;
 					}
 
-					c = inferConverter( type );
+					final ConfigConverter<?> c = inferConverter( type );
 
-					put( type, c );
+					put( type, c, MAX_VALUE );
 
 					return c;
 				}
@@ -223,15 +234,6 @@ public final class Converters
 		finally {
 			rdLock.unlock();
 		}
-	}
-
-	ConfigNode node( String path )
-	{
-		if( this.root == null || this.root.get() == null ) {
-			throw new IllegalStateException( "No configuration provided to Converters" );
-		}
-
-		return this.root.get().getNode( path );
 	}
 
 	private ConfigConverter<?> inferConverter( Type type )
@@ -277,7 +279,7 @@ public final class Converters
 				return new ArrayConverter<>( ct, getConverter( ct ) );
 			}
 			if( cls.isInterface() ) {
-				return new InterfaceConverter<>( cls, this );
+				return new InterfaceConverter<>( cls );
 			}
 
 			final ConfigConverter<?> fc = fromClass( cls );
@@ -290,7 +292,7 @@ public final class Converters
 		throw new ConfigException( format( "NO WAY to construct a %s", type.getTypeName() ) );
 	}
 
-	private ConfigConverter<?> fromClass( final Class<?> cls )
+	private ConfigConverter<?> fromClass( Class<?> cls )
 	{
 		ConfigConverter<?> c;
 
@@ -313,7 +315,7 @@ public final class Converters
 		return null;
 	}
 
-	ConfigConverter<?> fromConstructor( final Class<?> cls, Class<?> paramType )
+	ConfigConverter<?> fromConstructor( Class<?> cls, Class<?> paramType )
 	{
 		try {
 			final Constructor<?> c = cls.getDeclaredConstructor( paramType );
@@ -337,7 +339,7 @@ public final class Converters
 		}
 	}
 
-	ConfigConverter<?> fromMethod( final Class<?> cls, String name, Class<?> paramType )
+	ConfigConverter<?> fromMethod( Class<?> cls, String name, Class<?> paramType )
 	{
 		try {
 			final Method m = cls.getDeclaredMethod( name, paramType );
@@ -365,22 +367,22 @@ public final class Converters
 		}
 	}
 
-	private void add( Type type, Function<String, ?> func )
+	private void add( Type type, Function<String, ?> func, int prio )
 	{
-		put( type, ( u ) -> func.apply( u ) );
+		put( type, ( u ) -> func.apply( u ), prio );
 	}
 
-	private void addNullable( Type type, Function<String, ?> func )
+	private void addNullable( Type type, Function<String, ?> func, int prio )
 	{
-		put( type, nullable( ( u ) -> func.apply( u ) ) );
+		put( type, nullable( ( u ) -> func.apply( u ) ), prio );
 	}
 
-	private void addPrimitive( Type type, Function<String, ?> func )
+	private void addPrimitive( Type type, Function<String, ?> func, int prio )
 	{
-		put( type, primitive( ( u ) -> func.apply( u ) ) );
+		put( type, primitive( ( u ) -> func.apply( u ) ), prio );
 	}
 
-	private void add( ConfigConverter<?> c )
+	private void add( ConfigConverter<?> c, int p )
 	{
 		final Class<? extends ConfigConverter> cls = c.getClass();
 		final Type t = getTypeParameter( cls, CV_TYPE );
@@ -389,18 +391,20 @@ public final class Converters
 			throw new IllegalArgumentException( format( "No type information for converter %s", cls.getName() ) );
 		}
 
-		put( t, c );
+		put( t, c, p );
 	}
 
-	private void put( Type type, ConfigConverter<?> conv )
+	private void put( Type type, ConfigConverter<?> conv, int priority )
 	{
-		if( !this.cached.containsKey( type ) ) {
-			if( conv.isNullHandled() ) {
-				this.cached.put( type, conv );
+		this.cached.compute( type, ( t, h ) -> {
+			if( h == null || h.p < priority ) {
+				final ConfigConverter<?> c = conv.isNullHandled() ? conv : nullable( conv );
+
+				return new CCH<>( c, priority );
 			}
 			else {
-				this.cached.put( type, nullable( conv ) );
+				return h;
 			}
-		}
+		} );
 	}
 }

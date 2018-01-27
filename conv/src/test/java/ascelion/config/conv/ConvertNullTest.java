@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ascelion.tests.WhiteBox;
-
 import static ascelion.config.conv.Utils.asArray;
 import static ascelion.config.conv.Utils.isArray;
 import static ascelion.config.conv.Utils.isPrimitive;
@@ -29,13 +27,13 @@ import org.junit.runners.Parameterized;
 public class ConvertNullTest
 {
 
-	static private final Converters CVS = new Converters();
+	static private final ConverterRegistry CVS = ConverterRegistry.instance();
 
 	@Parameterized.Parameters( name = "{0}" )
 	static public Object[] data()
 	{
 		final List<Object[]> data = new ArrayList<>();
-		final Map<Type, ?> cached = (Map<Type, ?>) WhiteBox.getFieldValue( CVS, "cached" );
+		final Map<Type, ?> cached = CVS.getConverters( null );
 
 		for( final Type t : cached.keySet() ) {
 			if( isPrimitive( t ) ) {
@@ -71,12 +69,12 @@ public class ConvertNullTest
 	@Test
 	public void string()
 	{
-		assertThat( CVS.create( this.t, null ), is( this.m ) );
+		assertThat( (Object) ConvertNullTest.CVS.getConverter( this.t ).create( null ), is( this.m ) );
 	}
 
 	@Test
 	public void node()
 	{
-		assertThat( CVS.create( this.t, null, 0 ), is( this.m ) );
+		assertThat( (Object) ConvertNullTest.CVS.getConverter( this.t ).create( null, 0 ), is( this.m ) );
 	}
 }

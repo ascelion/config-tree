@@ -5,7 +5,6 @@ import java.beans.Introspector;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,7 +19,6 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.inject.Inject;
 
 import ascelion.cdi.type.AnnotatedTypeW;
-import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.conv.ConfigValueLiteral;
@@ -35,8 +33,6 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 	static private final Pattern SHORTCUT = Pattern.compile( "^([^${}:]*)(:(.+)$)?" );
 
 	private boolean modified;
-
-	private final Set<Class<? extends ConfigConverter<?>>> converters = new TreeSet<>( new TypeCMP<>() );
 
 	private final Set<ConfigValue> values = new HashSet<>();
 
@@ -166,22 +162,11 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 		}
 
 		this.values.add( cv );
-
-		final Class<? extends ConfigConverter<?>> c = (Class<? extends ConfigConverter<?>>) cv.converter();
-
-		if( !ConfigConverter.class.equals( c ) ) {
-			this.converters.add( c );
-		}
 	}
 
 	boolean modified()
 	{
 		return this.modified;
-	}
-
-	Collection<Class<? extends ConfigConverter<?>>> converters()
-	{
-		return unmodifiableSet( this.converters );
 	}
 
 	Set<ConfigValue> values()

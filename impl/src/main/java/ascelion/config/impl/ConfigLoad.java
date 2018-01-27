@@ -3,9 +3,12 @@ package ascelion.config.impl;
 
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.ConfigNodeImpl.ConfigNodeTA;
 import ascelion.logging.LOG;
+
+import static java.util.Arrays.asList;
 
 import com.google.gson.GsonBuilder;
 import org.eclipse.microprofile.config.Config;
@@ -18,22 +21,22 @@ public final class ConfigLoad
 
 	public void addReader( ConfigReader rd )
 	{
-		ConfigSources.instance().addReaders( rd );
+		ConfigRegistry.getInstance().addReaders( asList( rd ) );
 	}
 
 	public void addReaders( ConfigReader... rds )
 	{
-		ConfigSources.instance().addReaders( rds );
+		ConfigRegistry.getInstance().addReaders( asList( rds ) );
 	}
 
 	public void addSource( ConfigSource cs )
 	{
-		ConfigSources.instance().addSources( cs );
+		ConfigRegistry.getInstance().addSources( asList( cs ) );
 	}
 
 	public void addSources( ConfigSource... css )
 	{
-		ConfigSources.instance().addSources( css );
+		ConfigRegistry.getInstance().addSources( asList( css ) );
 	}
 
 	public ConfigNode load()

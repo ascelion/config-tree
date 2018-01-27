@@ -6,9 +6,9 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.ConfigJava;
-import ascelion.config.impl.ConfigSources;
 
 import static ascelion.config.conv.Utils.asArray;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -40,14 +40,14 @@ public class InterfaceConverterTest
 	}
 
 	static private final ConfigJava CJ = new ConfigJava();
-	static private final Converters CV = CJ.getConverter();
+	static private final ConverterRegistry CR = ConverterRegistry.instance();
 
 	@BeforeClass
 	static public void setUpClass()
 	{
 		ConfigProviderResolver.setInstance( null );
-		ConfigSources.setInstance( null );
-		ConfigSources.instance().setSourceFilter( cs -> cs.value().startsWith( "interface" ) );
+		ConfigRegistry.setInstance( null );
+		ConfigRegistry.getInstance().filterSource( cs -> cs.value().startsWith( "interface" ) );
 	}
 
 	private final String path;
@@ -63,7 +63,7 @@ public class InterfaceConverterTest
 	public void run()
 	{
 		final ConfigNode node = CJ.root().getNode( this.path );
-		final Object o = CV.create( DataSourceDefinition.class, node, 0 );
+		final Object o = CR.getConverter( DataSourceDefinition.class ).create( node, 0 );
 
 		final DataSourceDefinition dsd = verify( o );
 
@@ -97,7 +97,7 @@ public class InterfaceConverterTest
 		final Collection<ConfigNode> nodes = CJ.root().getNode( "databases" ).getNodes();
 
 		nodes.forEach( node -> {
-			verify( CV.create( DataSourceDefinition.class, node, 0 ) );
+			verify( CR.getConverter( DataSourceDefinition.class ).create( node, 0 ) );
 		} );
 	}
 }

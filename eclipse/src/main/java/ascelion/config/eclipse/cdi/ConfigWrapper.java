@@ -4,7 +4,6 @@ package ascelion.config.eclipse.cdi;
 import java.util.Optional;
 
 import ascelion.config.eclipse.AbstractConfig;
-import ascelion.config.eclipse.ConverterReg;
 import ascelion.config.eclipse.ext.ConfigExt;
 
 import org.eclipse.microprofile.config.Config;
@@ -22,8 +21,6 @@ final class ConfigWrapper extends AbstractConfig
 
 	private ConfigWrapper( Config config )
 	{
-		super( new ConverterReg().discover( config.getClass().getClassLoader() ).get() );
-
 		this.delegate = config;
 	}
 
