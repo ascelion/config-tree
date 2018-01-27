@@ -112,7 +112,7 @@ public class ConvertersTest
 		cachedField.setAccessible( true );
 	}
 
-	private final ConverterRegistry cvs = ConverterRegistry.instance();
+	private final Converters cvs = new Converters();
 	private Map<Class<?>, ConfigConverter<?>> cached;
 
 	@Before
@@ -128,14 +128,14 @@ public class ConvertersTest
 
 		final int count = this.cached.size();
 
-		this.cvs.add( cb );
+		this.cvs.register( cb );
 
 		assertThat( this.cached.size(), is( count + 1 ) );
 
-		final Base ob = (Base) this.cvs.getConverter( null, Base.class ).create( "" );
-		final Base o1 = (Base) (Object) this.cvs.getConverter( Derived1.class ).create( "" );
-		final Base o2 = (Base) (Object) this.cvs.getConverter( Derived2.class ).create( "" );
-		final Base o21 = (Base) (Object) this.cvs.getConverter( Derived21.class ).create( "" );
+		final Base ob = (Base) this.cvs.getConverter( Base.class ).create( "" );
+		final Base o1 = (Base) this.cvs.getConverter( Derived1.class ).create( "" );
+		final Base o2 = (Base) this.cvs.getConverter( Derived2.class ).create( "" );
+		final Base o21 = (Base) this.cvs.getConverter( Derived21.class ).create( "" );
 
 		assertThat( this.cached.size(), is( count + 4 ) );
 
@@ -159,16 +159,16 @@ public class ConvertersTest
 
 		final int count = this.cached.size();
 
-		this.cvs.add( cb );
-		this.cvs.add( c1 );
-		this.cvs.add( c2 );
+		this.cvs.register( cb );
+		this.cvs.register( c1 );
+		this.cvs.register( c2 );
 
 		assertThat( this.cached.size(), is( count + 3 ) );
 
-		final Base ob = (Base) (Object) this.cvs.getConverter( Base.class ).create( "" );
-		final Base o1 = (Base) (Object) this.cvs.getConverter( Derived1.class ).create( "" );
-		final Base o2 = (Base) (Object) this.cvs.getConverter( Derived2.class ).create( "" );
-		final Base o21 = (Base) (Object) this.cvs.getConverter( Derived21.class ).create( "" );
+		final Base ob = (Base) this.cvs.getConverter( Base.class ).create( "" );
+		final Base o1 = (Base) this.cvs.getConverter( Derived1.class ).create( "" );
+		final Base o2 = (Base) this.cvs.getConverter( Derived2.class ).create( "" );
+		final Base o21 = (Base) this.cvs.getConverter( Derived21.class ).create( "" );
 
 		assertThat( this.cached.size(), is( count + 4 ) );
 
@@ -186,7 +186,7 @@ public class ConvertersTest
 	@Test
 	public void intA()
 	{
-		final int[] values = (int[]) (Object) this.cvs.getConverter( int[].class ).create( "1, 2, 3, 4" );
+		final int[] values = (int[]) this.cvs.getConverter( int[].class ).create( "1, 2, 3, 4" );
 
 		assertThat( values, is( new int[] { 1, 2, 3, 4 } ) );
 	}
@@ -194,7 +194,7 @@ public class ConvertersTest
 	@Test
 	public void longA()
 	{
-		final long[] values = (long[]) (Object) this.cvs.getConverter( long[].class ).create( "1, 2, 3, 4" );
+		final long[] values = (long[]) this.cvs.getConverter( long[].class ).create( "1, 2, 3, 4" );
 
 		assertThat( values, is( new long[] { 1, 2, 3, 4 } ) );
 	}
@@ -202,7 +202,7 @@ public class ConvertersTest
 	@Test
 	public void doubleA()
 	{
-		final double[] values = (double[]) (Object) this.cvs.getConverter( double[].class ).create( "1, 2, 3, 4" );
+		final double[] values = (double[]) this.cvs.getConverter( double[].class ).create( "1, 2, 3, 4" );
 
 		assertThat( values, is( new double[] { 1, 2, 3, 4 } ) );
 	}
@@ -212,7 +212,7 @@ public class ConvertersTest
 	{
 		final Type type = parameterizedClass( List.class, Integer.class );
 
-		final Object values = (Object) this.cvs.getConverter( type ).create( "1, 2, 3, 4" );
+		final Object values = this.cvs.getConverter( type ).create( "1, 2, 3, 4" );
 
 		assertThat( values, is( asList( 1, 2, 3, 4 ) ) );
 	}
@@ -222,7 +222,7 @@ public class ConvertersTest
 	{
 		final Type type = parameterizedClass( List.class, Long.class );
 
-		final Object values = (Object) this.cvs.getConverter( type ).create( "1, 2, 3, 4" );
+		final Object values = this.cvs.getConverter( type ).create( "1, 2, 3, 4" );
 
 		assertThat( values, is( asList( 1L, 2L, 3L, 4L ) ) );
 	}
@@ -230,7 +230,7 @@ public class ConvertersTest
 	@Test
 	public void intArray()
 	{
-		final Object values = (Object) this.cvs.getConverter( Integer[].class ).create( "1, 2, 3, 4" );
+		final Object values = this.cvs.getConverter( Integer[].class ).create( "1, 2, 3, 4" );
 
 		assertThat( values, is( new Integer[] { 1, 2, 3, 4 } ) );
 	}

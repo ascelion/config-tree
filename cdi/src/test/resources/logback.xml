@@ -22,7 +22,7 @@
 		</encoder>
 	</appender>
 
-	<logger name="ascelion.config" level="ALL" />
+	<logger name="ascelion.config" level="INFO" />
 
 	<root level="INFO">
 		<appender-ref ref="FILE" />

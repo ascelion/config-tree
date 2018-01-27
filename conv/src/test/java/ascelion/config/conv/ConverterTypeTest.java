@@ -90,16 +90,16 @@ public class ConverterTypeTest
 			asArray( parameterizedClass( Map.class, String.class, Long.class ), asArray( MapConverter.class, NullableConverter.class, lambda() ) ),
 			asArray( parameterizedClass( Map.class, String.class, URL.class ), asArray( MapConverter.class, NullableConverter.class, lambda() ) ),
 
-			asArray( arrayOf( DataSourceDefinition.class ), asArray( ArrayConverter.class, InterfaceConverter.class, Converters.class ) ),
-			asArray( parameterizedClass( List.class, DataSourceDefinition.class ), asArray( ListConverter.class, InterfaceConverter.class, Converters.class ) ),
-			asArray( parameterizedClass( Set.class, DataSourceDefinition.class ), asArray( SetConverter.class, InterfaceConverter.class, Converters.class ) ),
-			asArray( parameterizedClass( Map.class, String.class, DataSourceDefinition.class ), asArray( MapConverter.class, InterfaceConverter.class, Converters.class ) ),
+			asArray( arrayOf( DataSourceDefinition.class ), asArray( ArrayConverter.class, InterfaceConverter.class ) ),
+			asArray( parameterizedClass( List.class, DataSourceDefinition.class ), asArray( ListConverter.class, InterfaceConverter.class ) ),
+			asArray( parameterizedClass( Set.class, DataSourceDefinition.class ), asArray( SetConverter.class, InterfaceConverter.class ) ),
+			asArray( parameterizedClass( Map.class, String.class, DataSourceDefinition.class ), asArray( MapConverter.class, InterfaceConverter.class ) ),
 
 			asArray( parameterizedClass( List.class, parameterizedClass( Set.class, arrayOf( parameterizedClass( Map.class, String.class, int[].class ) ) ) ),
 				asArray( ListConverter.class, SetConverter.class, ArrayConverter.class, MapConverter.class, lambda() ) ),
 
 			asArray( parameterizedClass( List.class, parameterizedClass( Set.class, arrayOf( parameterizedClass( Map.class, String.class, DataSourceDefinition.class ) ) ) ),
-				asArray( ListConverter.class, SetConverter.class, ArrayConverter.class, MapConverter.class, InterfaceConverter.class, Converters.class ) ),
+				asArray( ListConverter.class, SetConverter.class, ArrayConverter.class, MapConverter.class, InterfaceConverter.class ) ),
 		};
 	}
 

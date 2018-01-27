@@ -19,7 +19,7 @@ dependencies {
 
 	compile 'io.github.lukehutch:fast-classpath-scanner'
 
-	testCompile 'org.antlr:antlr4-runtime'
+	testCompile project( path: ':conv', configuration: 'testArchive' )
 	testCompile 'ascelion.shared:junit-ext'
 
 	testRuntime 'org.postgresql:postgresql'
@@ -32,11 +32,3 @@ task( cleanLog, type: Delete ) {
 test {
 	dependsOn cleanLog
 }
-
-//configurations {
-//	testArtifact.extendsFrom testRuntime
-//}
-//
-//artifacts {
-//	testArtifact testJar
-//}
