@@ -47,7 +47,7 @@ public class InterfaceConverterTest
 	{
 		ConfigProviderResolver.setInstance( null );
 		ConfigSources.setInstance( null );
-		ConfigSources.instance().addSourceFilter( cs -> cs.value().startsWith( "interface" ) );
+		ConfigSources.instance().setSourceFilter( cs -> cs.value().startsWith( "interface" ) );
 	}
 
 	private final String path;

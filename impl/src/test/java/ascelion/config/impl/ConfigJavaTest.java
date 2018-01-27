@@ -78,7 +78,7 @@ public class ConfigJavaTest
 	{
 		ConfigProviderResolver.setInstance( null );
 		ConfigSources.setInstance( null );
-		ConfigSources.instance().addSourceFilter( cs -> cs.value().startsWith( "file" ) );
+		ConfigSources.instance().setSourceFilter( cs -> cs.value().startsWith( "file" ) );
 	}
 
 	@Test

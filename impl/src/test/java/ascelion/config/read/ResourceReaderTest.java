@@ -72,7 +72,7 @@ public class ResourceReaderTest
 	{
 		ConfigProviderResolver.setInstance( null );
 		ConfigSources.setInstance( null );
-		ConfigSources.instance().addSourceFilter( cs -> cs.type().equals( "STREAM" ) );
+		ConfigSources.instance().setSourceFilter( cs -> cs.type().equals( "STREAM" ) );
 	}
 
 	@Test

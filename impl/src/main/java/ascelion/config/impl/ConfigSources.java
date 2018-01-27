@@ -1,123 +1,64 @@
 
 package ascelion.config.impl;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.function.Predicate;
 
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.utils.References;
+import ascelion.config.utils.Iterables;
 import ascelion.config.utils.ServiceInstance;
-
-import static java.util.Arrays.asList;
 
 public abstract class ConfigSources
 {
 
-	static private volatile ConfigSources instance = null;
+	static private final ServiceInstance<ConfigSources> si = new ServiceInstance<>( ConfigSources.class );
 
 	public static void setInstance( ConfigSources instance )
 	{
-		ConfigSources.instance = instance;
+		si.set( instance );
 	}
 
 	public static ConfigSources instance()
 	{
-		if( instance == null ) {
-			synchronized( ConfigSources.class ) {
-				if( instance != null ) {
-					return instance;
-				}
-
-				ClassLoader cl = AccessController.doPrivileged( (PrivilegedAction<ClassLoader>) () -> Thread.currentThread().getContextClassLoader() );
-				if( cl == null ) {
-					cl = ConfigSources.class.getClassLoader();
-				}
-
-				final ConfigSources newInstance = loadSpi( cl );
-
-				if( newInstance == null ) {
-					instance = new DefaultConfigSources();
-				}
-				else {
-					instance = newInstance;
-				}
-			}
-		}
-
-		return instance;
+		return si.get();
 	}
 
-	private static ConfigSources loadSpi( ClassLoader cl )
-	{
-		if( cl == null ) {
-			return null;
-		}
-
-		// start from the root CL and go back down to the TCCL
-		ConfigSources instance = loadSpi( cl.getParent() );
-
-		if( instance == null ) {
-			final ServiceLoader<ConfigSources> sl = ServiceLoader.load( ConfigSources.class, cl );
-			for( final ConfigSources spi : sl ) {
-				if( instance != null ) {
-					throw new IllegalStateException( "Multiple ConfigLoad implementations found: "
-						+ spi.getClass().getName() + " and "
-						+ instance.getClass().getName() );
-				}
-				else {
-					instance = spi;
-				}
-			}
-		}
-		return instance;
-	}
-
-	private final References<Iterable<ConfigSource>> sources = new References<>();
-	private final References<Iterable<ConfigReader>> READERS = new References<>();
-
-	private final Collection<ConfigSource> addedSources = new HashSet<>();
-	private final Collection<Predicate<ConfigSource>> sourceFilter = new ArrayList<>();
-	private final Collection<ConfigReader> addedReaders = new ArrayList<>();
-	private final Collection<Predicate<ConfigReader>> readerFilter = new ArrayList<>();
+	private final Iterables<ConfigSource> sources = new Iterables<>();
+	private final Iterables<ConfigReader> readers = new Iterables<>();
 
 	public final void addSources( ConfigSource... sources )
 	{
-		this.addedSources.addAll( asList( sources ) );
+		this.sources.add( sources );
 	}
 
 	public Iterable<ConfigSource> getSources( ClassLoader cld )
 	{
 		cld = ServiceInstance.classLoader( cld, getClass() );
 
-		return this.sources.get( cld, this::buildSources );
+		return this.sources.get( cld, this::loadSources );
 	}
 
-	public final void addSourceFilter( Predicate<ConfigSource> csf )
+	public final void setSourceFilter( Predicate<ConfigSource> csf )
 	{
-		this.sourceFilter.add( csf );
+		this.sources.filter( csf );
 	}
 
 	public final void addReaders( ConfigReader... readers )
 	{
-		this.addedReaders.addAll( asList( readers ) );
+		this.readers.add( readers );
 	}
 
 	public Iterable<ConfigReader> getReaders( ClassLoader cld )
 	{
 		cld = ServiceInstance.classLoader( cld, getClass() );
 
-		return this.READERS.get( cld, this::buildReaders );
+		return this.readers.get( cld, this::loadReaders );
 	}
 
-	public final void addReaderFilter( Predicate<ConfigReader> rdf )
+	public final void setReaderFilter( Predicate<ConfigReader> rdf )
 	{
-		this.readerFilter.add( rdf );
+		this.readers.filter( rdf );
 	}
 
 	protected abstract Iterable<ConfigSource> loadSources( ClassLoader cld );
@@ -125,44 +66,6 @@ public abstract class ConfigSources
 	protected Iterable<ConfigReader> loadReaders( ClassLoader cld )
 	{
 		return ServiceLoader.load( ConfigReader.class, cld );
-	}
-
-	private Iterable<ConfigSource> buildSources( ClassLoader cld )
-	{
-		final Collection<ConfigSource> sources = new HashSet<>();
-
-		sources.addAll( this.addedSources );
-		loadSources( cld ).forEach( sources::add );
-
-		return () -> sources.stream().filter( this::accept ).iterator();
-	}
-
-	private boolean accept( ConfigSource cs )
-	{
-		if( this.sourceFilter.isEmpty() ) {
-			return true;
-		}
-
-		return this.sourceFilter.stream().anyMatch( p -> p.test( cs ) );
-	}
-
-	private Iterable<ConfigReader> buildReaders( ClassLoader cld )
-	{
-		final Collection<ConfigReader> readers = new ArrayList<>();
-
-		readers.addAll( this.addedReaders );
-		loadReaders( cld ).forEach( readers::add );
-
-		return () -> readers.stream().filter( this::accept ).iterator();
-	}
-
-	private boolean accept( ConfigReader rd )
-	{
-		if( this.readerFilter.isEmpty() ) {
-			return true;
-		}
-
-		return this.readerFilter.stream().anyMatch( p -> p.test( rd ) );
 	}
 
 }

@@ -8,6 +8,7 @@ import java.util.ServiceLoader;
 import ascelion.config.eclipse.cs.ENVConfigSource;
 import ascelion.config.eclipse.cs.PRPConfigSourceProvider;
 import ascelion.config.eclipse.cs.SYSConfigSource;
+import ascelion.config.utils.ServiceInstance;
 
 import static java.util.Arrays.asList;
 
@@ -89,7 +90,7 @@ final class ConfigBuilderImpl implements ConfigBuilder
 	@Override
 	public Config build()
 	{
-		final ClassLoader cld = ConfigProviderResolver.classLoader( this.cld );
+		final ClassLoader cld = ServiceInstance.classLoader( this.cld, getClass() );
 		final ConverterReg cr = new ConverterReg();
 
 		this.converters.forEach( cr::addConverter );

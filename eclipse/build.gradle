@@ -12,8 +12,9 @@ sourceSets {
 }
 
 dependencies {
+	compile project( ':api' )
 	compile project( ':conv' )
-
+	
 	compile 'javax.enterprise:cdi-api'
 	compile 'javax.annotation:javax.annotation-api'
 	compile 'org.eclipse.microprofile.config:microprofile-config-api'

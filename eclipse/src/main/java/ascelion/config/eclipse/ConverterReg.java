@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import ascelion.config.conv.Converters;
+import ascelion.config.utils.ServiceInstance;
 
 import org.eclipse.microprofile.config.spi.Converter;
 
@@ -17,7 +18,7 @@ public final class ConverterReg
 
 	public ConverterReg discover( ClassLoader cld )
 	{
-		cld = ConfigProviderResolver.classLoader( cld );
+		cld = ServiceInstance.classLoader( cld, getClass() );
 
 		ServiceLoader.load( Converter.class, cld ).forEach( c -> addConverter( new ConverterInfo<>( c ) ) );
 
