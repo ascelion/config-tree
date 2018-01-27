@@ -12,7 +12,7 @@ import ascelion.config.utils.ServiceInstance;
 public abstract class ConfigSources
 {
 
-	static private final ServiceInstance<ConfigSources> si = new ServiceInstance<>( ConfigSources.class );
+	static private final ServiceInstance<ConfigSources> si = new ServiceInstance<>( ConfigSources.class, DefaultConfigSources::new );
 
 	public static void setInstance( ConfigSources instance )
 	{

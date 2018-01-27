@@ -3,7 +3,7 @@ apply plugin: 'java'
 dependencies {
 	compile project( ':api' )
 	compile project( ':conv' )
-//	compile project( ':eclipse' )
+	runtime project( ':eclipse' )
 
 	compile 'org.eclipse.microprofile.config:microprofile-config-api'
 	compile 'ascelion.shared:fmt-log'

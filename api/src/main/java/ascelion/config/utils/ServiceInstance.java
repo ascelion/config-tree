@@ -2,9 +2,9 @@
 package ascelion.config.utils;
 
 import java.security.PrivilegedAction;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static java.lang.Thread.currentThread;
@@ -19,29 +19,40 @@ public final class ServiceInstance<T>
 			return cld;
 		}
 
-		cld = doPrivileged( (PrivilegedAction<ClassLoader>) () -> currentThread().getContextClassLoader() );
-		if( cld != null ) {
-			return cld;
-		}
+		return doPrivileged( (PrivilegedAction<ClassLoader>) () -> {
+			ClassLoader cl = currentThread().getContextClassLoader();
 
-		if( fallback != null ) {
-			cld = fallback.getClassLoader();
-			if( cld != null ) {
-				cld = ClassLoader.getSystemClassLoader();
+			if( cl != null ) {
+				return cl;
 			}
-		}
 
-		return doPrivileged( (PrivilegedAction<ClassLoader>) () -> ClassLoader.getSystemClassLoader() );
+			if( fallback != null ) {
+				cl = fallback.getClassLoader();
+
+				if( cl != null ) {
+					return cl;
+				}
+			}
+
+			return ClassLoader.getSystemClassLoader();
+		} );
 	}
 
 	private final Class<T> type;
 	private final String name;
+	private final Supplier<T> impl;
 	private volatile T instance;
 
 	public ServiceInstance( Class<T> type )
 	{
+		this( type, () -> null );
+	}
+
+	public ServiceInstance( Class<T> type, Supplier<T> impl )
+	{
 		this.type = type;
 		this.name = type.getName();
+		this.impl = impl;
 	}
 
 	public T get()
@@ -55,25 +66,35 @@ public final class ServiceInstance<T>
 				return this.instance;
 			}
 
-			final ClassLoader cld = classLoader( null, this.type );
-
-			this.instance = loadFromProperty( cld );
-
-			if( this.instance == null ) {
-				this.instance = loadFromService( cld );
-			}
-
-			if( this.instance == null ) {
-				throw new IllegalStateException( "No ConfigRegistry implementations found" );
-			}
-
-			return this.instance;
+			return this.instance = doPrivileged( (PrivilegedAction<T>) () -> load() );
 		}
 	}
 
 	public void set( T instance )
 	{
 		this.instance = instance;
+	}
+
+	private T load()
+	{
+		final ClassLoader cld = classLoader( null, this.type );
+
+		T instance = loadFromProperty( cld );
+		if( instance != null ) {
+			return instance;
+		}
+
+		instance = loadFromService( cld );
+		if( instance != null ) {
+			return instance;
+		}
+
+		instance = this.impl.get();
+		if( instance != null ) {
+			return instance;
+		}
+
+		throw new ServiceConfigurationError( "No ConfigRegistry implementations found" );
 	}
 
 	private T loadFromService( ClassLoader cld )
@@ -86,7 +107,7 @@ public final class ServiceInstance<T>
 
 		for( final T reg : ServiceLoader.load( this.type, cld ) ) {
 			if( instance != null ) {
-				throw new IllegalStateException( format( "Multiple ConfigRegistry implementations found, use -D%s=some.package.Implementation", this.name ) );
+				throw new ServiceConfigurationError( format( "Multiple ConfigRegistry implementations found, use -D%s=some.package.Implementation", this.name ) );
 			}
 
 			instance = reg;
@@ -107,10 +128,7 @@ public final class ServiceInstance<T>
 			return (T) cld.loadClass( className ).newInstance();
 		}
 		catch( InstantiationException | IllegalAccessException | ClassNotFoundException e ) {
-			Logger.getLogger( this.name )
-				.log( Level.CONFIG, e, () -> "Cannot load class " + className );
-
-			return null;
+			throw new IllegalStateException( "Cannot instantiate type " + className, e );
 		}
 	}
 }
