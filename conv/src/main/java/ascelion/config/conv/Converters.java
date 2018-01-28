@@ -29,6 +29,7 @@ import java.util.function.Function;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
+import ascelion.config.api.ConvertersRegistry;
 import ascelion.config.utils.Utils;
 
 import static ascelion.config.conv.EnumConverter.enumeration;
@@ -40,7 +41,7 @@ import static java.lang.Integer.MAX_VALUE;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 
-final class Converters
+public final class Converters implements ConvertersRegistry
 {
 
 	static final TypeVariable<? extends Class<?>> CV_TYPE = ConfigConverter.class.getTypeParameters()[0];
@@ -108,7 +109,7 @@ final class Converters
 
 	private final ReadWriteLock RW_LOCK = new ReentrantReadWriteLock();
 
-	Converters()
+	public Converters()
 	{
 		addNullable( Class.class, ExtraConverters::createClass, MAX_VALUE );
 
@@ -145,7 +146,8 @@ final class Converters
 		add( double[].class, ExtraConverters::createDoubleA, MAX_VALUE );
 	}
 
-	void register( ConfigConverter<?> c )
+	@Override
+	public void register( ConfigConverter<?> c )
 	{
 		final Class<? extends ConfigConverter> cls = c.getClass();
 		final Type t = getTypeParameter( cls, CV_TYPE );
@@ -157,12 +159,8 @@ final class Converters
 		register( t, c, Utils.getPriority( c ) );
 	}
 
-	void register( Type t, ConfigConverter<?> c )
-	{
-		register( t, c, Utils.getPriority( c ) );
-	}
-
-	void register( Type t, ConfigConverter<?> c, int p )
+	@Override
+	public void register( Type t, ConfigConverter<?> c, int p )
 	{
 		final Lock wrLock = this.RW_LOCK.writeLock();
 
@@ -176,13 +174,15 @@ final class Converters
 		}
 	}
 
-	Map<Type, ConfigConverter<?>> getConverters()
+	@Override
+	public Map<Type, ConfigConverter<?>> getConverters()
 	{
 		return this.cached.entrySet().stream()
 			.collect( toMap( e -> e.getKey(), e -> e.getValue().c ) );
 	}
 
-	ConfigConverter<?> getConverter( Type type )
+	@Override
+	public ConfigConverter<?> getConverter( Type type )
 	{
 		final Lock rdLock = this.RW_LOCK.readLock();
 
@@ -315,7 +315,7 @@ final class Converters
 		return null;
 	}
 
-	ConfigConverter<?> fromConstructor( Class<?> cls, Class<?> paramType )
+	private ConfigConverter<?> fromConstructor( Class<?> cls, Class<?> paramType )
 	{
 		try {
 			final Constructor<?> c = cls.getDeclaredConstructor( paramType );
@@ -339,7 +339,7 @@ final class Converters
 		}
 	}
 
-	ConfigConverter<?> fromMethod( Class<?> cls, String name, Class<?> paramType )
+	private ConfigConverter<?> fromMethod( Class<?> cls, String name, Class<?> paramType )
 	{
 		try {
 			final Method m = cls.getDeclaredMethod( name, paramType );

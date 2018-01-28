@@ -27,13 +27,13 @@ import org.junit.runners.Parameterized;
 public class ConvertNullTest
 {
 
-	static private final ConverterRegistry CVS = ConverterRegistry.instance();
+	static private final Converters CVS = new Converters();
 
 	@Parameterized.Parameters( name = "{0}" )
 	static public Object[] data()
 	{
 		final List<Object[]> data = new ArrayList<>();
-		final Map<Type, ?> cached = CVS.getConverters( null );
+		final Map<Type, ?> cached = CVS.getConverters();
 
 		for( final Type t : cached.keySet() ) {
 			if( isPrimitive( t ) ) {
@@ -69,12 +69,12 @@ public class ConvertNullTest
 	@Test
 	public void string()
 	{
-		assertThat( (Object) ConvertNullTest.CVS.getConverter( this.t ).create( null ), is( this.m ) );
+		assertThat( (Object) CVS.getConverter( this.t ).create( null ), is( this.m ) );
 	}
 
 	@Test
 	public void node()
 	{
-		assertThat( (Object) ConvertNullTest.CVS.getConverter( this.t ).create( null, 0 ), is( this.m ) );
+		assertThat( (Object) CVS.getConverter( this.t ).create( null, 0 ), is( this.m ) );
 	}
 }

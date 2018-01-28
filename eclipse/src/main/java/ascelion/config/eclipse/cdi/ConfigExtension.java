@@ -31,7 +31,6 @@ import ascelion.config.eclipse.ext.ConfigExt;
 import static java.util.stream.Collectors.joining;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 
 public class ConfigExtension implements Extension
 {
@@ -41,8 +40,6 @@ public class ConfigExtension implements Extension
 
 	void beforeBeanDiscovery( @Observes BeforeBeanDiscovery event, BeanManager bm )
 	{
-		ConfigProviderResolver.setInstance( null );
-
 		addTypes( bm, event, ConfigFactory.class );
 	}
 

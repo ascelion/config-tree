@@ -19,8 +19,8 @@ import javax.management.MBeanServer;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigValue;
-import ascelion.config.conv.ConverterRegistry;
 //import ascelion.config.impl.JMXSupport;
 //import ascelion.config.read.JMXConfigReader;
 import ascelion.logging.LOG;
@@ -75,13 +75,14 @@ class ConfigFactory
 			return this.converters.computeIfAbsent( a, this::create );
 		}
 
-		return ConverterRegistry.instance().getConverter( t );
+		return ConfigRegistry.getInstance()
+			.converters( getClass().getClassLoader() )
+			.getConverter( t );
 	}
 
 	private ConfigConverter<?> create( ConfigValue a )
 	{
 		final Class<? extends ConfigConverter<?>> c = (Class<? extends ConfigConverter<?>>) a.converter();
-		final InstanceInfo<ConfigConverter<?>> info;
 		final Set<Bean<?>> beans = this.bm.getBeans( c );
 
 		if( beans.size() > 0 ) {

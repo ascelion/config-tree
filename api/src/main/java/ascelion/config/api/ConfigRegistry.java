@@ -23,6 +23,7 @@ public abstract class ConfigRegistry
 
 	private final Iterables<ConfigSource> sources = new Iterables<>();
 	private final Iterables<ConfigReader> readers = new Iterables<>();
+	private final ServiceInstance<ConvertersRegistry> cvs = new ServiceInstance<>( ConvertersRegistry.class );
 
 	// sources
 	public final void add( ConfigSource... objects )
@@ -42,7 +43,7 @@ public abstract class ConfigRegistry
 
 	public final Iterable<ConfigSource> getSources( ClassLoader cld )
 	{
-		return this.sources.get( cld, this::loadSources );
+		return this.sources.get( null, this::loadSources );
 	}
 
 	protected abstract Iterable<ConfigSource> loadSources( ClassLoader cld );
@@ -65,8 +66,15 @@ public abstract class ConfigRegistry
 
 	public final Iterable<ConfigReader> getReaders( ClassLoader cld )
 	{
-		return this.readers.get( cld, this::loadReaders );
+		return this.readers.get( null, this::loadReaders );
 	}
 
 	protected abstract Iterable<ConfigReader> loadReaders( ClassLoader cld );
+
+	// converters
+	public final ConvertersRegistry converters( ClassLoader cld )
+	{
+		return this.cvs.get( null );
+	}
+
 }

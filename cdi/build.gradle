@@ -9,7 +9,7 @@ dependencies {
 	testCompile project( path: ':impl', configuration: 'testArchive' )
 	testCompile 'ascelion.shared:cdi-unit-impl'
 	testCompile 'ascelion.shared:cdi-unit-weld'
-	testCompile 'org.apache.deltaspike.core:deltaspike-core-impl'
+	testRuntime project( ':eclipse' )
 
 	testRuntime 'org.postgresql:postgresql'
 }

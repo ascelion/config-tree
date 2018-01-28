@@ -11,7 +11,7 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.conv.ConverterRegistry;
+import ascelion.config.api.ConvertersRegistry;
 
 import static ascelion.config.conv.Utils.asArray;
 import static ascelion.config.conv.Utils.asSet;
@@ -96,7 +96,7 @@ public class ConfigLinkTest
 	}
 
 	static private final ConfigJava CJ = new ConfigJava();
-	static private final ConverterRegistry CR = ConverterRegistry.instance();
+	static private final ConvertersRegistry CR = ConfigRegistry.getInstance().converters( null );
 
 	@BeforeClass
 	static public void setUpClass()

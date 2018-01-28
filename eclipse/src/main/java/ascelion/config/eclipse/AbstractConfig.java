@@ -3,7 +3,7 @@ package ascelion.config.eclipse;
 
 import java.lang.reflect.Type;
 
-import ascelion.config.conv.ConverterRegistry;
+import ascelion.config.api.ConvertersRegistry;
 import ascelion.config.eclipse.ext.ConfigExt;
 import ascelion.config.utils.Expression;
 
@@ -13,6 +13,13 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 
 public abstract class AbstractConfig implements ConfigExt
 {
+
+	private final ConvertersRegistry cvs;
+
+	protected AbstractConfig( ConvertersRegistry cvs )
+	{
+		this.cvs = cvs;
+	}
 
 	@Override
 	public final String getValue( String propertyName )
@@ -46,7 +53,8 @@ public abstract class AbstractConfig implements ConfigExt
 	public final <T> T convert( String value, Type type )
 	{
 		try {
-			return (T) ConverterRegistry.instance().getConverter( null, type ).create( value );
+			return (T) this.cvs.getConverter( type )
+				.create( value );
 		}
 		catch( final IllegalArgumentException e ) {
 			throw e;

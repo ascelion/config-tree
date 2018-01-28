@@ -1,21 +1,19 @@
 
 package ascelion.config.utils;
 
-import java.security.PrivilegedAction;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
-import static java.security.AccessController.doPrivileged;
 
 public final class ServiceInstance<T>
 {
 
+	private final References<T> refs = new References<>();
 	private final Class<T> type;
 	private final String name;
 	private final Supplier<T> impl;
-	private volatile T instance;
 
 	public ServiceInstance( Class<T> type )
 	{
@@ -31,28 +29,26 @@ public final class ServiceInstance<T>
 
 	public T get()
 	{
-		if( this.instance != null ) {
-			return this.instance;
-		}
+		return get( null );
+	}
 
-		synchronized( this ) {
-			if( this.instance != null ) {
-				return this.instance;
-			}
-
-			return this.instance = doPrivileged( (PrivilegedAction<T>) () -> load() );
-		}
+	public T get( ClassLoader cld )
+	{
+		return this.refs.get( cld, this::load );
 	}
 
 	public void set( T instance )
 	{
-		this.instance = instance;
+		set( null, instance );
 	}
 
-	private T load()
+	public void set( ClassLoader cld, T instance )
 	{
-		final ClassLoader cld = Utils.classLoader( null, this.type );
+		this.refs.put( cld, instance );
+	}
 
+	private T load( ClassLoader cld )
+	{
 		T instance = loadFromProperty( cld );
 		if( instance != null ) {
 			return instance;

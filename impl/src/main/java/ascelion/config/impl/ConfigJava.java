@@ -7,8 +7,8 @@ import java.util.ServiceLoader;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.conv.ConverterRegistry;
 import ascelion.config.utils.Utils;
 
 public final class ConfigJava
@@ -29,19 +29,19 @@ public final class ConfigJava
 
 	public void add( ConfigConverter<?> cv )
 	{
-		ConverterRegistry.instance().add( cv );
+		ConfigRegistry.getInstance().converters( null ).register( cv );
 	}
 
 	public void add( Type type, ConfigConverter<?> cv )
 	{
-		ConverterRegistry.instance().add( type, cv, Utils.getPriority( cv ) );
+		ConfigRegistry.getInstance().converters( null ).register( type, cv, Utils.getPriority( cv ) );
 	}
 
 	public ConfigNode root()
 	{
 		if( this.root == null ) {
 			ServiceLoader.load( ConfigConverter.class )
-				.forEach( ConverterRegistry.instance()::add );
+				.forEach( ConfigRegistry.getInstance().converters( null )::register );
 
 			this.root = this.ld.load();
 		}

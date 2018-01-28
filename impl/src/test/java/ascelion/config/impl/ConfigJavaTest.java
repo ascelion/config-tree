@@ -9,7 +9,7 @@ import java.util.Set;
 
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.conv.ConverterRegistry;
+import ascelion.config.api.ConvertersRegistry;
 
 import static ascelion.config.conv.Utils.asArray;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
@@ -63,7 +63,7 @@ public class ConfigJavaTest
 	}
 
 	static private final ConfigJava CJ = new ConfigJava();
-	static private final ConverterRegistry CR = ConverterRegistry.instance();
+	static private final ConvertersRegistry CR = ConfigRegistry.getInstance().converters( null );
 
 	private final String prop;
 	private final Type type;

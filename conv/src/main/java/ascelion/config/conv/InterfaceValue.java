@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigValue;
 
 import static ascelion.config.conv.Utils.methodsOf;
@@ -82,7 +83,9 @@ final class InterfaceValue implements InvocationHandler
 
 	private ConfigConverter<?> getConverter( final Type t )
 	{
-		return ConverterRegistry.instance().getConverter( this.type.getClassLoader(), t );
+		return ConfigRegistry.getInstance()
+			.converters( this.type.getClassLoader() )
+			.getConverter( t );
 	}
 
 	private void addName( Method m )

@@ -5,10 +5,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ServiceLoader;
 
-import ascelion.config.conv.ConverterRegistry;
+import ascelion.config.api.ConvertersRegistry;
 import ascelion.config.eclipse.cs.ENVConfigSource;
 import ascelion.config.eclipse.cs.PRPConfigSourceProvider;
 import ascelion.config.eclipse.cs.SYSConfigSource;
+import ascelion.config.utils.ServiceInstance;
 import ascelion.config.utils.Utils;
 
 import static java.util.Arrays.asList;
@@ -22,6 +23,7 @@ import org.eclipse.microprofile.config.spi.Converter;
 final class ConfigBuilderImpl implements ConfigBuilder
 {
 
+	private final ServiceInstance<ConvertersRegistry> si = new ServiceInstance<>( ConvertersRegistry.class );
 	private final Collection<ConfigSource> sources = new ArrayList<>();
 	private final Collection<ConverterInfo<?>> converters = new ArrayList<>();
 
@@ -92,19 +94,19 @@ final class ConfigBuilderImpl implements ConfigBuilder
 	public Config build()
 	{
 		final ClassLoader cld = Utils.classLoader( this.cld, getClass() );
-		final ConverterRegistry cr = ConverterRegistry.instance();
+		final ConvertersRegistry cvs = this.si.get( cld );
 
 		this.converters.forEach( i -> {
-			cr.add( cld, i.type, i.converter::convert, i.priority );
+			cvs.register( i.type, i.converter::convert, i.priority );
 		} );
 
 		if( this.discoverConverters ) {
 			ServiceLoader
 				.load( Converter.class, cld )
-				.forEach( c -> cr.add( cld, ConverterInfo.typeOf( c ), c::convert, Utils.getPriority( c ) ) );
+				.forEach( c -> cvs.register( ConverterInfo.typeOf( c ), c::convert, Utils.getPriority( c ) ) );
 		}
 
-		final ConfigImpl cf = new ConfigImpl();
+		final ConfigImpl cf = new ConfigImpl( cvs );
 
 		cf.addSources( this.sources );
 

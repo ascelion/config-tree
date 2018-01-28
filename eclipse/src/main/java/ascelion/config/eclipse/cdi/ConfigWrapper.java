@@ -3,14 +3,18 @@ package ascelion.config.eclipse.cdi;
 
 import java.util.Optional;
 
+import ascelion.config.api.ConvertersRegistry;
 import ascelion.config.eclipse.AbstractConfig;
 import ascelion.config.eclipse.ext.ConfigExt;
+import ascelion.config.utils.ServiceInstance;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 final class ConfigWrapper extends AbstractConfig
 {
+
+	static private final ServiceInstance<ConvertersRegistry> si = new ServiceInstance<>( ConvertersRegistry.class );
 
 	static ConfigExt wrap( Config cf )
 	{
@@ -21,6 +25,8 @@ final class ConfigWrapper extends AbstractConfig
 
 	private ConfigWrapper( Config config )
 	{
+		super( si.get() );
+
 		this.delegate = config;
 	}
 

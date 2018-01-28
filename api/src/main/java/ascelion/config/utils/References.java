@@ -4,7 +4,6 @@ package ascelion.config.utils;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -21,14 +20,16 @@ public final class References<T>
 
 	public void put( ClassLoader cld, T obj )
 	{
+		cld = Utils.classLoader( cld, getClass() );
+
 		synchronized( this.references ) {
 			this.references.put( cld, new WeakReference<>( obj ) );
 		}
 	}
 
-	public T get( ClassLoader cld, Function<ClassLoader, T> sup )
+	public T get( ClassLoader _cld, Function<ClassLoader, T> sup )
 	{
-		Objects.requireNonNull( cld, "The classLoader cannot be null" );
+		final ClassLoader cld = Utils.classLoader( _cld, getClass() );
 
 		T obj = ref( cld );
 

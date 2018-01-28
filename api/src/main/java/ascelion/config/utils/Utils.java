@@ -8,7 +8,7 @@ import javax.annotation.Priority;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
-public class Utils
+public final class Utils
 {
 
 	static public int getPriority( Object o )
@@ -24,11 +24,7 @@ public class Utils
 		return 100;
 	}
 
-	public Utils()
-	{
-	}
-
-	static public ClassLoader classLoader( ClassLoader cld, Class<?> fallback )
+	public static ClassLoader classLoader( ClassLoader cld, Class<?> fallback )
 	{
 		if( cld != null ) {
 			return cld;
@@ -51,6 +47,10 @@ public class Utils
 
 			return ClassLoader.getSystemClassLoader();
 		} );
+	}
+
+	private Utils()
+	{
 	}
 
 }
