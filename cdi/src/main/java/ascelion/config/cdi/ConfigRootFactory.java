@@ -6,9 +6,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
 import ascelion.config.api.ConfigNode;
-import ascelion.config.impl.ConfigLoad;
+import ascelion.config.api.ConfigRegistry;
 
-class ConfigNodeFactory
+class ConfigRootFactory
 {
 
 	@Produces
@@ -18,6 +18,6 @@ class ConfigNodeFactory
 	@PostConstruct
 	private void postConstruct()
 	{
-		this.root = new ConfigLoad().load();
+		this.root = ConfigRegistry.getInstance( getClass().getClassLoader() ).root();
 	}
 }

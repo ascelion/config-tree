@@ -62,8 +62,8 @@ public class ConfigJavaTest
 		};
 	}
 
-	static private final ConfigJava CJ = new ConfigJava();
-	static private final ConvertersRegistry CR = ConfigRegistry.getInstance().converters( null );
+	static private final ConfigRegistry CJ = ConfigRegistry.getInstance();
+	static private final ConvertersRegistry CR = CJ.converters();
 
 	private final String prop;
 	private final Type type;

@@ -1,30 +1,37 @@
 
 package ascelion.config.utils;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 
 public final class ServiceInstance<T>
 {
 
-	private final References<T> refs = new References<>();
+	@Target( ElementType.FIELD )
+	@Retention( RetentionPolicy.RUNTIME )
+	public @interface CLD
+	{
+	}
+
+	private final References<T> services = new References<>();
 	private final Class<T> type;
 	private final String name;
-	private final Supplier<T> impl;
 
 	public ServiceInstance( Class<T> type )
 	{
-		this( type, () -> null );
-	}
-
-	public ServiceInstance( Class<T> type, Supplier<T> impl )
-	{
 		this.type = type;
 		this.name = type.getName();
-		this.impl = impl;
 	}
 
 	public T get()
@@ -34,7 +41,7 @@ public final class ServiceInstance<T>
 
 	public T get( ClassLoader cld )
 	{
-		return this.refs.get( cld, this::load );
+		return this.services.get( cld, this::load );
 	}
 
 	public void set( T instance )
@@ -44,27 +51,79 @@ public final class ServiceInstance<T>
 
 	public void set( ClassLoader cld, T instance )
 	{
-		this.refs.put( cld, instance );
+		this.services.put( cld, instance );
 	}
 
 	private T load( ClassLoader cld )
 	{
 		T instance = loadFromProperty( cld );
 		if( instance != null ) {
-			return instance;
+			return withClassLoader( cld, instance );
 		}
 
 		instance = loadFromService( cld );
 		if( instance != null ) {
-			return instance;
+			return withClassLoader( cld, instance );
 		}
 
-		instance = this.impl.get();
+		instance = fromFactory( cld, "Factory" );
 		if( instance != null ) {
-			return instance;
+			return withClassLoader( cld, instance );
 		}
 
-		throw new ServiceConfigurationError( "No ConfigRegistry implementations found" );
+		instance = fromFactory( cld, "$Factory" );
+		if( instance != null ) {
+			return withClassLoader( cld, instance );
+		}
+
+		throw new ServiceConfigurationError( "Cannot find any implementation of " + this.name );
+	}
+
+	private T fromFactory( ClassLoader cld, String suffix )
+	{
+		final String factName = this.name + suffix;
+		final Class<Function<ClassLoader, T>> factClass;
+
+		try {
+			factClass = (Class<Function<ClassLoader, T>>) cld.loadClass( factName );
+		}
+		catch( final ClassNotFoundException e ) {
+			return null;
+		}
+
+		try {
+			final Constructor<Function<ClassLoader, T>> ct = factClass.getDeclaredConstructor();
+
+			ct.setAccessible( true );
+
+			return ct.newInstance().apply( cld );
+		}
+		catch( InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e ) {
+			throw new IllegalStateException( format( "Cannot instantiate %s from %s ", this.name, factName ), e );
+		}
+	}
+
+	private T withClassLoader( ClassLoader cld, T instance )
+	{
+		for( Class<?> c = instance.getClass(); c != Object.class; c = c.getSuperclass() ) {
+			for( final Field f : c.getDeclaredFields() ) {
+				final int m = f.getModifiers();
+				if( Modifier.isStatic( m ) || Modifier.isFinal( m ) ) {
+					continue;
+				}
+				if( f.getType() == ClassLoader.class && f.isAnnotationPresent( CLD.class ) ) {
+					f.setAccessible( true );
+					try {
+						f.set( instance, cld );
+					}
+					catch( IllegalArgumentException | IllegalAccessException e ) {
+						throw new ServiceConfigurationError( format( "Cannot inject associated classloader into %s.%s", f.getDeclaringClass().getName(), f.getName() ) );
+					}
+				}
+			}
+		}
+
+		return instance;
 	}
 
 	private T loadFromService( ClassLoader cld )
@@ -77,7 +136,7 @@ public final class ServiceInstance<T>
 
 		for( final T reg : ServiceLoader.load( this.type, cld ) ) {
 			if( instance != null ) {
-				throw new ServiceConfigurationError( format( "Multiple ConfigRegistry implementations found, use -D%s=some.package.Implementation", this.name ) );
+				throw new ServiceConfigurationError( format( "Found multiple implementations of %1$s, use -D%1$s=some.package.Implementation", this.name ) );
 			}
 
 			instance = reg;

@@ -9,7 +9,6 @@ import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigRegistry;
-import ascelion.config.impl.ConfigLoad;
 import ascelion.config.impl.ConfigSourceLiteral;
 
 import static ascelion.config.conv.Utils.asArray;
@@ -95,13 +94,13 @@ public class ResourceReaderTest
 		}
 		assertThat( source, is( notNullValue() ) );
 
-		final ConfigLoad ld = new ConfigLoad();
+		final ConfigRegistry cr = ConfigRegistry.getInstance();
 		final ConfigReader rd = new ConfigStreamReader( source, this.cls.newInstance() );
 
-		ld.addReader( rd );
-		ld.addSource( new ConfigSourceLiteral( "", 0, "STREAM" ) );
+		cr.add( rd );
+		cr.add( new ConfigSourceLiteral( "", 0, "STREAM" ) );
 
-		final ConfigNode cn = ld.load();
+		final ConfigNode cn = cr.root();
 
 		assertThat( cn.getNode( "default" ).getValue(), is( "0" ) );
 		assertThat( cn.getNode( "prop1" ).getValue(), is( "value1" ) );

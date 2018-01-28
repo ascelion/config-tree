@@ -27,24 +27,24 @@ public final class References<T>
 		}
 	}
 
-	public T get( ClassLoader _cld, Function<ClassLoader, T> sup )
+	public T get( ClassLoader cld, Function<ClassLoader, T> sup )
 	{
-		final ClassLoader cld = Utils.classLoader( _cld, getClass() );
+		final ClassLoader cldCt = Utils.classLoader( cld, getClass() );
 
-		T obj = ref( cld );
+		T obj = ref( cldCt );
 
 		if( obj == null ) {
 			synchronized( this.references ) {
-				obj = ref( cld );
+				obj = ref( cldCt );
 
 				if( obj == null ) {
-					obj = sup.apply( cld );
+					obj = sup.apply( cldCt );
 
 					final WeakReference<T> ref = new WeakReference<>( obj );
 
-					L.finest( () -> format( "PUT %s / %s / %s", cld, ref, ref.get() ) );
+					L.finest( () -> format( "PUT %s / %s / %s", cldCt, ref, ref.get() ) );
 
-					this.references.put( cld, ref );
+					this.references.put( cldCt, ref );
 				}
 
 				purge( null );

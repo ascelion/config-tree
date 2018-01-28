@@ -61,7 +61,7 @@ public class ConfigExtension implements Extension
 	{
 		addType( CDIConfigRegistry.class, bm, event );
 		addType( ConfigFactory.class, bm, event );
-		addType( ConfigNodeFactory.class, bm, event );
+		addType( ConfigRootFactory.class, bm, event );
 		addType( INIConfigReader.class, bm, event );
 		addType( JMXConfigReader.class, bm, event );
 		addType( PRPConfigReader.class, bm, event );

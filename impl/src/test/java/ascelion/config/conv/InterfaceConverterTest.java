@@ -9,7 +9,6 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConvertersRegistry;
-import ascelion.config.impl.ConfigJava;
 
 import static ascelion.config.conv.Utils.asArray;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -40,8 +39,8 @@ public class InterfaceConverterTest
 		};
 	}
 
-	static private final ConfigJava CJ = new ConfigJava();
-	static private final ConvertersRegistry CR = ConfigRegistry.getInstance().converters( null );
+	static private final ConfigRegistry CJ = ConfigRegistry.getInstance();
+	static private final ConvertersRegistry CR = CJ.converters();
 
 	@BeforeClass
 	static public void setUpClass()

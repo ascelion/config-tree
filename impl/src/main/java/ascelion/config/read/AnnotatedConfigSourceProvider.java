@@ -28,6 +28,23 @@ import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 {
 
+	static private final LOG L = LOG.get();
+
+	static private String getType( ascelion.config.api.ConfigSource source )
+	{
+		String t = source.type();
+
+		if( isBlank( t ) ) {
+			t = FilenameUtils.getExtension( source.value() );
+
+			if( isBlank( t ) ) {
+				t = source.value();
+			}
+		}
+
+		return t.toUpperCase();
+	}
+
 	static private List<URL> getResources( String source, ClassLoader cld )
 	{
 		try {
@@ -55,22 +72,6 @@ public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 		}
 	}
 
-	static private String getType( ascelion.config.api.ConfigSource source )
-	{
-		String t = source.type();
-
-		if( isBlank( t ) ) {
-			t = FilenameUtils.getExtension( source.value() );
-
-			if( isBlank( t ) ) {
-				t = source.value();
-			}
-		}
-
-		return t.toUpperCase();
-	}
-
-	static private final LOG L = LOG.get();
 	private final References<Iterable<ConfigSource>> sources = new References<>();
 
 	@Override
@@ -83,8 +84,9 @@ public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 	{
 		final Collection<ConfigSource> built = new ArrayList<>();
 		final Map<String, ConfigReader> readers = new TreeMap<>();
+		final ConfigRegistry reg = ConfigRegistry.getInstance( cld );
 
-		ConfigRegistry.getInstance().getReaders( cld )
+		reg.getReaders()
 			.forEach( rd -> {
 				L.trace( "Found reader: %s -> %s", rd.getClass().getName(), rd.types() );
 
@@ -92,8 +94,7 @@ public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 					readers.put( t.toUpperCase(), rd );
 				}
 			} );
-		ConfigRegistry.getInstance()
-			.getSources( cld )
+		reg.getSources()
 			.forEach( cs -> {
 				final String st = getType( cs );
 				final ConfigReader rd = readers.get( st );

@@ -60,8 +60,8 @@ public class InterfaceLinkTest
 		};
 	}
 
-	static private final ConfigJava CJ = new ConfigJava();
-	static private final ConvertersRegistry CR = ConfigRegistry.getInstance().converters( null );
+	static private final ConfigRegistry CJ = ConfigRegistry.getInstance();
+	static private final ConvertersRegistry CR = CJ.converters();
 
 	@BeforeClass
 	static public void setUpClass()

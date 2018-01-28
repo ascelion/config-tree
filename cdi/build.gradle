@@ -1,6 +1,7 @@
 apply plugin: 'java'
 
 dependencies {
+	compile project( ':api' )
 	compile project( ':impl' )
 
 	compile 'ascelion.shared:cdi-utils'

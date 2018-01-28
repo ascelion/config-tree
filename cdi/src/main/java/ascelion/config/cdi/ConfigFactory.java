@@ -75,8 +75,8 @@ class ConfigFactory
 			return this.converters.computeIfAbsent( a, this::create );
 		}
 
-		return ConfigRegistry.getInstance()
-			.converters( getClass().getClassLoader() )
+		return ConfigRegistry.getInstance( getClass().getClassLoader() )
+			.converters()
 			.getConverter( t );
 	}
 

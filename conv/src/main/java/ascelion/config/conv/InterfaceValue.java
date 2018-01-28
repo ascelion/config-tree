@@ -83,8 +83,8 @@ final class InterfaceValue implements InvocationHandler
 
 	private ConfigConverter<?> getConverter( final Type t )
 	{
-		return ConfigRegistry.getInstance()
-			.converters( this.type.getClassLoader() )
+		return ConfigRegistry.getInstance( this.type.getClassLoader() )
+			.converters()
 			.getConverter( t );
 	}
 

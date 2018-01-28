@@ -3,7 +3,6 @@ apply plugin: 'java'
 dependencies {
 	compile project( ':api' )
 	compile project( ':conv' )
-	compile project( ':eclipse' )
 
 	compile 'org.eclipse.microprofile.config:microprofile-config-api'
 	compile 'ascelion.shared:fmt-log'
@@ -20,6 +19,7 @@ dependencies {
 	compile 'io.github.lukehutch:fast-classpath-scanner'
 
 	testCompile project( path: ':conv', configuration: 'testArchive' )
+	testRuntime project( ':eclipse' )
 	testCompile 'ascelion.shared:junit-ext'
 
 	testRuntime 'org.postgresql:postgresql'

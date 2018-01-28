@@ -5,16 +5,24 @@ import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
 
+import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
+import ascelion.config.impl.ConfigNodeImpl.ConfigNodeTA;
+import ascelion.logging.LOG;
 
 import static java.util.Arrays.asList;
 
+import com.google.gson.GsonBuilder;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 
-public final class DefaultConfigRegistry extends ConfigRegistry
+public class DefaultConfigRegistry extends ConfigRegistry
 {
+
+	static private final LOG L = LOG.get();
 
 	static private final String[] SCAN_PACKAGES = {
 		"-java",
@@ -56,5 +64,33 @@ public final class DefaultConfigRegistry extends ConfigRegistry
 	protected Iterable<ConfigReader> loadReaders( ClassLoader cld )
 	{
 		return ServiceLoader.load( ConfigReader.class, cld );
+	}
+
+	@Override
+	protected ConfigNode load( ClassLoader cld )
+	{
+		final ConfigNodeImpl root = new ConfigNodeImpl();
+		final Config config = ConfigProviderResolver.instance().getConfig( cld );
+
+		try {
+			config.getConfigSources().forEach( cs -> {
+				root.setValue( cs.getProperties() );
+			} );
+
+			if( L.isTraceEnabled() ) {
+				final String s = new GsonBuilder()
+					.setPrettyPrinting()
+					.registerTypeHierarchyAdapter( ConfigNode.class, new ConfigNodeTA() )
+					.create()
+					.toJson( root );
+
+				L.trace( "Config: %s", s );
+			}
+		}
+		finally {
+			ConfigProviderResolver.instance().releaseConfig( config );
+		}
+
+		return root;
 	}
 }

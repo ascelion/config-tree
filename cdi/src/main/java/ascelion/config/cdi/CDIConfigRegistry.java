@@ -13,9 +13,10 @@ import javax.inject.Singleton;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
+import ascelion.config.impl.DefaultConfigRegistry;
 
 @Singleton
-class CDIConfigRegistry extends ConfigRegistry
+class CDIConfigRegistry extends DefaultConfigRegistry
 {
 
 	@Inject

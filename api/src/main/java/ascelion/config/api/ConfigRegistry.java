@@ -4,6 +4,7 @@ package ascelion.config.api;
 import java.util.function.Predicate;
 
 import ascelion.config.utils.Iterables;
+import ascelion.config.utils.LazyValue;
 import ascelion.config.utils.ServiceInstance;
 
 public abstract class ConfigRegistry
@@ -21,9 +22,23 @@ public abstract class ConfigRegistry
 		si.set( instance );
 	}
 
+	static public ConfigRegistry getInstance( ClassLoader cld )
+	{
+		return si.get( cld );
+	}
+
+	static public void setInstance( ClassLoader cld, ConfigRegistry instance )
+	{
+		si.set( cld, instance );
+	}
+
 	private final Iterables<ConfigSource> sources = new Iterables<>();
 	private final Iterables<ConfigReader> readers = new Iterables<>();
 	private final ServiceInstance<ConvertersRegistry> cvs = new ServiceInstance<>( ConvertersRegistry.class );
+	private final LazyValue<ConfigNode> root = new LazyValue<>();
+
+	@ServiceInstance.CLD
+	private ClassLoader cld;
 
 	// sources
 	public final void add( ConfigSource... objects )
@@ -41,9 +56,9 @@ public abstract class ConfigRegistry
 		this.sources.filter( f );
 	}
 
-	public final Iterable<ConfigSource> getSources( ClassLoader cld )
+	public final Iterable<ConfigSource> getSources()
 	{
-		return this.sources.get( null, this::loadSources );
+		return this.sources.get( () -> loadSources( this.cld ) );
 	}
 
 	protected abstract Iterable<ConfigSource> loadSources( ClassLoader cld );
@@ -64,17 +79,27 @@ public abstract class ConfigRegistry
 		this.readers.filter( f );
 	}
 
-	public final Iterable<ConfigReader> getReaders( ClassLoader cld )
+	public final Iterable<ConfigReader> getReaders()
 	{
-		return this.readers.get( null, this::loadReaders );
+		return this.readers.get( () -> loadReaders( this.cld ) );
 	}
 
 	protected abstract Iterable<ConfigReader> loadReaders( ClassLoader cld );
 
 	// converters
-	public final ConvertersRegistry converters( ClassLoader cld )
+	public final ConvertersRegistry converters()
 	{
-		return this.cvs.get( null );
+		return this.cvs.get();
 	}
 
+	// root node
+	public final ConfigNode root()
+	{
+		return this.root.get( () -> load( this.cld ) );
+	}
+
+	protected ConfigNode load( ClassLoader cld )
+	{
+		return new ServiceInstance<>( ConfigNode.class ).get( cld );
+	}
 }

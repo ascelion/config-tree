@@ -225,12 +225,12 @@ final class ConfigNodeImpl implements ConfigNode
 		return sb.toString();
 	}
 
-	public void setValue( String path, Object value )
+	void setValue( String path, Object value )
 	{
 		findNode( path, true ).setValue( value );
 	}
 
-	public void setValue( Object value )
+	void setValue( Object value )
 	{
 		if( value instanceof Map ) {
 			final Map<String, Object> ms = (Map<String, Object>) value;

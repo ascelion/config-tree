@@ -4,10 +4,11 @@ package ascelion.config.utils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.synchronizedSet;
 
 public final class Iterables<T>
 {
@@ -15,8 +16,8 @@ public final class Iterables<T>
 	@SuppressWarnings( "rawtypes" )
 	static private final Predicate ACCEPT = t -> true;
 
-	private final References<Iterable<T>> references = new References<>();
-	private final Collection<T> objects = new HashSet<>();
+	private final LazyValue<Iterable<T>> reference = new LazyValue<>();
+	private final Collection<T> objects = synchronizedSet( new HashSet<>() );
 	private Predicate<T> filter = ACCEPT;
 
 	public void add( T... objects )
@@ -34,17 +35,17 @@ public final class Iterables<T>
 		this.filter = this.filter != null ? this.filter : ACCEPT;
 	}
 
-	public Iterable<T> get( ClassLoader cld, Function<ClassLoader, Iterable<T>> additional )
+	public Iterable<T> get( Supplier<Iterable<T>> additional )
 	{
-		return () -> this.references.get( cld, x -> build( x, additional ) ).iterator();
+		return () -> this.reference.get( () -> build( additional ) ).iterator();
 	}
 
-	private Iterable<T> build( ClassLoader cld, Function<ClassLoader, Iterable<T>> additional )
+	private Iterable<T> build( Supplier<Iterable<T>> additional )
 	{
 		final Collection<T> built = new ArrayList<>();
 
 		built.addAll( this.objects );
-		additional.apply( cld ).forEach( built::add );
+		additional.get().forEach( built::add );
 
 		return built;
 	}
