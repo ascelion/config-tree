@@ -1,8 +1,6 @@
 
 package ascelion.config.impl;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
@@ -63,7 +61,6 @@ public final class ConfigNodeImpl implements ConfigNode
 	private final ConfigNodeImpl root;
 	private final String name;
 	private final String path;
-	private final PropertyChangeSupport pcs;
 	private final Expression expression;
 	private Map<String, ConfigNodeImpl> nodes;
 
@@ -72,7 +69,6 @@ public final class ConfigNodeImpl implements ConfigNode
 		this.root = this;
 		this.name = null;
 		this.path = null;
-		this.pcs = new PropertyChangeSupport( this );
 		this.expression = new Expression( this::lookup );
 	}
 
@@ -81,7 +77,6 @@ public final class ConfigNodeImpl implements ConfigNode
 		this.name = name;
 		this.path = path( path( parent ), name );
 		this.root = parent.root;
-		this.pcs = parent.pcs;
 		this.expression = new Expression( this.root::lookup );
 
 		parent.nodes.put( name, this );
@@ -196,18 +191,6 @@ public final class ConfigNodeImpl implements ConfigNode
 	}
 
 	@Override
-	public void addChangeListener( PropertyChangeListener pcl )
-	{
-		this.pcs.addPropertyChangeListener( pcl );
-	}
-
-	@Override
-	public void removeChangeListener( PropertyChangeListener pcl )
-	{
-		this.pcs.removePropertyChangeListener( pcl );
-	}
-
-	@Override
 	public String toString()
 	{
 		final StringBuilder sb = new StringBuilder();
@@ -261,8 +244,6 @@ public final class ConfigNodeImpl implements ConfigNode
 
 		if( !Objects.equals( oldValue, newValue ) ) {
 			this.expression.setValue( newValue );
-
-			this.pcs.firePropertyChange( this.path, oldValue, newValue );
 		}
 	}
 

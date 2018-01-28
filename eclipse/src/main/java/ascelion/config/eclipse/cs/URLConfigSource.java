@@ -9,13 +9,14 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import ascelion.config.eclipse.ext.ConfigChangeListener;
+import ascelion.config.eclipse.ext.ConfigChangeListenerSupport;
+import ascelion.config.eclipse.ext.ConfigSourceExt;
 import ascelion.logging.LOG;
 
 import static java.lang.String.format;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
-
-public abstract class URLConfigSource implements ConfigSource
+public abstract class URLConfigSource implements ConfigSourceExt
 {
 
 	static private final LOG L = LOG.get();
@@ -25,6 +26,7 @@ public abstract class URLConfigSource implements ConfigSource
 	private final URL resource;
 	private long updated = 0;
 	private Integer ordinal;
+	private final ConfigChangeListenerSupport cls = new ConfigChangeListenerSupport( this );
 
 	public URLConfigSource( URL resource )
 	{
@@ -39,7 +41,7 @@ public abstract class URLConfigSource implements ConfigSource
 	@Override
 	public final int getOrdinal()
 	{
-		return this.ordinal != null ? this.ordinal : ConfigSource.super.getOrdinal();
+		return this.ordinal != null ? this.ordinal : ConfigSourceExt.super.getOrdinal();
 	}
 
 	@Override
@@ -78,6 +80,20 @@ public abstract class URLConfigSource implements ConfigSource
 		return this.resource.toExternalForm();
 	}
 
+	@Override
+	public void addChangeListener( ConfigChangeListener cl )
+	{
+		this.cls.add( cl );
+	}
+
+	@Override
+	public void removeChangeListener( ConfigChangeListener cl )
+	{
+		this.cls.remove( cl );
+	}
+
+	protected abstract Map<String, String> readConfiguration( InputStream is ) throws IOException;
+
 	private void load()
 	{
 		try {
@@ -107,6 +123,8 @@ public abstract class URLConfigSource implements ConfigSource
 
 								L.trace( "LastUpdated %tF, %s\n%s", this.updated, getName(), w );
 							}
+
+							this.cls.fireChanged();
 						}
 					}
 					finally {
@@ -122,6 +140,4 @@ public abstract class URLConfigSource implements ConfigSource
 			L.warn( "Cannot read from %s", getName() );
 		}
 	}
-
-	protected abstract Map<String, String> readConfiguration( InputStream is ) throws IOException;
 }

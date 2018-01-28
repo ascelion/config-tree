@@ -4,11 +4,12 @@ package ascelion.config.read;
 import java.util.Map;
 
 import ascelion.config.api.ConfigReader;
+import ascelion.config.eclipse.ext.ConfigChangeListener;
+import ascelion.config.eclipse.ext.ConfigChangeListenerSupport;
+import ascelion.config.eclipse.ext.ConfigSourceExt;
 import ascelion.logging.LOG;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
-
-final class AnnotatedConfigSource implements ConfigSource
+final class AnnotatedConfigSource implements ConfigSourceExt
 {
 
 	static private final LOG L = LOG.get();
@@ -17,6 +18,7 @@ final class AnnotatedConfigSource implements ConfigSource
 	private Map<String, String> properties;
 	private final String source;
 	private final int priority;
+	private final ConfigChangeListenerSupport cls = new ConfigChangeListenerSupport( this );
 
 	AnnotatedConfigSource( ConfigReader rd, String source, int priority )
 	{
@@ -32,6 +34,8 @@ final class AnnotatedConfigSource implements ConfigSource
 			L.trace( "Reading '%s'", this.source );
 
 			this.properties = this.rd.readConfiguration( this.source );
+
+			this.cls.fireChanged();
 		}
 
 		return this.properties;
@@ -53,5 +57,17 @@ final class AnnotatedConfigSource implements ConfigSource
 	public int getOrdinal()
 	{
 		return this.priority;
+	}
+
+	@Override
+	public void addChangeListener( ConfigChangeListener cl )
+	{
+		this.cls.add( cl );
+	}
+
+	@Override
+	public void removeChangeListener( ConfigChangeListener cl )
+	{
+		this.cls.remove( cl );
 	}
 }

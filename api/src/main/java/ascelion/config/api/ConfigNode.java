@@ -1,7 +1,6 @@
 
 package ascelion.config.api;
 
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Set;
 
@@ -23,8 +22,4 @@ public interface ConfigNode
 	ConfigNode getNode( String path );
 
 	String getValue( String path );
-
-	void addChangeListener( PropertyChangeListener pcl );
-
-	void removeChangeListener( PropertyChangeListener pcl );
 }

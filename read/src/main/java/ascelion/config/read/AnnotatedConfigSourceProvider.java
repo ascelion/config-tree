@@ -101,7 +101,7 @@ public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 
 				if( rd != null ) {
 					if( cs.value().length() > 0 ) {
-						final List<URL> resources = AnnotatedConfigSourceProvider.getResources( cs.value(), cld );
+						final List<URL> resources = getResources( cs.value(), cld );
 
 						if( resources.isEmpty() ) {
 							L.trace( "Found source: %s(%d) -> %s", st, cs.priority(), cs.value() );

@@ -4,6 +4,7 @@ package ascelion.config.api;
 import java.util.function.Predicate;
 
 import ascelion.config.utils.Iterables;
+import ascelion.config.utils.LazyValue;
 import ascelion.config.utils.ServiceInstance;
 
 public abstract class ConfigRegistry
@@ -34,6 +35,7 @@ public abstract class ConfigRegistry
 	private final Iterables<ConfigSource> sources = new Iterables<>();
 	private final Iterables<ConfigReader> readers = new Iterables<>();
 	private final ServiceInstance<ConvertersRegistry> cvs = new ServiceInstance<>( ConvertersRegistry.class );
+	private final LazyValue<ConfigNode> root = new LazyValue<>();
 
 	@ServiceInstance.CLD
 	private ClassLoader cld;
@@ -93,7 +95,7 @@ public abstract class ConfigRegistry
 	// root node
 	public final ConfigNode root()
 	{
-		return load( this.cld );
+		return this.root.get( () -> load( this.cld ) );
 	}
 
 	protected abstract ConfigNode load( ClassLoader cld );

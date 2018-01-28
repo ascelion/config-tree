@@ -3,11 +3,11 @@ package ascelion.config.eclipse.cs;
 
 import java.util.Map;
 
+import ascelion.config.eclipse.ext.ConfigSourceExt;
+
 import static java.util.Collections.unmodifiableMap;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
-
-public final class ENVConfigSource implements ConfigSource
+public final class ENVConfigSource implements ConfigSourceExt
 {
 
 	private final Map<String, String> properties;

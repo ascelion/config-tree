@@ -12,6 +12,7 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
+import ascelion.config.eclipse.ext.ConfigExt;
 import ascelion.config.impl.ConfigNodeImpl.ConfigNodeTA;
 import ascelion.logging.LOG;
 
@@ -72,34 +73,38 @@ public class DefaultConfigRegistry extends ConfigRegistry
 	@Override
 	protected ConfigNode load( ClassLoader cld )
 	{
-		final ConfigNodeImpl root = new ConfigNodeImpl();
 		final Config config = ConfigProviderResolver.instance().getConfig( cld );
+		final ConfigNodeImpl root = new ConfigNodeImpl();
 
-		try {
-			final List<org.eclipse.microprofile.config.spi.ConfigSource> sources = new ArrayList<>();
+		readConfig( root, config );
 
-			config.getConfigSources().forEach( sources::add );
-
-			Collections.reverse( sources );
-
-			sources.forEach( cs -> {
-				root.setValue( cs.getProperties() );
-			} );
-
-			if( L.isTraceEnabled() ) {
-				final String s = new GsonBuilder()
-					.setPrettyPrinting()
-					.registerTypeHierarchyAdapter( ConfigNode.class, new ConfigNodeTA() )
-					.create()
-					.toJson( root );
-
-				L.trace( "Config: %s", s );
-			}
-		}
-		finally {
-			ConfigProviderResolver.instance().releaseConfig( config );
+		if( config instanceof ConfigExt ) {
+			( (ConfigExt) config ).addChangeListener( cs -> root.setValue( cs.getProperties() ) );
 		}
 
 		return root;
+	}
+
+	private void readConfig( final ConfigNodeImpl root, final Config config )
+	{
+		final List<org.eclipse.microprofile.config.spi.ConfigSource> sources = new ArrayList<>();
+
+		config.getConfigSources().forEach( sources::add );
+
+		Collections.reverse( sources );
+
+		sources.forEach( cs -> {
+			root.setValue( cs.getProperties() );
+		} );
+
+		if( L.isTraceEnabled() ) {
+			final String s = new GsonBuilder()
+				.setPrettyPrinting()
+				.registerTypeHierarchyAdapter( ConfigNode.class, new ConfigNodeTA() )
+				.create()
+				.toJson( root );
+
+			L.trace( "Config: %s", s );
+		}
 	}
 }

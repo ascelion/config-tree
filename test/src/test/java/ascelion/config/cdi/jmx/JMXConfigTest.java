@@ -3,7 +3,6 @@ package ascelion.config.cdi.jmx;
 
 import java.lang.management.ManagementFactory;
 
-import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -46,7 +45,7 @@ public class JMXConfigTest
 	private MBeanServer mbs;
 
 	@Inject
-	private Instance<ConfigNode> root;
+	private ConfigNode root;
 
 	@Inject
 	private Config config;
@@ -55,7 +54,7 @@ public class JMXConfigTest
 	public void run() throws MalformedObjectNameException
 	{
 		final String v11 = this.config.getValue( "file.prop1", String.class );
-		final String v12 = this.root.get().getValue( "file.prop1" );
+		final String v12 = this.root.getValue( "file.prop1" );
 
 		assertEquals( v11, v12 );
 
@@ -65,7 +64,7 @@ public class JMXConfigTest
 		cb.setValue( cb.getValue() + "CHANGED" );
 
 		final String v21 = this.config.getValue( "file.prop1", String.class );
-		final String v22 = this.root.get().getValue( "file.prop1" );
+		final String v22 = this.root.getValue( "file.prop1" );
 
 		assertEquals( v21, v22 );
 		assertEquals( v11 + "CHANGED", v21 );

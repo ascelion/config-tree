@@ -13,4 +13,12 @@ public interface ConfigExt extends Config
 	String getValue( String propertyName, boolean evaluate );
 
 	<T> T convert( String value, Type type );
+
+	default void addChangeListener( ConfigChangeListener cl )
+	{
+	}
+
+	default void removeChangeListener( ConfigChangeListener cl )
+	{
+	}
 }
