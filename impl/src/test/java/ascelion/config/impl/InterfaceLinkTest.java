@@ -9,9 +9,8 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConvertersRegistry;
+import ascelion.config.utils.Utils;
 
-import static ascelion.config.conv.Utils.asArray;
-import static ascelion.config.conv.Utils.asSet;
 import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static java.lang.String.format;
@@ -46,7 +45,7 @@ public class InterfaceLinkTest
 			m.put( format( "%s.VAL%d", PROP1.substring( PREFIX.length() + 1 ), m.size() ), v );
 		}
 
-		return asArray( parameterizedClass( Map.class, String.class, type ), m );
+		return Utils.asArray( parameterizedClass( Map.class, String.class, type ), m );
 	}
 
 	@Parameterized.Parameters( name = "{0}" )
@@ -56,7 +55,7 @@ public class InterfaceLinkTest
 			map( parameterizedClass( InterfaceIntPA.class ), new int[] { 0 }, new int[] { 1 }, new int[] { 2, 3, 4 }, new int[] { 5, 6, 7 } ),
 			map( parameterizedClass( InterfaceLongA.class ), new Long[] { 0L }, new Long[] { 1L }, new Long[] { 2L, 3L, 4L }, new Long[] { 5L, 6L, 7L } ),
 			map( parameterizedClass( InterfaceDoubleL.class ), asList( 0D ), asList( 1D ), asList( 2D, 3D, 4D ), asList( 5D, 6D, 7D ) ),
-			map( parameterizedClass( InterfaceStringS.class ), asSet( "0" ), asSet( "1" ), asSet( "2", "3", "4" ), asSet( "5", "6", "7" ) ),
+			map( parameterizedClass( InterfaceStringS.class ), Utils.asSet( "0" ), Utils.asSet( "1" ), Utils.asSet( "2", "3", "4" ), Utils.asSet( "5", "6", "7" ) ),
 		};
 	}
 

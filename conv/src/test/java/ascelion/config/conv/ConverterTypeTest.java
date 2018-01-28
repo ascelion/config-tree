@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ascelion.config.utils.Utils;
 import ascelion.tests.WhiteBox;
 
-import static ascelion.config.conv.Utils.asArray;
 import static io.leangen.geantyref.TypeFactory.arrayOf;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -66,40 +66,40 @@ public class ConverterTypeTest
 	static public Object data()
 	{
 		return new Object[] {
-			asArray( int[].class, asArray( lambda() ) ),
-			asArray( arrayOf( long.class ), asArray( lambda() ) ),
-			asArray( arrayOf( double.class ), asArray( lambda() ) ),
+			Utils.asArray( int[].class, Utils.asArray( lambda() ) ),
+			Utils.asArray( arrayOf( long.class ), Utils.asArray( lambda() ) ),
+			Utils.asArray( arrayOf( double.class ), Utils.asArray( lambda() ) ),
 
-			asArray( arrayOf( String.class ), asArray( ArrayConverter.class, lambda() ) ),
-			asArray( arrayOf( Integer.class ), asArray( ArrayConverter.class, NullableConverter.class, lambda() ) ),
-			asArray( arrayOf( Long.class ), asArray( ArrayConverter.class, NullableConverter.class, lambda() ) ),
-			asArray( arrayOf( Double.class ), asArray( ArrayConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( arrayOf( String.class ), Utils.asArray( ArrayConverter.class, lambda() ) ),
+			Utils.asArray( arrayOf( Integer.class ), Utils.asArray( ArrayConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( arrayOf( Long.class ), Utils.asArray( ArrayConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( arrayOf( Double.class ), Utils.asArray( ArrayConverter.class, NullableConverter.class, lambda() ) ),
 
-			asArray( parameterizedClass( List.class, String.class ), asArray( ListConverter.class, lambda() ) ),
-			asArray( parameterizedClass( List.class, Integer.class ), asArray( ListConverter.class, NullableConverter.class, lambda() ) ),
-			asArray( parameterizedClass( List.class, Long.class ), asArray( ListConverter.class, NullableConverter.class, lambda() ) ),
-			asArray( parameterizedClass( List.class, URL.class ), asArray( ListConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( List.class, String.class ), Utils.asArray( ListConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( List.class, Integer.class ), Utils.asArray( ListConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( List.class, Long.class ), Utils.asArray( ListConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( List.class, URL.class ), Utils.asArray( ListConverter.class, NullableConverter.class, lambda() ) ),
 
-			asArray( parameterizedClass( Set.class, String.class ), asArray( SetConverter.class, lambda() ) ),
-			asArray( parameterizedClass( Set.class, Integer.class ), asArray( SetConverter.class, NullableConverter.class, lambda() ) ),
-			asArray( parameterizedClass( Set.class, Long.class ), asArray( SetConverter.class, NullableConverter.class, lambda() ) ),
-			asArray( parameterizedClass( Set.class, URL.class ), asArray( SetConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( Set.class, String.class ), Utils.asArray( SetConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( Set.class, Integer.class ), Utils.asArray( SetConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( Set.class, Long.class ), Utils.asArray( SetConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( Set.class, URL.class ), Utils.asArray( SetConverter.class, NullableConverter.class, lambda() ) ),
 
-			asArray( parameterizedClass( Map.class, String.class, String.class ), asArray( MapConverter.class, lambda() ) ),
-			asArray( parameterizedClass( Map.class, String.class, Integer.class ), asArray( MapConverter.class, NullableConverter.class, lambda() ) ),
-			asArray( parameterizedClass( Map.class, String.class, Long.class ), asArray( MapConverter.class, NullableConverter.class, lambda() ) ),
-			asArray( parameterizedClass( Map.class, String.class, URL.class ), asArray( MapConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( Map.class, String.class, String.class ), Utils.asArray( MapConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( Map.class, String.class, Integer.class ), Utils.asArray( MapConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( Map.class, String.class, Long.class ), Utils.asArray( MapConverter.class, NullableConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( Map.class, String.class, URL.class ), Utils.asArray( MapConverter.class, NullableConverter.class, lambda() ) ),
 
-			asArray( arrayOf( DataSourceDefinition.class ), asArray( ArrayConverter.class, InterfaceConverter.class ) ),
-			asArray( parameterizedClass( List.class, DataSourceDefinition.class ), asArray( ListConverter.class, InterfaceConverter.class ) ),
-			asArray( parameterizedClass( Set.class, DataSourceDefinition.class ), asArray( SetConverter.class, InterfaceConverter.class ) ),
-			asArray( parameterizedClass( Map.class, String.class, DataSourceDefinition.class ), asArray( MapConverter.class, InterfaceConverter.class ) ),
+			Utils.asArray( arrayOf( DataSourceDefinition.class ), Utils.asArray( ArrayConverter.class, InterfaceConverter.class ) ),
+			Utils.asArray( parameterizedClass( List.class, DataSourceDefinition.class ), Utils.asArray( ListConverter.class, InterfaceConverter.class ) ),
+			Utils.asArray( parameterizedClass( Set.class, DataSourceDefinition.class ), Utils.asArray( SetConverter.class, InterfaceConverter.class ) ),
+			Utils.asArray( parameterizedClass( Map.class, String.class, DataSourceDefinition.class ), Utils.asArray( MapConverter.class, InterfaceConverter.class ) ),
 
-			asArray( parameterizedClass( List.class, parameterizedClass( Set.class, arrayOf( parameterizedClass( Map.class, String.class, int[].class ) ) ) ),
-				asArray( ListConverter.class, SetConverter.class, ArrayConverter.class, MapConverter.class, lambda() ) ),
+			Utils.asArray( parameterizedClass( List.class, parameterizedClass( Set.class, arrayOf( parameterizedClass( Map.class, String.class, int[].class ) ) ) ),
+				Utils.asArray( ListConverter.class, SetConverter.class, ArrayConverter.class, MapConverter.class, lambda() ) ),
 
-			asArray( parameterizedClass( List.class, parameterizedClass( Set.class, arrayOf( parameterizedClass( Map.class, String.class, DataSourceDefinition.class ) ) ) ),
-				asArray( ListConverter.class, SetConverter.class, ArrayConverter.class, MapConverter.class, InterfaceConverter.class ) ),
+			Utils.asArray( parameterizedClass( List.class, parameterizedClass( Set.class, arrayOf( parameterizedClass( Map.class, String.class, DataSourceDefinition.class ) ) ) ),
+				Utils.asArray( ListConverter.class, SetConverter.class, ArrayConverter.class, MapConverter.class, InterfaceConverter.class ) ),
 		};
 	}
 

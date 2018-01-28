@@ -7,9 +7,10 @@ dependencies {
 	compile 'ascelion.shared:cdi-utils'
 	compile 'ascelion.shared:fmt-log'
 
-	testCompile project( path: ':impl', configuration: 'testArchive' )
 	testCompile 'ascelion.shared:cdi-unit-impl'
 	testCompile 'ascelion.shared:cdi-unit-weld'
+	testCompile project( path: ':conv', configuration: 'testArchive' )
+	testRuntime project( path: ':api', configuration: 'testArchive' )
 	testRuntime project( ':eclipse' )
 
 	testRuntime 'org.postgresql:postgresql'

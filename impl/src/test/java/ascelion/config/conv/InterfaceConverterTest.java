@@ -9,8 +9,8 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConvertersRegistry;
+import ascelion.config.utils.Utils;
 
-import static ascelion.config.conv.Utils.asArray;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -32,10 +32,10 @@ public class InterfaceConverterTest
 	static public Object data()
 	{
 		return new Object[] {
-			asArray( "databases.db1", "jdbc/db1" ),
-			asArray( "databases.db2", "jdbc/db2" ),
-			asArray( "databases.db3", "jdbc/db1" ),
-			asArray( "databases.db4", "jdbc/db2" ),
+			Utils.asArray( "databases.db1", "jdbc/db1" ),
+			Utils.asArray( "databases.db2", "jdbc/db2" ),
+			Utils.asArray( "databases.db3", "jdbc/db1" ),
+			Utils.asArray( "databases.db4", "jdbc/db2" ),
 		};
 	}
 

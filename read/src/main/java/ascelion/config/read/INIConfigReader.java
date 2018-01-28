@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigReader;
 
-import static ascelion.config.conv.Utils.path;
+import static ascelion.config.utils.Utils.path;
 
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;

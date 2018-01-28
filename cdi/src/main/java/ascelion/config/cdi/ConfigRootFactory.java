@@ -1,8 +1,7 @@
 
 package ascelion.config.cdi;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 
 import ascelion.config.api.ConfigNode;
@@ -12,12 +11,9 @@ class ConfigRootFactory
 {
 
 	@Produces
-	@ApplicationScoped
-	private ConfigNode root;
-
-	@PostConstruct
-	private void postConstruct()
+	@Dependent
+	ConfigNode postConstruct()
 	{
-		this.root = ConfigRegistry.getInstance( getClass().getClassLoader() ).root();
+		return ConfigRegistry.getInstance( getClass().getClassLoader() ).root();
 	}
 }

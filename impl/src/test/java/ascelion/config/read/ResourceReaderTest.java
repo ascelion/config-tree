@@ -9,9 +9,9 @@ import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigRegistry;
-import ascelion.config.impl.ConfigSourceLiteral;
+import ascelion.config.utils.ConfigSourceLiteral;
+import ascelion.config.utils.Utils;
 
-import static ascelion.config.conv.Utils.asArray;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -31,10 +31,10 @@ public class ResourceReaderTest
 	static public Object data()
 	{
 		return new Object[] {
-			asArray( INIConfigReader.class ),
-			asArray( PRPConfigReader.class ),
-			asArray( XMLConfigReader.class ),
-			asArray( YMLConfigReader.class ),
+			Utils.asArray( INIConfigReader.class ),
+			Utils.asArray( PRPConfigReader.class ),
+			Utils.asArray( XMLConfigReader.class ),
+			Utils.asArray( YMLConfigReader.class ),
 		};
 	}
 

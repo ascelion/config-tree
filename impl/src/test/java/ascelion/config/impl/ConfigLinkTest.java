@@ -12,9 +12,8 @@ import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConvertersRegistry;
+import ascelion.config.utils.Utils;
 
-import static ascelion.config.conv.Utils.asArray;
-import static ascelion.config.conv.Utils.asSet;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -65,7 +64,7 @@ public class ConfigLinkTest
 			m.put( format( "%s.VAL%d", PROP1.substring( PREFIX.length() + 1 ), m.size() ), v );
 		}
 
-		return asArray( parameterizedClass( Map.class, String.class, type ), m );
+		return Utils.asArray( parameterizedClass( Map.class, String.class, type ), m );
 	}
 
 	@Parameterized.Parameters( name = "{0}" )
@@ -78,7 +77,7 @@ public class ConfigLinkTest
 			map( long[].class, new long[] { 0 }, new long[] { 1 }, new long[] { 2, 3, 4 }, new long[] { 5, 6, 7 } ),
 			map( double[].class, new double[] { 0 }, new double[] { 1 }, new double[] { 2, 3, 4 }, new double[] { 5, 6, 7 } ),
 
-			map( String[].class, asArray( "0" ), asArray( "1" ), asArray( "2", "3", "4" ), asArray( "5", "6", "7" ) ),
+			map( String[].class, Utils.asArray( "0" ), Utils.asArray( "1" ), Utils.asArray( "2", "3", "4" ), Utils.asArray( "5", "6", "7" ) ),
 			map( Integer[].class, new Integer[] { 0 }, new Integer[] { 1 }, new Integer[] { 2, 3, 4 }, new Integer[] { 5, 6, 7 } ),
 			map( Long[].class, new Long[] { 0L }, new Long[] { 1L }, new Long[] { 2L, 3L, 4L }, new Long[] { 5L, 6L, 7L } ),
 			map( Double[].class, new Double[] { 0D }, new Double[] { 1D }, new Double[] { 2D, 3D, 4D }, new Double[] { 5D, 6D, 7D } ),
@@ -88,10 +87,10 @@ public class ConfigLinkTest
 			map( parameterizedClass( List.class, Long.class ), asList( 0L ), asList( 1L ), asList( 2L, 3L, 4L ), asList( 5L, 6L, 7L ) ),
 			map( parameterizedClass( List.class, Double.class ), asList( 0D ), asList( 1D ), asList( 2D, 3D, 4D ), asList( 5D, 6D, 7D ) ),
 
-			map( parameterizedClass( Set.class, String.class ), asSet( "0" ), asSet( "1" ), asSet( "2", "3", "4" ), asSet( "5", "6", "7" ) ),
-			map( parameterizedClass( Set.class, Integer.class ), asSet( 0 ), asSet( 1 ), asSet( 2, 3, 4 ), asSet( 5, 6, 7 ) ),
-			map( parameterizedClass( Set.class, Long.class ), asSet( 0L ), asSet( 1L ), asSet( 2L, 3L, 4L ), asSet( 5L, 6L, 7L ) ),
-			map( parameterizedClass( Set.class, Double.class ), asSet( 0D ), asSet( 1D ), asSet( 2D, 3D, 4D ), asSet( 5D, 6D, 7D ) ),
+			map( parameterizedClass( Set.class, String.class ), Utils.asSet( "0" ), Utils.asSet( "1" ), Utils.asSet( "2", "3", "4" ), Utils.asSet( "5", "6", "7" ) ),
+			map( parameterizedClass( Set.class, Integer.class ), Utils.asSet( 0 ), Utils.asSet( 1 ), Utils.asSet( 2, 3, 4 ), Utils.asSet( 5, 6, 7 ) ),
+			map( parameterizedClass( Set.class, Long.class ), Utils.asSet( 0L ), Utils.asSet( 1L ), Utils.asSet( 2L, 3L, 4L ), Utils.asSet( 5L, 6L, 7L ) ),
+			map( parameterizedClass( Set.class, Double.class ), Utils.asSet( 0D ), Utils.asSet( 1D ), Utils.asSet( 2D, 3D, 4D ), Utils.asSet( 5D, 6D, 7D ) ),
 		};
 	}
 

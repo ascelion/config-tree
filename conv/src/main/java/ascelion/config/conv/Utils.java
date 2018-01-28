@@ -15,29 +15,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigException;
-import ascelion.config.api.ConfigNode;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
-import org.apache.commons.lang3.StringUtils;
 
 public final class Utils
 {
 
 	private static final String ARRAY_SEPARATOR_REGEX = "(?<!\\\\)" + Pattern.quote( "," );
-
-	static public <X> X[] asArray( X... x )
-	{
-		return x;
-	}
-
-	static public <X> Set<? super X> asSet( X... x )
-	{
-		return asList( x ).stream().collect( Collectors.toSet() );
-	}
 
 	static public Set<Method> methodsOf( Class<?> cls )
 	{
@@ -57,26 +42,6 @@ public final class Utils
 		}
 
 		return v;
-	}
-
-	static public String[] keys( String path )
-	{
-		return isNotBlank( path ) ? path.split( "\\." ) : new String[0];
-	}
-
-	static public String path( ConfigNode node )
-	{
-		return node != null ? node.getPath() : null;
-	}
-
-	static public String path( int s, int e, String[] keys )
-	{
-		return asList( keys ).subList( s, e ).stream().collect( Collectors.joining( "." ) );
-	}
-
-	static public String path( String... names )
-	{
-		return Stream.of( names ).filter( StringUtils::isNotBlank ).collect( Collectors.joining( "." ) );
 	}
 
 	static public String unwrap( String path, int count )

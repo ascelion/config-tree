@@ -17,8 +17,8 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.utils.Expression;
 
-import static ascelion.config.conv.Utils.keys;
-import static ascelion.config.conv.Utils.path;
+import static ascelion.config.utils.Utils.path;
+import static ascelion.config.utils.Utils.pathNames;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
@@ -279,7 +279,7 @@ final class ConfigNodeImpl implements ConfigNode
 
 	private ConfigNodeImpl findNode( String path, boolean create )
 	{
-		final String[] keys = keys( path );
+		final String[] keys = pathNames( path );
 		ConfigNodeImpl node = this;
 
 		for( final String key : keys ) {

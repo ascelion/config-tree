@@ -12,7 +12,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import ascelion.config.api.ConfigReader;
 
-import static ascelion.config.conv.Utils.path;
+import static ascelion.config.utils.Utils.path;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 import org.xml.sax.Attributes;

@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static ascelion.config.conv.Utils.asArray;
+import ascelion.config.utils.Utils;
+
 import static ascelion.config.conv.Utils.isArray;
 import static ascelion.config.conv.Utils.isPrimitive;
 import static io.leangen.geantyref.TypeFactory.arrayOf;
@@ -37,22 +38,22 @@ public class ConvertNullTest
 
 		for( final Type t : cached.keySet() ) {
 			if( isPrimitive( t ) ) {
-				data.add( asArray( t, notNullValue() ) );
+				data.add( Utils.asArray( t, notNullValue() ) );
 			}
 			else if( isArray( t ) ) {
-				data.add( asArray( t, notNullValue() ) );
+				data.add( Utils.asArray( t, notNullValue() ) );
 			}
 			else {
-				data.add( asArray( t, nullValue() ) );
+				data.add( Utils.asArray( t, nullValue() ) );
 			}
 		}
 
-		data.add( asArray( parameterizedClass( Map.class, String.class, String.class ), notNullValue() ) );
-		data.add( asArray( parameterizedClass( List.class, String.class ), notNullValue() ) );
-		data.add( asArray( parameterizedClass( Set.class, String.class ), notNullValue() ) );
-		data.add( asArray( arrayOf( String.class ), notNullValue() ) );
+		data.add( Utils.asArray( parameterizedClass( Map.class, String.class, String.class ), notNullValue() ) );
+		data.add( Utils.asArray( parameterizedClass( List.class, String.class ), notNullValue() ) );
+		data.add( Utils.asArray( parameterizedClass( Set.class, String.class ), notNullValue() ) );
+		data.add( Utils.asArray( arrayOf( String.class ), notNullValue() ) );
 
-		data.add( asArray( URI.class, nullValue() ) );
+		data.add( Utils.asArray( URI.class, nullValue() ) );
 
 		return data.toArray();
 	}

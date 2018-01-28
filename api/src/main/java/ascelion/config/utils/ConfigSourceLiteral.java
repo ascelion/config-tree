@@ -1,11 +1,11 @@
 
-package ascelion.config.impl;
+package ascelion.config.utils;
 
 import javax.enterprise.util.AnnotationLiteral;
 
 import ascelion.config.api.ConfigSource;
 
-public class ConfigSourceLiteral extends AnnotationLiteral<ConfigSource> implements ConfigSource
+public final class ConfigSourceLiteral extends AnnotationLiteral<ConfigSource> implements ConfigSource
 {
 
 	private final String value;

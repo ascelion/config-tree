@@ -1,5 +1,5 @@
 
-package ascelion.config.impl;
+package ascelion.config.cdi.jmx;
 
 import javax.management.MXBean;
 
@@ -7,13 +7,9 @@ import javax.management.MXBean;
 public interface ConfigBean
 {
 
-	String getName();
-
 	String getPath();
 
 	String getValue();
-
-	String getRawValue();
 
 	void setValue( String value );
 }

@@ -10,8 +10,8 @@ import java.util.Set;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConvertersRegistry;
+import ascelion.config.utils.Utils;
 
-import static ascelion.config.conv.Utils.asArray;
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
@@ -35,30 +35,30 @@ public class ConfigJavaTest
 	static public Object data()
 	{
 		return new Object[] {
-			asArray( "file.prop1", String.class, "314" ),
-			asArray( "file.prop1", Integer.class, 314 ),
-			asArray( "file.prop1", int.class, 314 ),
-			asArray( "file.prop1", Long.class, 314L ),
-			asArray( "file.prop1", long.class, 314L ),
-			asArray( "file.prop2", String.class, "value2" ),
-			asArray( "file.prop3", String.class, "value1, value2, value3" ),
-			asArray( "file.prop3", String[].class, asArray( "value1", "value2", "value3" ) ),
+			Utils.asArray( "file.prop1", String.class, "314" ),
+			Utils.asArray( "file.prop1", Integer.class, 314 ),
+			Utils.asArray( "file.prop1", int.class, 314 ),
+			Utils.asArray( "file.prop1", Long.class, 314L ),
+			Utils.asArray( "file.prop1", long.class, 314L ),
+			Utils.asArray( "file.prop2", String.class, "value2" ),
+			Utils.asArray( "file.prop3", String.class, "value1, value2, value3" ),
+			Utils.asArray( "file.prop3", String[].class, Utils.asArray( "value1", "value2", "value3" ) ),
 
-			asArray( "file.prop1", parameterizedClass( Optional.class, Long.class ), Optional.of( 314L ) ),
+			Utils.asArray( "file.prop1", parameterizedClass( Optional.class, Long.class ), Optional.of( 314L ) ),
 
-			asArray( "file.prop6", String.class, "1, 2, 3" ),
-			asArray( "file.prop6", String[].class, asArray( "1", "2", "3" ) ),
-			asArray( "file.prop6", Integer[].class, asArray( 1, 2, 3 ) ),
-			asArray( "file.prop6", int[].class, new int[] { 1, 2, 3 } ),
+			Utils.asArray( "file.prop6", String.class, "1, 2, 3" ),
+			Utils.asArray( "file.prop6", String[].class, Utils.asArray( "1", "2", "3" ) ),
+			Utils.asArray( "file.prop6", Integer[].class, Utils.asArray( 1, 2, 3 ) ),
+			Utils.asArray( "file.prop6", int[].class, new int[] { 1, 2, 3 } ),
 
-			asArray( "file.prop6", parameterizedClass( Set.class, String.class ), new HashSet<>( asList( "1", "2", "3" ) ) ),
-			asArray( "file.prop6", parameterizedClass( Set.class, Integer.class ), new HashSet<>( asList( 1, 2, 3 ) ) ),
+			Utils.asArray( "file.prop6", parameterizedClass( Set.class, String.class ), new HashSet<>( asList( "1", "2", "3" ) ) ),
+			Utils.asArray( "file.prop6", parameterizedClass( Set.class, Integer.class ), new HashSet<>( asList( 1, 2, 3 ) ) ),
 
-			asArray( "file.prop6", parameterizedClass( List.class, String.class ), asList( "1", "2", "3" ) ),
-			asArray( "file.prop6", parameterizedClass( List.class, Integer.class ), asList( 1, 2, 3 ) ),
+			Utils.asArray( "file.prop6", parameterizedClass( List.class, String.class ), asList( "1", "2", "3" ) ),
+			Utils.asArray( "file.prop6", parameterizedClass( List.class, Integer.class ), asList( 1, 2, 3 ) ),
 
-			asArray( "file.version1", String.class, System.getProperty( "java.version" ) ),
-			asArray( "file.version2", String.class, System.getProperty( "java.version" ) ),
+			Utils.asArray( "file.version1", String.class, System.getProperty( "java.version" ) ),
+			Utils.asArray( "file.version2", String.class, System.getProperty( "java.version" ) ),
 		};
 	}
 

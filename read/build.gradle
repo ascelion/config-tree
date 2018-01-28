@@ -1,0 +1,15 @@
+apply plugin: 'java'
+
+dependencies {
+	compile project( ':api' )
+
+	compile 'ascelion.shared:fmt-log'
+	compile 'org.eclipse.microprofile.config:microprofile-config-api'
+	compile 'commons-io:commons-io'
+	compile 'org.yaml:snakeyaml'
+	compile 'org.ini4j:ini4j'
+
+	testCompile 'ascelion.shared:junit-ext'
+	testRuntime project( ':eclipse' )
+	testRuntime project( path: ':api', configuration: 'testArchive' )
+}
