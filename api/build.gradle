@@ -11,7 +11,6 @@ dependencies {
 	testCompile 'org.hamcrest:hamcrest-core'
 	testCompile 'org.hamcrest:hamcrest-library'
 
-	testCompileOnly 'org.apiguardian:apiguardian-api:1.0.0'
 	testCompile 'org.junit.jupiter:junit-jupiter-api'
 	testCompile 'org.junit.jupiter:junit-jupiter-params'
 	testRuntime 'org.junit.jupiter:junit-jupiter-engine'

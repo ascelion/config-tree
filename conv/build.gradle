@@ -2,8 +2,7 @@ apply plugin: 'java'
 
 dependencies {
 	compile project( ':api' )
+
 	compile 'io.leangen.geantyref:geantyref'
 	compile 'org.apache.commons:commons-lang3'
-
-	testCompile 'ascelion.shared:junit-ext'
 }

@@ -12,13 +12,6 @@ dependencies {
 	compile 'com.google.code.gson:gson'
 
 	compile 'io.github.lukehutch:fast-classpath-scanner'
-
-	testCompile 'ascelion.shared:junit-ext'
-	testCompile project( path: ':conv', configuration: 'testArchive' )
-	testRuntime project( path: ':api', configuration: 'testArchive' )
-	testRuntime project( ':eclipse' )
-
-	testRuntime 'org.postgresql:postgresql'
 }
 
 task( cleanLog, type: Delete ) {
