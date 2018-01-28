@@ -1,8 +1,8 @@
 
 package ascelion.config.cdi;
 
+import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Destroyed;
 import javax.enterprise.context.Initialized;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Any;
@@ -14,6 +14,8 @@ import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.impl.DefaultConfigRegistry;
+
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 
 @Singleton
 class CDIConfigRegistry extends DefaultConfigRegistry
@@ -38,14 +40,10 @@ class CDIConfigRegistry extends DefaultConfigRegistry
 		return this.ext.sources();
 	}
 
-	void applicationInitialised( @Observes @Initialized( ApplicationScoped.class ) Object event )
+	void applicationInitialised( @Observes @Priority( -1000 ) @Initialized( ApplicationScoped.class ) Object event )
 	{
+		ConfigProviderResolver.setInstance( null );
 		ConfigRegistry.setInstance( this );
-	}
-
-	void applicationDestroyed( @Observes @Destroyed( ApplicationScoped.class ) Object event )
-	{
-		ConfigRegistry.setInstance( null );
 	}
 
 }

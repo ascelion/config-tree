@@ -15,7 +15,6 @@ dependencies {
 	compile project( ':api' )
 	compile project( ':conv' )
 
-	compile 'org.eclipse.microprofile.config:microprofile-config-api'
 	compile 'ascelion.shared:fmt-log'
 	compile 'ascelion.shared:cdi-utils'
 
