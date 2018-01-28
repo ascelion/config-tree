@@ -32,7 +32,7 @@ public class ConfigValueTest
 	@ConfigSource( "file.yml" )
 	@ConfigSource( "file.properties" )
 	@ConfigSource( "file.conf" )
-	static class Bean1
+	static public class Bean1
 	{
 
 		@ConfigValue( "value1:-20" )

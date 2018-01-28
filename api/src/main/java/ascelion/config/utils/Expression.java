@@ -92,10 +92,10 @@ public final class Expression
 	{
 		this.lookup = lookup;
 
-		setValue( expression );
+		setExpression( expression );
 	}
 
-	public void setValue( String expression )
+	public void setExpression( String expression )
 	{
 		this.expression = expression;
 		this.cached = isEmpty();

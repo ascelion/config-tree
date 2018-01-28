@@ -9,7 +9,11 @@ public interface ConfigBean
 
 	String getPath();
 
+	String getExpression();
+
+	void setExpression( String value );
+
 	String getValue();
 
-	void setValue( String value );
+	String getDefaultValue();
 }

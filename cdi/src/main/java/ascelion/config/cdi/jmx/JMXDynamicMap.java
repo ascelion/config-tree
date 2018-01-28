@@ -122,7 +122,7 @@ class JMXDynamicMap extends AbstractMap<String, String>
 
 		if( cv != null ) {
 			try {
-				this.mbs.registerMBean( new ConfigBeanImpl( path, cv ), on );
+				this.mbs.registerMBean( new ConfigBeanImpl( path, cv, this.init ), on );
 				this.mbs.addNotificationListener( on, this::handleNotification, not -> AttributeChangeNotification.class.isInstance( not ), path );
 
 				this.delegate.put( path, cv );

@@ -243,7 +243,7 @@ public final class ConfigNodeImpl implements ConfigNode
 		final String oldValue = this.expression.getExpression();
 
 		if( !Objects.equals( oldValue, newValue ) ) {
-			this.expression.setValue( newValue );
+			this.expression.setExpression( newValue );
 		}
 	}
 
