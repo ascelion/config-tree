@@ -1,7 +1,10 @@
 
 package ascelion.config.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -73,7 +76,13 @@ public class DefaultConfigRegistry extends ConfigRegistry
 		final Config config = ConfigProviderResolver.instance().getConfig( cld );
 
 		try {
-			config.getConfigSources().forEach( cs -> {
+			final List<org.eclipse.microprofile.config.spi.ConfigSource> sources = new ArrayList<>();
+
+			config.getConfigSources().forEach( sources::add );
+
+			Collections.reverse( sources );
+
+			sources.forEach( cs -> {
 				root.setValue( cs.getProperties() );
 			} );
 

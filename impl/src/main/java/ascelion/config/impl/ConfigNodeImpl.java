@@ -28,7 +28,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-final class ConfigNodeImpl implements ConfigNode
+public final class ConfigNodeImpl implements ConfigNode
 {
 
 	static class ConfigNodeTA extends TypeAdapter<ConfigNodeImpl>
@@ -67,7 +67,7 @@ final class ConfigNodeImpl implements ConfigNode
 	private final Expression expression;
 	private Map<String, ConfigNodeImpl> nodes;
 
-	ConfigNodeImpl()
+	public ConfigNodeImpl()
 	{
 		this.root = this;
 		this.name = null;
