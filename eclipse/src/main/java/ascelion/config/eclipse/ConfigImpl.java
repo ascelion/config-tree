@@ -47,13 +47,13 @@ final class ConfigImpl extends AbstractConfig
 	@Override
 	public <T> Optional<T> getOptionalValue( String propertyName, Class<T> propertyType )
 	{
-		final String value = getValue( propertyName );
+		final Value value = getValue( propertyName, false );
 
-		if( value == null ) {
+		if( value.undefined() ) {
 			return empty();
 		}
 
-		return ofNullable( convert( value, propertyType ) );
+		return ofNullable( convert( value.get(), propertyType ) );
 	}
 
 	@Override

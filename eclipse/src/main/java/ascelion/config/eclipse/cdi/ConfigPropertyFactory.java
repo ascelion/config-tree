@@ -14,6 +14,7 @@ import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import ascelion.config.eclipse.ext.ConfigExt;
+import ascelion.config.eclipse.ext.ConfigExt.Value;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -25,17 +26,20 @@ final class ConfigPropertyFactory
 	static Object getValue( InjectionPoint ip, ConfigExt cf )
 	{
 		final String pn = propertyName( ip );
-		String pv = cf.getValue( pn );
+		Value pv = cf.getValue( pn, false );
 
-		if( pv == null ) {
+		if( pv.undefined() ) {
 			final ConfigProperty cp = ip.getAnnotated().getAnnotation( ConfigProperty.class );
 
-			if( !ConfigProperty.UNCONFIGURED_VALUE.equals( cp.defaultValue() ) ) {
-				pv = cp.defaultValue();
+			if( ConfigProperty.UNCONFIGURED_VALUE.equals( cp.defaultValue() ) ) {
+				pv = new Value( "" );
+			}
+			else {
+				pv = new Value( cp.defaultValue() );
 			}
 		}
 
-		return cf.convert( pv, ip.getType() );
+		return cf.convert( pv.get(), ip.getType() );
 	}
 
 	static String propertyName( InjectionPoint ip )
