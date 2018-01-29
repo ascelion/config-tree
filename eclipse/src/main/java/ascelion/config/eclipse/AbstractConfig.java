@@ -2,12 +2,11 @@
 package ascelion.config.eclipse;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 
 import ascelion.config.api.ConvertersRegistry;
 import ascelion.config.eclipse.ext.ConfigExt;
 import ascelion.config.utils.Expression;
-
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
@@ -22,28 +21,20 @@ public abstract class AbstractConfig implements ConfigExt
 	}
 
 	@Override
-	public final String getValue( String propertyName )
+	public final String getValue( String key )
 	{
-		for( final ConfigSource cs : getConfigSources() ) {
-			final String val = cs.getValue( propertyName );
-
-			if( val != null ) {
-				return val;
-			}
-		}
-
-		return null;
+		return readValue( key ).get();
 	}
 
 	@Override
-	public final String getValue( String propertyName, boolean evaluate )
+	public final Value getValue( String key, boolean evaluate )
 	{
-		String val = getValue( propertyName );
+		final Value val = readValue( key );
 
-		if( evaluate && isNotBlank( val ) ) {
-			final Expression exp = new Expression( this::lookup, val );
+		if( evaluate && !val.undefined() ) {
+			final Expression exp = new Expression( this::lookup, val.get() );
 
-			val = exp.getValue();
+			return new Value( exp.getValue() );
 		}
 
 		return val;
@@ -64,10 +55,21 @@ public abstract class AbstractConfig implements ConfigExt
 		}
 	}
 
-	private Expression.Result lookup( String key )
+	protected final Value readValue( String key )
 	{
-		final String val = getValue( key, false );
+		for( final ConfigSource cs : getConfigSources() ) {
+			final Map<String, String> map = cs.getProperties();
 
-		return val != null ? new Expression.Result( val ) : new Expression.Result();
+			if( map.containsKey( key ) ) {
+				return new Value( cs.getValue( key ) );
+			}
+		}
+
+		return new Value();
+	}
+
+	private Value lookup( String key )
+	{
+		return getValue( key, false );
 	}
 }

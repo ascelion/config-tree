@@ -33,15 +33,15 @@ final class ConfigImpl extends AbstractConfig
 	@Override
 	public <T> T getValue( String propertyName, Class<T> propertyType )
 	{
-		final String value = getValue( propertyName );
+		final Value value = readValue( propertyName );
 
-		if( value == null ) {
+		if( value.undefined() ) {
 			L.trace( "Configuration not found: %s", propertyName );
 
 			throw new NoSuchElementException( "Configuration not found: " + propertyName );
 		}
 
-		return convert( value, propertyType );
+		return convert( value.get(), propertyType );
 	}
 
 	@Override

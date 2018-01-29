@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import ascelion.config.api.ConfigNotFoundException;
+import ascelion.config.eclipse.ext.ConfigExt.Value;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
@@ -21,38 +22,18 @@ import lombok.ToString;
 public final class Expression
 {
 
-	@ToString
-	public static class Result
+	static private Function<String, Value> wrap( UnaryOperator<String> fun )
 	{
+		return x -> {
+			x = fun.apply( x );
 
-		static Function<String, Result> wrap( UnaryOperator<String> fun )
-		{
-			return x -> {
-				x = fun.apply( x );
-
-				if( x == null ) {
-					return new Result();
-				}
-				else {
-					return new Result( x );
-				}
-			};
-		}
-
-		final boolean unresolved;
-		final String value;
-
-		public Result()
-		{
-			this.unresolved = true;
-			this.value = null;
-		}
-
-		public Result( String value )
-		{
-			this.unresolved = false;
-			this.value = value;
-		}
+			if( x == null ) {
+				return new Value();
+			}
+			else {
+				return new Value( x );
+			}
+		};
 	}
 
 	static private final char[] PREFIX = "${".toCharArray();
@@ -60,7 +41,7 @@ public final class Expression
 	static private final char[] SUFFIX = "}".toCharArray();
 	static private final char ESCAPE = '\\';
 
-	private final Function<String, Result> lookup;
+	private final Function<String, Value> lookup;
 	@Getter
 	private String expression;
 	private String value;
@@ -75,20 +56,20 @@ public final class Expression
 
 	public Expression( UnaryOperator<String> lookup )
 	{
-		this( Result.wrap( lookup ), null );
+		this( wrap( lookup ), null );
 	}
 
 	public Expression( UnaryOperator<String> lookup, String expression )
 	{
-		this( Result.wrap( lookup ), expression );
+		this( wrap( lookup ), expression );
 	}
 
-	public Expression( Function<String, Result> lookup )
+	public Expression( Function<String, Value> lookup )
 	{
 		this( lookup, null );
 	}
 
-	public Expression( Function<String, Result> lookup, String expression )
+	public Expression( Function<String, Value> lookup, String expression )
 	{
 		this.lookup = lookup;
 
@@ -165,14 +146,17 @@ public final class Expression
 
 							addName( var );
 
-							final Result res = this.lookup.apply( var );
-							String val = res.value;
-							if( res.unresolved ) {
+							final Value res = this.lookup.apply( var );
+							String val;
+							if( res.undefined() ) {
 								if( this.defValue == null ) {
 									throw new ConfigNotFoundException( var );
 								}
 
 								val = this.defValue;
+							}
+							else {
+								val = res.get();
 							}
 
 							val = replace( new Buffer( trimToEmpty( val ) ) );

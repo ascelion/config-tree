@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
+import ascelion.config.eclipse.ext.ConfigExt;
 import ascelion.config.utils.Expression;
 
 import static ascelion.config.utils.Utils.path;
@@ -288,10 +289,10 @@ public final class ConfigNodeImpl implements ConfigNode
 		}
 	}
 
-	private Expression.Result lookup( String path )
+	private ConfigExt.Value lookup( String path )
 	{
 		final ConfigNode node = findNode( path, false );
 
-		return node != null ? new Expression.Result( node.getRawValue() ) : new Expression.Result();
+		return node != null ? new ConfigExt.Value( node.getRawValue() ) : new ConfigExt.Value();
 	}
 }

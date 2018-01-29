@@ -2,7 +2,6 @@
 package ascelion.config.cdi.jmx;
 
 import java.lang.management.ManagementFactory;
-import java.util.function.UnaryOperator;
 
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -18,12 +17,14 @@ import ascelion.cdi.junit.EnableExtensions;
 import ascelion.cdi.junit.ImportClasses;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigSource;
-import ascelion.config.utils.Expression;
+import ascelion.config.eclipse.ext.ConfigExt;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import org.eclipse.microprofile.config.Config;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,41 +55,43 @@ public class JMXConfigTest
 	private ConfigNode root;
 
 	@Inject
-	private Config config;
+	private ConfigExt config;
 
 	@Test
 	public void run() throws MalformedObjectNameException
 	{
-		final String v11 = this.config.getValue( "file.prop1", String.class );
+		final String v11 = this.config.getValue( "file.prop1", true ).get();
 		final String v12 = this.root.getValue( "file.prop1" );
 
-		assertEquals( v11, v12 );
+		assertThat( v11, equalTo( v12 ) );
 
 		final ObjectName on = JMXTree.objectName( "test", "file.prop1" );
 		final ConfigBean cb = JMX.newMBeanProxy( this.mbs, on, ConfigBean.class );
 
 		cb.setExpression( "${java.version}" );
 
-		final Expression exp = new Expression( (UnaryOperator<String>) x -> this.config.getValue( x, String.class ) );
-		exp.setExpression( this.config.getValue( "file.prop1", String.class ) );
-		final String v21 = exp.getValue();
+		final String v21 = this.config.getValue( "file.prop1", true ).get();
 		final String v22 = this.root.getValue( "file.prop1" );
 
-		assertEquals( v21, v22 );
-		assertEquals( System.getProperty( "java.version" ), v21 );
+		assertThat( v21, equalTo( v22 ) );
+		assertThat( v21, equalTo( System.getProperty( "java.version" ) ) );
 
 		try {
 			this.mbs.getObjectInstance( JMXTree.objectName( "test", "java.version" ) );
+
 			fail( "found java.version" );
 		}
 		catch( final InstanceNotFoundException e ) {
 			// OK
 		}
 
-		this.root.getKeys().forEach( this.root::getNode );
-		this.config.getPropertyNames().forEach( this.root::getNode );
+		cb.setExpression( null );
 
-		System.out.println();
+		final String v31 = this.config.getValue( "file.prop1", true ).get();
+		final String v32 = this.root.getValue( "file.prop1" );
+
+		assertThat( v31, is( nullValue() ) );
+		assertThat( v32, is( nullValue() ) );
 	}
 
 }

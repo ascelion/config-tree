@@ -2,6 +2,7 @@
 package ascelion.config.cdi.jmx;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.management.AttributeChangeNotification;
 import javax.management.InstanceAlreadyExistsException;
@@ -19,7 +20,7 @@ import ascelion.config.utils.Utils;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toMap;
+import static java.util.Collections.unmodifiableMap;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -86,7 +87,14 @@ final class JMXTree
 
 	private Map<String, String> doQuery() throws MalformedObjectNameException
 	{
-		return this.mbs.queryNames( new ObjectName( this.domain + ":*" ), null ).stream().collect( toMap( this::pathOf, this::valueOf ) );
+		final Map<String, String> map = new TreeMap<>();
+
+		this.mbs.queryNames( new ObjectName( this.domain + ":*" ), null )
+			.forEach( oi -> {
+				map.put( pathOf( oi ), valueOf( oi ) );
+			} );
+
+		return unmodifiableMap( map );
 	}
 
 	private void buildEntry( String path, String value )
