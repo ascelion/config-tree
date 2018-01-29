@@ -15,6 +15,7 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigNotFoundException;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigValue;
+import ascelion.config.utils.ConfigValueLiteral;
 
 import static ascelion.config.conv.Utils.methodsOf;
 import static java.lang.String.format;

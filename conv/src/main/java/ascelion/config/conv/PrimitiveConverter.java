@@ -34,10 +34,6 @@ final class PrimitiveConverter<T> implements ConfigConverter<T>
 	@Override
 	public T create( ConfigNode u, int unwrap )
 	{
-		if( u == null ) {
-			return this.conv.create( "0" );
-		}
-
-		return this.conv.create( u, unwrap );
+		return create( u != null ? u.getValue() : null );
 	}
 }

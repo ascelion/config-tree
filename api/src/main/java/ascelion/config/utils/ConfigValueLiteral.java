@@ -1,5 +1,5 @@
 
-package ascelion.config.conv;
+package ascelion.config.utils;
 
 import javax.enterprise.util.AnnotationLiteral;
 

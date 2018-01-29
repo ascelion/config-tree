@@ -26,3 +26,8 @@ junitPlatform {
 		includeClassNamePattern '.*Test'
 	}
 }
+
+junitPlatformTest {
+	enabled = !booleanProperty('skipTests')
+}
+
