@@ -35,7 +35,6 @@ import ascelion.config.utils.Utils;
 import static ascelion.config.conv.EnumConverter.enumeration;
 import static ascelion.config.conv.NullableConverter.nullable;
 import static ascelion.config.conv.PrimitiveConverter.primitive;
-import static io.leangen.geantyref.GenericTypeReflector.getTypeName;
 import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.String.format;
@@ -50,41 +49,7 @@ public final class Converters implements ConvertersRegistry
 
 	static private int compare( Type t1, Type t2 )
 	{
-		if( t1.equals( t2 ) ) {
-			return 0;
-		}
-
-		if( t1 instanceof Class && t2 instanceof Class ) {
-			if( isBaseOf( t2, t1 ) ) {
-				return -1;
-			}
-			if( isBaseOf( t1, t2 ) ) {
-				return +1;
-			}
-
-			return t1.getTypeName().compareTo( t2.getTypeName() );
-		}
-		if( t1 instanceof Class ) {
-			return -1;
-		}
-		if( t2 instanceof Class ) {
-			return +1;
-		}
-
-		return getTypeName( t1 ).compareTo( getTypeName( t2 ) );
-	}
-
-	static private boolean isBaseOf( Type t1, Type t2 )
-	{
-		if( t1 instanceof Class && t2 instanceof Class ) {
-			final Class<?> c1 = (Class<?>) t1;
-			final Class<?> c2 = (Class<?>) t2;
-
-			return c1.isAssignableFrom( c2 );
-		}
-		else {
-			return false;
-		}
+		return t1.getTypeName().compareTo( t2.getTypeName() );
 	}
 
 	static class CCH<T>
@@ -203,18 +168,6 @@ public final class Converters implements ConvertersRegistry
 				try {
 					if( this.cached.containsKey( type ) ) {
 						return this.cached.get( type ).c;
-					}
-
-					final CCH<?> h = this.cached.entrySet().stream()
-						.filter( e -> isBaseOf( e.getKey(), type ) )
-						.map( e -> e.getValue() )
-						.findFirst()
-						.orElse( null );
-
-					if( h != null ) {
-						this.cached.put( type, h );
-
-						return h.c;
 					}
 
 					final ConfigConverter<?> c = inferConverter( type );
