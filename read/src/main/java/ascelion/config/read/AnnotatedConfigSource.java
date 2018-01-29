@@ -9,6 +9,11 @@ import ascelion.config.eclipse.ext.ConfigChangeListenerSupport;
 import ascelion.config.eclipse.ext.ConfigSourceExt;
 import ascelion.logging.LOG;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+@EqualsAndHashCode( of = "source", doNotUseGetters = true )
+@ToString( of = { "source" }, doNotUseGetters = true )
 final class AnnotatedConfigSource implements ConfigSourceExt
 {
 

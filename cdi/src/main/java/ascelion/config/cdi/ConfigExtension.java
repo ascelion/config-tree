@@ -9,10 +9,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -33,6 +36,7 @@ import javax.inject.Inject;
 import ascelion.cdi.bean.BeanAttributesBuilder;
 import ascelion.cdi.bean.BeanBuilder;
 import ascelion.cdi.type.AnnotatedTypeW;
+import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.cdi.jmx.JMXConfigReader;
@@ -47,6 +51,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
 import com.google.common.primitives.Primitives;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 
 public class ConfigExtension implements Extension
 {
@@ -64,10 +69,11 @@ public class ConfigExtension implements Extension
 		addType( ConfigFactory.class, bm, event );
 		addType( ConfigRootFactory.class, bm, event );
 		addType( INIConfigReader.class, bm, event );
-		addType( JMXConfigReader.class, bm, event );
 		addType( PRPConfigReader.class, bm, event );
 		addType( XMLConfigReader.class, bm, event );
 		addType( YMLConfigReader.class, bm, event );
+
+		addType( JMXConfigReader.class, bm, event );
 	}
 
 	<X> void collectConfigSourceList( @Observes ProcessAnnotatedType<X> event )
@@ -150,15 +156,16 @@ public class ConfigExtension implements Extension
 		}
 	}
 
-//	void afterDeploymentValidation( @Observes AfterDeploymentValidation event, BeanManager bm )
-//	{
-//		final Set<Bean<?>> beans = bm.getBeans( CDIConfigRegistry.class );
-//		final Bean<CDIConfigRegistry> bean = (Bean<CDIConfigRegistry>) bm.resolve( beans );
-//		final CreationalContext<CDIConfigRegistry> cx = bm.createCreationalContext( bean );
-//		final CDIConfigRegistry reference = (CDIConfigRegistry) bm.getReference( bean, CDIConfigRegistry.class, cx );
-//
-//		ConfigRegistry.setInstance( reference );
-//	}
+	void afterDeploymentValidation( @Observes @Priority( -5000 ) AfterDeploymentValidation event, BeanManager bm )
+	{
+		final Set<Bean<?>> beans = bm.getBeans( ConfigRegistry.class );
+		final Bean<ConfigRegistry> bean = (Bean<ConfigRegistry>) bm.resolve( beans );
+		final CreationalContext<ConfigRegistry> cx = bm.createCreationalContext( bean );
+		final ConfigRegistry reference = (ConfigRegistry) bm.getReference( bean, ConfigRegistry.class, cx );
+
+		ConfigProviderResolver.setInstance( null );
+		ConfigRegistry.setInstance( reference );
+	}
 
 	private void createFactory( AfterBeanDiscovery event, BeanManager bm )
 	{

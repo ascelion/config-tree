@@ -85,7 +85,7 @@ public class DefaultConfigRegistry extends ConfigRegistry
 		return root;
 	}
 
-	private void readConfig( final ConfigNodeImpl root, final Config config )
+	private void readConfig( ConfigNodeImpl root, Config config )
 	{
 		final List<org.eclipse.microprofile.config.spi.ConfigSource> sources = new ArrayList<>();
 
