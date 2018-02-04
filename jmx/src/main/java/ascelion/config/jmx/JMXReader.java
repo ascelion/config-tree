@@ -16,9 +16,9 @@ import ascelion.config.eclipse.ext.ConfigExt;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.synchronizedMap;
 
-@ConfigReader.Type( value = JMXConfigReader.TYPE )
+@ConfigReader.Type( value = JMXReader.TYPE )
 @ApplicationScoped
-public class JMXConfigReader implements ConfigReader
+public class JMXReader implements ConfigReader
 {
 
 	static public final String TYPE = "JMX";

@@ -25,7 +25,7 @@ public class JMXExtension implements Extension
 
 	void beforeBeanDiscovery( @Observes BeforeBeanDiscovery event, BeanManager bm )
 	{
-		addType( JMXConfigReader.class, bm, event );
+		addType( JMXReader.class, bm, event );
 	}
 
 	<X> void collectWritable( @Observes ProcessAnnotatedType<X> event )
