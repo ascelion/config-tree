@@ -1,5 +1,5 @@
 
-package ascelion.config.cdi.jmx;
+package ascelion.config.jmx;
 
 import javax.management.MXBean;
 
@@ -10,8 +10,6 @@ public interface ConfigBean
 	String getPath();
 
 	String getExpression();
-
-	void setExpression( String value );
 
 	String getValue();
 

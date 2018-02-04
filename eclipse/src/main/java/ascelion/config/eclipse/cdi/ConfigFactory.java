@@ -4,10 +4,12 @@ package ascelion.config.eclipse.cdi;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.Typed;
 
 import ascelion.config.eclipse.ext.ConfigExt;
 
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 
 class ConfigFactory
@@ -15,17 +17,14 @@ class ConfigFactory
 
 	@Produces
 	@ApplicationScoped
-	static ConfigExt getConfig()
+	@Typed( { Config.class, ConfigExt.class } )
+	static ConfigExt getConfigExt()
 	{
-		return ConfigWrapper.wrap( ConfigProviderResolver.instance().getConfig() );
+		return ConfigExt.wrap( ConfigProvider.getConfig() );
 	}
 
 	static void release( @Disposes Config config )
 	{
-		if( config instanceof ConfigWrapper ) {
-			config = ( (ConfigWrapper) config ).delegate;
-		}
-
 		ConfigProviderResolver.instance().releaseConfig( config );
 	}
 }

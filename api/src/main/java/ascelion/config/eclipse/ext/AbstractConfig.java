@@ -1,11 +1,10 @@
 
-package ascelion.config.eclipse;
+package ascelion.config.eclipse.ext;
 
 import java.lang.reflect.Type;
 import java.util.Map;
 
 import ascelion.config.api.ConvertersRegistry;
-import ascelion.config.eclipse.ext.ConfigExt;
 import ascelion.config.utils.Expression;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;

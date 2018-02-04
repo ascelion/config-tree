@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ascelion.config.api.ConvertersRegistry;
+import ascelion.config.eclipse.ext.AbstractConfig;
 import ascelion.config.eclipse.ext.ConfigChangeListener;
 import ascelion.config.eclipse.ext.ConfigSourceExt;
 import ascelion.logging.LOG;

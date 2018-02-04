@@ -80,7 +80,7 @@ public class ConfigJavaTest
 	public void setUp()
 	{
 		ConfigProviderResolver.setInstance( null );
-		ConfigRegistry.setInstance( null );
+		ConfigRegistry.reset();
 		ConfigRegistry.getInstance().filterSource( cs -> cs.value().startsWith( "file" ) );
 	}
 

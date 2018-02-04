@@ -4,6 +4,7 @@ package ascelion.config.utils;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -20,6 +21,8 @@ public final class References<T>
 
 	public void put( ClassLoader cld, T obj )
 	{
+		Objects.requireNonNull( obj, "Instance cannot be null" );
+
 		cld = Utils.classLoader( cld, getClass() );
 
 		synchronized( this.references ) {
@@ -58,6 +61,13 @@ public final class References<T>
 	{
 		synchronized( this.references ) {
 			purge( t );
+		}
+	}
+
+	public void clear()
+	{
+		synchronized( this.references ) {
+			this.references.clear();
 		}
 	}
 

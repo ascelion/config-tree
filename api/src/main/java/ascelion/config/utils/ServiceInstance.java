@@ -41,7 +41,7 @@ public final class ServiceInstance<T>
 
 	public T get( ClassLoader cld )
 	{
-		return this.services.get( cld, this::load );
+		return this.services.get( cld, this::create );
 	}
 
 	public void set( T instance )
@@ -54,7 +54,12 @@ public final class ServiceInstance<T>
 		this.services.put( cld, instance );
 	}
 
-	private T load( ClassLoader cld )
+	public void clear()
+	{
+		this.services.clear();
+	}
+
+	public T create( ClassLoader cld )
 	{
 		T instance = loadFromProperty( cld );
 		if( instance != null ) {

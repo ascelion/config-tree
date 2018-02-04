@@ -5,10 +5,11 @@ dependencies {
 	testCompile project( ':read' )
 	testCompile project( ':impl' )
 	testCompile project( ':cdi' )
+	testCompile project( ':jmx' )
+	testCompile project( ':eclipse' )
 
 	testCompile 'ascelion.shared:junit-ext'
 	testCompile 'ascelion.shared:cdi-unit-impl'
 	testCompile 'ascelion.shared:cdi-unit-weld'
 	testRuntime 'org.postgresql:postgresql'
-	testCompile project( ':eclipse' )
 }

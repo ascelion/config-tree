@@ -39,7 +39,6 @@ import ascelion.cdi.type.AnnotatedTypeW;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.api.ConfigValue;
-import ascelion.config.cdi.jmx.JMXConfigReader;
 import ascelion.config.read.INIConfigReader;
 //import ascelion.config.read.JMXConfigReader;
 import ascelion.config.read.PRPConfigReader;
@@ -72,8 +71,6 @@ public class ConfigExtension implements Extension
 		addType( PRPConfigReader.class, bm, event );
 		addType( XMLConfigReader.class, bm, event );
 		addType( YMLConfigReader.class, bm, event );
-
-		addType( JMXConfigReader.class, bm, event );
 	}
 
 	<X> void collectConfigSourceList( @Observes ProcessAnnotatedType<X> event )
@@ -164,6 +161,7 @@ public class ConfigExtension implements Extension
 		final ConfigRegistry reference = (ConfigRegistry) bm.getReference( bean, ConfigRegistry.class, cx );
 
 		ConfigProviderResolver.setInstance( null );
+		ConfigRegistry.reset();
 		ConfigRegistry.setInstance( reference );
 	}
 

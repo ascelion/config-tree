@@ -1,8 +1,8 @@
 
 package ascelion.config.utils;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -42,6 +42,7 @@ public final class Expression
 	static private final char ESCAPE = '\\';
 
 	private final Function<String, Value> lookup;
+	private final Deque<String> names = new LinkedList<>();
 	@Getter
 	private String expression;
 	private String value;
@@ -52,7 +53,6 @@ public final class Expression
 	private boolean changed;
 	@Getter
 	private String lastVariable;
-	private final Set<String> names = new LinkedHashSet<>();
 
 	public Expression( UnaryOperator<String> lookup )
 	{
@@ -79,7 +79,7 @@ public final class Expression
 	public void setExpression( String expression )
 	{
 		this.expression = expression;
-		this.cached = isEmpty();
+		this.cached = isBlank( expression );
 		this.changed = false;
 		this.value = null;
 	}
@@ -108,7 +108,7 @@ public final class Expression
 
 	public void expire()
 	{
-		this.cached = false;
+		this.cached = isBlank( this.expression );
 		this.value = null;
 	}
 
@@ -144,7 +144,7 @@ public final class Expression
 								this.defValue = place.toString( defIx + DEFAULT.length, place.count - defIx - DEFAULT.length );
 							}
 
-							addName( var );
+							pushName( var );
 
 							final Value res = this.lookup.apply( var );
 							String val;
@@ -168,7 +168,7 @@ public final class Expression
 
 							this.changed = true;
 
-							delName( var );
+							popName();
 
 							break;
 						}
@@ -183,19 +183,21 @@ public final class Expression
 		return buf.toString();
 	}
 
-	private void addName( String name )
+	private void pushName( String name )
 	{
-		if( !this.names.add( name ) ) {
+		if( this.names.contains( name ) ) {
 			final String m = format( "Recursive definition for ${%s}: %s", name, this.names.stream().collect( joining( " -> " ) ) );
 
 			throw new IllegalStateException( m );
 		}
 
+		this.names.addLast( name );
+
 		this.lastVariable = name;
 	}
 
-	private void delName( String name )
+	private void popName()
 	{
-		this.names.remove( name );
+		this.names.pollLast();
 	}
 }

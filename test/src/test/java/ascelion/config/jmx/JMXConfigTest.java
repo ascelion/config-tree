@@ -1,5 +1,5 @@
 
-package ascelion.config.cdi.jmx;
+package ascelion.config.jmx;
 
 import java.lang.management.ManagementFactory;
 
@@ -33,10 +33,12 @@ import org.junit.runner.RunWith;
 	ascelion.config.cdi.ConfigValueTest.Bean1.class,
 } )
 @EnableExtensions( {
+	JMXExtension.class,
 	ascelion.config.cdi.ConfigExtension.class,
 	ascelion.config.eclipse.cdi.ConfigExtension.class,
 } )
 @ConfigSource( type = JMXConfigReader.TYPE, priority = 500, value = "test" )
+@JMXObject( value = "file.prop1", writable = true )
 public class JMXConfigTest
 {
 
@@ -66,7 +68,7 @@ public class JMXConfigTest
 		assertThat( v11, equalTo( v12 ) );
 
 		final ObjectName on = JMXTree.objectName( "test", "file.prop1" );
-		final ConfigBean cb = JMX.newMBeanProxy( this.mbs, on, ConfigBean.class );
+		final WritableConfigBean cb = JMX.newMBeanProxy( this.mbs, on, WritableConfigBean.class );
 
 		cb.setExpression( "${java.version}" );
 

@@ -44,6 +44,11 @@ public interface ConfigExt extends Config
 		}
 	}
 
+	static ConfigExt wrap( Config cf )
+	{
+		return cf instanceof ConfigExt ? (ConfigExt) cf : new ConfigWrapper( cf );
+	}
+
 	String getValue( String propertyName );
 
 	Value getValue( String propertyName, boolean evaluate );

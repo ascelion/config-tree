@@ -32,9 +32,14 @@ public abstract class ConfigRegistry
 		si.set( cld, instance );
 	}
 
+	public static void reset()
+	{
+		si.clear();
+		ConvertersRegistry.reset();
+	}
+
 	private final Iterables<ConfigSource> sources = new Iterables<>();
 	private final Iterables<ConfigReader> readers = new Iterables<>();
-	private final ServiceInstance<ConvertersRegistry> cvs = new ServiceInstance<>( ConvertersRegistry.class );
 	private final LazyValue<ConfigNode> root = new LazyValue<>();
 
 	@ServiceInstance.CLD
@@ -89,7 +94,7 @@ public abstract class ConfigRegistry
 	// converters
 	public final ConvertersRegistry converters()
 	{
-		return this.cvs.get( this.cld );
+		return ConvertersRegistry.getInstance( this.cld );
 	}
 
 	// root node

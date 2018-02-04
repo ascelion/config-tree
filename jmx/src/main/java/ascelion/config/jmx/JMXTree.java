@@ -1,5 +1,5 @@
 
-package ascelion.config.cdi.jmx;
+package ascelion.config.jmx;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -16,13 +16,13 @@ import javax.management.Notification;
 import javax.management.ObjectName;
 
 import ascelion.config.api.ConfigException;
+import ascelion.config.eclipse.ext.ConfigExt;
 import ascelion.config.utils.Utils;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 
-import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 final class JMXTree
@@ -30,15 +30,17 @@ final class JMXTree
 
 	private final String domain;
 	private final MBeanServer mbs;
-	private final Config cf;
+	private final ConfigExt cf;
+	private final Map<String, JMXObject> objects;
 	private volatile boolean changed;
 	private volatile boolean loading;
 
-	JMXTree( String domain, MBeanServer mbs, Config cf )
+	JMXTree( String domain, MBeanServer mbs, ConfigExt cf, Map<String, JMXObject> objects )
 	{
 		this.domain = domain;
 		this.mbs = mbs;
 		this.cf = cf;
+		this.objects = objects;
 	}
 
 	boolean isChanged()
@@ -107,7 +109,15 @@ final class JMXTree
 		}
 		try {
 			final ObjectName on = JMXTree.objectName( this.domain, path );
-			this.mbs.registerMBean( new ConfigBeanImpl( path, value, this::getValue ), on );
+			final JMXObject jo = this.objects.get( path );
+
+			if( jo != null && jo.writable() ) {
+				this.mbs.registerMBean( new WritableConfigBeanImpl( path, value, jo.sensitive(), this::getValue ), on );
+			}
+			else {
+				this.mbs.registerMBean( new ConfigBeanImpl( path, value, jo != null ? jo.sensitive() : false, this::getValue ), on );
+			}
+
 			this.mbs.addNotificationListener( on, this::handleNotification, not -> AttributeChangeNotification.class.isInstance( not ), path );
 		}
 		catch( InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException | InstanceNotFoundException e ) {

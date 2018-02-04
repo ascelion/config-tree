@@ -1,5 +1,5 @@
 
-package ascelion.config.cdi.jmx;
+package ascelion.config.jmx;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -11,11 +11,10 @@ import javax.management.MBeanServer;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigReader;
+import ascelion.config.eclipse.ext.ConfigExt;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.synchronizedMap;
-
-import org.eclipse.microprofile.config.Config;
 
 @ConfigReader.Type( value = JMXConfigReader.TYPE )
 @ApplicationScoped
@@ -27,9 +26,11 @@ public class JMXConfigReader implements ConfigReader
 	private final Map<String, JMXTree> maps = synchronizedMap( new TreeMap<>() );
 
 	@Inject
-	private Instance<Config> cfi;
+	private Instance<ConfigExt> cfi;
 	@Inject
 	private Instance<MBeanServer> mbsi;
+	@Inject
+	private JMXExtension ext;
 
 	@Override
 	public boolean isModified( String source )
@@ -53,7 +54,7 @@ public class JMXConfigReader implements ConfigReader
 
 	private JMXTree buildTree( String domain )
 	{
-		return new JMXTree( domain, this.mbsi.get(), this.cfi.get() );
+		return new JMXTree( domain, this.mbsi.get(), this.cfi.get(), this.ext.objects() );
 	}
 
 }

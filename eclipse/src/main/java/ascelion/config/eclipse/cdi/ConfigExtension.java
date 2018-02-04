@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AfterDeploymentValidation;
@@ -26,6 +27,7 @@ import javax.enterprise.inject.spi.ProducerFactory;
 import ascelion.cdi.bean.BeanAttributesBuilder;
 import ascelion.cdi.bean.BeanBuilder;
 import ascelion.cdi.type.AnnotatedTypeW;
+import ascelion.config.api.ConvertersRegistry;
 import ascelion.config.eclipse.ext.ConfigExt;
 
 import static java.util.stream.Collectors.joining;
@@ -40,6 +42,8 @@ public class ConfigExtension implements Extension
 
 	void beforeBeanDiscovery( @Observes BeforeBeanDiscovery event, BeanManager bm )
 	{
+		ConvertersRegistry.reset();
+
 		addTypes( bm, event, ConfigFactory.class );
 	}
 
@@ -67,11 +71,13 @@ public class ConfigExtension implements Extension
 		}
 	}
 
-	void afterDeploymentValidation( @Observes AfterDeploymentValidation event )
+	void afterDeploymentValidation( @Observes AfterDeploymentValidation event, BeanManager bm )
 	{
 		if( this.validate.size() > 0 ) {
 			final Set<String> missing = new TreeSet<>();
-			final ConfigExt cf = ConfigFactory.getConfig();
+			final Bean<ConfigExt> cfBean = (Bean<ConfigExt>) bm.resolve( bm.getBeans( ConfigExt.class ) );
+			final CreationalContext<ConfigExt> cfCx = bm.createCreationalContext( cfBean );
+			final ConfigExt cf = (ConfigExt) bm.getReference( cfBean, ConfigExt.class, cfCx );
 
 			try {
 				for( final InjectionPoint ip : this.validate ) {
@@ -90,7 +96,7 @@ public class ConfigExtension implements Extension
 				}
 			}
 			finally {
-				ConfigFactory.release( cf );
+				cfBean.destroy( cf, cfCx );
 			}
 		}
 	}

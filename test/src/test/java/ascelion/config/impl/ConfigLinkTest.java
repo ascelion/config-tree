@@ -101,7 +101,7 @@ public class ConfigLinkTest
 	static public void setUpClass()
 	{
 		ConfigProviderResolver.setInstance( null );
-		ConfigRegistry.setInstance( null );
+		ConfigRegistry.reset();
 		ConfigRegistry.getInstance().filterSource( cs -> cs.value().startsWith( "file" ) );
 	}
 

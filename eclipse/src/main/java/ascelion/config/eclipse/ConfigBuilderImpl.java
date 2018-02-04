@@ -9,7 +9,6 @@ import ascelion.config.api.ConvertersRegistry;
 import ascelion.config.eclipse.cs.ENVConfigSource;
 import ascelion.config.eclipse.cs.PRPConfigSourceProvider;
 import ascelion.config.eclipse.cs.SYSConfigSource;
-import ascelion.config.utils.ServiceInstance;
 import ascelion.config.utils.Utils;
 
 import static java.util.Arrays.asList;
@@ -23,7 +22,6 @@ import org.eclipse.microprofile.config.spi.Converter;
 final class ConfigBuilderImpl implements ConfigBuilder
 {
 
-	private final ServiceInstance<ConvertersRegistry> si = new ServiceInstance<>( ConvertersRegistry.class );
 	private final Collection<ConfigSource> sources = new ArrayList<>();
 	private final Collection<ConverterInfo<?>> converters = new ArrayList<>();
 
@@ -94,7 +92,7 @@ final class ConfigBuilderImpl implements ConfigBuilder
 	public Config build()
 	{
 		final ClassLoader cld = Utils.classLoader( this.cld, getClass() );
-		final ConvertersRegistry cvs = this.si.get( cld );
+		final ConvertersRegistry cvs = ConvertersRegistry.newInstance( cld );
 
 		this.converters.forEach( i -> {
 			cvs.register( i.type, i.converter::convert, i.priority );

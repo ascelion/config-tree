@@ -1,12 +1,9 @@
 
-package ascelion.config.eclipse.cdi;
+package ascelion.config.eclipse.ext;
 
 import java.util.Optional;
 
 import ascelion.config.api.ConvertersRegistry;
-import ascelion.config.eclipse.AbstractConfig;
-import ascelion.config.eclipse.ext.ConfigExt;
-import ascelion.config.utils.ServiceInstance;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -14,18 +11,11 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 final class ConfigWrapper extends AbstractConfig
 {
 
-	static private final ServiceInstance<ConvertersRegistry> si = new ServiceInstance<>( ConvertersRegistry.class );
-
-	static ConfigExt wrap( Config cf )
-	{
-		return cf instanceof ConfigExt ? (ConfigExt) cf : new ConfigWrapper( cf );
-	}
-
 	final Config delegate;
 
-	private ConfigWrapper( Config config )
+	ConfigWrapper( Config config )
 	{
-		super( si.get() );
+		super( ConvertersRegistry.getInstance() );
 
 		this.delegate = config;
 	}

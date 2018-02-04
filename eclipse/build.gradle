@@ -12,12 +12,12 @@ sourceSets {
 }
 
 dependencies {
-	compile project( ':api' )
 	compile project( ':conv' )
 
 	compile 'ascelion.shared:fmt-log'
 	compile 'ascelion.shared:cdi-utils'
 
+	testCompile configurations.runtime
 	testCompile 'ascelion.shared:cdi-unit-impl'
 	testCompile 'ascelion.shared:cdi-unit-weld'
 
@@ -28,6 +28,7 @@ dependencies {
 	tckTestRuntime 'org.jboss.arquillian.container:arquillian-weld-embedded'
 	tckTestRuntime 'org.jboss.weld.se:weld-se-shaded'
 	tckTestRuntime 'ch.qos.logback:logback-classic'
+	tckTestRuntime configurations.runtime
 }
 
 testReportDirName = file( "$buildDir/test-output" )
