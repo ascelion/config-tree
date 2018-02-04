@@ -2,6 +2,9 @@
 package ascelion.config.conv;
 
 import java.beans.Introspector;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -26,7 +29,19 @@ import io.leangen.geantyref.GenericTypeReflector;
 final class InterfaceValue implements InvocationHandler
 {
 
-	static final Set<Method> O_METHODS = methodsOf( Object.class );
+	static private final Set<Method> O_METHODS = methodsOf( Object.class );
+	static private final Constructor<MethodHandles.Lookup> LOOKUP;
+
+	static {
+		try {
+			LOOKUP = MethodHandles.Lookup.class.getDeclaredConstructor( Class.class, int.class );
+
+			LOOKUP.setAccessible( true );
+		}
+		catch( NoSuchMethodException | SecurityException e ) {
+			throw new ExceptionInInitializerError( e );
+		}
+	}
 
 	private final Map<Method, ConfigValue> names = new HashMap<>();
 
@@ -39,6 +54,7 @@ final class InterfaceValue implements InvocationHandler
 		this.node = node;
 
 		Stream.of( type.getMethods() )
+			.filter( m -> !m.isDefault() )
 			.filter( m -> m.getParameterTypes().length == 0 )
 			.filter( m -> m.getReturnType() != void.class )
 			.forEach( this::addName );
@@ -78,8 +94,16 @@ final class InterfaceValue implements InvocationHandler
 
 			return getConverter( t ).create( null, a.unwrap() );
 		}
+		else if( method.isDefault() ) {
+			final Class<?> cls = method.getDeclaringClass();
+			final MethodHandle han = LOOKUP.newInstance( cls, -1 )
+				.unreflectSpecial( method, cls )
+				.bindTo( proxy );
 
-		throw new NoSuchMethodError( format( "%s#%s", this.type.getName(), method.getName() ) );
+			return han.invokeWithArguments( args );
+		}
+
+		throw new RuntimeException( format( "Cannot handle method %s#%s", this.type.getName(), method.getName() ) );
 	}
 
 	private ConfigConverter<?> getConverter( final Type t )

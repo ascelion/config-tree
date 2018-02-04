@@ -35,4 +35,13 @@ public interface DataSourceDefinition
 	@ConfigValue( unwrap = 3 )
 	Map<String, String> getProperties();
 
+	default String defaultJndi()
+	{
+		return "jdbc/default";
+	}
+
+	default String defaultPassword()
+	{
+		return getUser();
+	}
 }
