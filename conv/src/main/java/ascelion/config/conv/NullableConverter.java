@@ -34,7 +34,7 @@ final class NullableConverter<T> implements ConfigConverter<T>
 	@Override
 	public T create( ConfigNode u, int unwrap )
 	{
-		if( u == null ) {
+		if( u == null || isBlank( u.getValue() ) ) {
 			return null;
 		}
 

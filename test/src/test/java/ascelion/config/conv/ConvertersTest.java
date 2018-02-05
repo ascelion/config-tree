@@ -3,9 +3,11 @@ package ascelion.config.conv;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Optional;
 
 import ascelion.config.api.ConfigConverter;
 import ascelion.config.api.ConfigException;
+import ascelion.config.impl.ConfigNodeImpl;
 
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static java.util.Arrays.asList;
@@ -13,6 +15,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -203,6 +206,29 @@ public class ConvertersTest
 		final Object values = this.cvs.getConverter( type ).create( "1, 2, 3, 4" );
 
 		assertThat( values, is( asList( 1, 2, 3, 4 ) ) );
+	}
+
+	@Test
+	public void intOptNull()
+	{
+		final Object value = this.cvs.getConverter( int.class ).create( null );
+
+		assertThat( value, is( 0 ) );
+
+		final Type type = parameterizedClass( Optional.class, Integer.class );
+		final ConfigConverter<?> cv = this.cvs.getConverter( type );
+
+		final Optional<Integer> v1 = (Optional<Integer>) cv.create( null );
+
+		assertFalse( v1.isPresent() );
+
+		final ConfigNodeImpl root = new ConfigNodeImpl();
+
+		root.setValue( "a", null );
+
+		final Optional<Integer> v2 = (Optional<Integer>) cv.create( root, 0 );
+
+		assertFalse( v2.isPresent() );
 	}
 
 	@Test

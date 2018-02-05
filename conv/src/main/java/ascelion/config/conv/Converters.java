@@ -322,17 +322,17 @@ public final class Converters implements ConvertersRegistry
 
 	private void add( Type type, Function<String, ?> func, int prio )
 	{
-		put( type, ( u ) -> func.apply( u ), prio );
+		put( type, u -> func.apply( u ), prio );
 	}
 
 	private void addNullable( Type type, Function<String, ?> func, int prio )
 	{
-		put( type, nullable( ( u ) -> func.apply( u ) ), prio );
+		put( type, nullable( u -> func.apply( u ) ), prio );
 	}
 
 	private void addPrimitive( Type type, Function<String, ?> func, int prio )
 	{
-		put( type, primitive( ( u ) -> func.apply( u ) ), prio );
+		put( type, primitive( u -> func.apply( u ) ), prio );
 	}
 
 	private void add( ConfigConverter<?> c, int p )
