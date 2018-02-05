@@ -106,20 +106,20 @@ public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 						if( resources.isEmpty() ) {
 							L.trace( "Found source: %s(%d) -> %s", st, cs.priority(), cs.value() );
 
-							built.add( new AnnotatedConfigSource( rd, cs.value(), cs.priority() ) );
+							built.add( new AnnotatedConfigSource( rd, st, cs.value(), cs.priority() ) );
 						}
 						else {
 							resources.forEach( u -> {
 								L.trace( "Found source: %s(%d) -> %s", st, cs.priority(), u );
 
-								built.add( new AnnotatedConfigSource( rd, u.toExternalForm(), cs.priority() ) );
+								built.add( new AnnotatedConfigSource( rd, st, u.toExternalForm(), cs.priority() ) );
 							} );
 						}
 					}
 					else {
 						L.trace( "Found source: %s(%d)", st, cs.priority() );
 
-						built.add( new AnnotatedConfigSource( rd, cs.value(), cs.priority() ) );
+						built.add( new AnnotatedConfigSource( rd, st, cs.value(), cs.priority() ) );
 					}
 				}
 				else {

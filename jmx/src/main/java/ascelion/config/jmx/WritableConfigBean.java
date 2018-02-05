@@ -9,4 +9,5 @@ public interface WritableConfigBean extends ConfigBean
 
 	void setExpression( String value );
 
+	boolean isModified();
 }

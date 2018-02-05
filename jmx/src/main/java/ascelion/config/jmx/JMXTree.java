@@ -4,16 +4,7 @@ package ascelion.config.jmx;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.management.AttributeChangeNotification;
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
-import javax.management.JMX;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.Notification;
-import javax.management.ObjectName;
+import javax.management.*;
 
 import ascelion.config.api.ConfigException;
 import ascelion.config.eclipse.ext.ConfigExt;
@@ -28,94 +19,105 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 final class JMXTree
 {
 
+	enum State
+	{
+		INIT,
+		LOAD,
+		DONE,
+	}
+
 	private final String domain;
 	private final MBeanServer mbs;
 	private final ConfigExt cf;
-	private final Map<String, JMXObject> objects;
+	private final Map<String, JMXConfig> jmxConfigs;
 	private volatile boolean changed;
-	private volatile boolean loading;
+	private volatile State state = State.INIT;
 
-	JMXTree( String domain, MBeanServer mbs, ConfigExt cf, Map<String, JMXObject> objects )
+	JMXTree( String domain, MBeanServer mbs, ConfigExt cf, Map<String, JMXConfig> jmxConfigs )
 	{
 		this.domain = domain;
 		this.mbs = mbs;
 		this.cf = cf;
-		this.objects = objects;
+		this.jmxConfigs = jmxConfigs;
 	}
 
 	boolean isChanged()
 	{
-		return this.loading ? false : this.changed;
+		return this.state == State.DONE ? this.changed : false;
 	}
 
 	Map<String, String> query()
 	{
-		if( this.loading ) {
-			return emptyMap();
-		}
+		switch( this.state ) {
+			case LOAD:
+				return emptyMap();
 
-		try {
-			final Map<String, String> map = doQuery();
+			case INIT:
+				this.state = State.LOAD;
 
-			if( map == null || map.isEmpty() ) {
-				this.loading = true;
+				this.cf.getPropertyNames()
+					.forEach( this::buildEntry );
 
+				this.state = State.DONE;
+
+			case DONE:
 				try {
-					return buildTree();
+					return doQuery();
 				}
 				finally {
-					this.loading = false;
+					this.changed = false;
 				}
-			}
 
-			return map;
+			default:
+				throw new AssertionError( "UNREACHABLE CODE!!!" );
+		}
+	}
+
+	private Map<String, String> doQuery()
+	{
+		final ObjectName wc;
+
+		try {
+			wc = new ObjectName( this.domain + ":*" );
 		}
 		catch( final MalformedObjectNameException e ) {
 			throw new IllegalStateException( e );
 		}
-		finally {
-			this.changed = false;
-		}
-	}
 
-	private Map<String, String> buildTree() throws MalformedObjectNameException
-	{
-		this.cf.getPropertyNames().forEach( p -> {
-			buildEntry( p, this.cf.getValue( p, String.class ) );
+		return ConfigBeanImpl.unprotected( () -> {
+			final Map<String, String> map = new TreeMap<>();
+
+			this.mbs.queryNames( wc, Query.eq( Query.attr( "Modified" ), Query.value( true ) ) )
+				.forEach( oi -> {
+					final ConfigBean cb = JMX.newMBeanProxy( this.mbs, oi, ConfigBean.class );
+
+					map.put( pathOf( oi ), cb.getExpression() );
+				} );
+
+			return unmodifiableMap( map );
 		} );
-
-		return doQuery();
 	}
 
-	private Map<String, String> doQuery() throws MalformedObjectNameException
+	private void buildEntry( String path )
 	{
-		final Map<String, String> map = new TreeMap<>();
-
-		this.mbs.queryNames( new ObjectName( this.domain + ":*" ), null )
-			.forEach( oi -> {
-				map.put( pathOf( oi ), valueOf( oi ) );
-			} );
-
-		return unmodifiableMap( map );
-	}
-
-	private void buildEntry( String path, String value )
-	{
-		if( System.getProperties().containsKey( path ) ) {
-			return;
+		if( !this.jmxConfigs.containsKey( path ) ) {
+			if( System.getProperties().containsKey( path ) ) {
+				return;
+			}
+			if( System.getenv().containsKey( path ) ) {
+				return;
+			}
 		}
-		if( System.getenv().containsKey( path ) ) {
-			return;
-		}
+
 		try {
 			final ObjectName on = JMXTree.objectName( this.domain, path );
-			final JMXObject jo = this.objects.get( path );
+			final JMXConfig jo = this.jmxConfigs.get( path );
 
 			if( jo != null && jo.writable() ) {
-				this.mbs.registerMBean( new WritableConfigBeanImpl( path, value, jo.sensitive(), this::getValue ), on );
+				this.mbs.registerMBean( new WritableConfigBeanImpl( path, jo.sensitive(), this::getValue ), on );
 			}
 			else {
-				this.mbs.registerMBean( new ConfigBeanImpl( path, value, jo != null ? jo.sensitive() : false, this::getValue ), on );
+				this.mbs.registerMBean( new ConfigBeanImpl( path, jo != null ? jo.sensitive() : false, this::getValue ), on );
 			}
 
 			this.mbs.addNotificationListener( on, this::handleNotification, not -> AttributeChangeNotification.class.isInstance( not ), path );
@@ -146,13 +148,6 @@ final class JMXTree
 	private String pathOf( ObjectName on )
 	{
 		return on.getKeyPropertyListString().replaceAll( "\\d+=", "" ).replace( ",", "." );
-	}
-
-	private String valueOf( ObjectName on )
-	{
-		final ConfigBean cb = JMX.newMBeanProxy( this.mbs, on, ConfigBean.class );
-
-		return cb.getExpression();
 	}
 
 	static ObjectName objectName( String domain, String path )

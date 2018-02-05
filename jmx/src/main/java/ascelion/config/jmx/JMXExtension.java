@@ -21,7 +21,7 @@ import static java.util.Collections.unmodifiableMap;
 public class JMXExtension implements Extension
 {
 
-	private final Map<String, JMXObject> objects = new TreeMap<>();
+	private final Map<String, JMXConfig> jmxConfigs = new TreeMap<>();
 
 	void beforeBeanDiscovery( @Observes BeforeBeanDiscovery event, BeanManager bm )
 	{
@@ -39,9 +39,9 @@ public class JMXExtension implements Extension
 		t.getFields().forEach( this::processAnnotated );
 	}
 
-	Map<String, JMXObject> objects()
+	Map<String, JMXConfig> jmxConfigs()
 	{
-		return unmodifiableMap( this.objects );
+		return unmodifiableMap( this.jmxConfigs );
 	}
 
 	private void addType( Class<?> type, BeanManager bm, BeforeBeanDiscovery event )
@@ -59,6 +59,8 @@ public class JMXExtension implements Extension
 
 	private void processAnnotated( Annotated t )
 	{
-		t.getAnnotations( JMXObject.class ).forEach( a -> Stream.of( a.value() ).forEach( path -> this.objects.put( path, a ) ) );
+		t.getAnnotations( JMXConfig.class )
+			.forEach( a -> Stream.of( a.value() )
+				.forEach( path -> this.jmxConfigs.put( path, a ) ) );
 	}
 }

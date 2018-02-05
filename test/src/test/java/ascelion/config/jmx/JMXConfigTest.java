@@ -38,7 +38,8 @@ import org.junit.runner.RunWith;
 	ascelion.config.eclipse.cdi.ConfigExtension.class,
 } )
 @ConfigSource( type = JMXReader.TYPE, priority = 500, value = "test" )
-@JMXObject( value = "file.prop1", writable = true )
+@JMXConfig( value = "file.prop1", writable = true )
+@JMXConfig( value = "file.prop2", writable = true, sensitive = true )
 public class JMXConfigTest
 {
 

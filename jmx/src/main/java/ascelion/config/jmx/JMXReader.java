@@ -54,7 +54,7 @@ public class JMXReader implements ConfigReader
 
 	private JMXTree buildTree( String domain )
 	{
-		return new JMXTree( domain, this.mbsi.get(), this.cfi.get(), this.ext.objects() );
+		return new JMXTree( domain, this.mbsi.get(), this.cfi.get(), this.ext.jmxConfigs() );
 	}
 
 }

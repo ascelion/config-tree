@@ -13,8 +13,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Retention( RUNTIME )
 @Target( { TYPE, CONSTRUCTOR, METHOD, FIELD } )
-@Repeatable( JMXObject.List.class )
-public @interface JMXObject
+@Repeatable( JMXConfig.List.class )
+public @interface JMXConfig
 {
 
 	@Retention( RUNTIME )
@@ -22,7 +22,7 @@ public @interface JMXObject
 	@interface List
 	{
 
-		JMXObject[] value();
+		JMXConfig[] value();
 	}
 
 	String[] value() default {};

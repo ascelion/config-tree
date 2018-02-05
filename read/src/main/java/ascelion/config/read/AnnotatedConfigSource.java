@@ -9,11 +9,11 @@ import ascelion.config.eclipse.ext.ConfigChangeListenerSupport;
 import ascelion.config.eclipse.ext.ConfigSourceExt;
 import ascelion.logging.LOG;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import static java.lang.String.format;
 
-@EqualsAndHashCode( of = "source", doNotUseGetters = true )
-@ToString( of = { "source" }, doNotUseGetters = true )
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode( of = { "source", "type" }, doNotUseGetters = true )
 final class AnnotatedConfigSource implements ConfigSourceExt
 {
 
@@ -22,21 +22,29 @@ final class AnnotatedConfigSource implements ConfigSourceExt
 	private final ConfigReader rd;
 	private Map<String, String> properties;
 	private final String source;
+	private final String type;
 	private final int priority;
 	private final ConfigChangeListenerSupport cls = new ConfigChangeListenerSupport( this );
 
-	AnnotatedConfigSource( ConfigReader rd, String source, int priority )
+	AnnotatedConfigSource( ConfigReader rd, String type, String source, int priority )
 	{
 		this.rd = rd;
+		this.type = type;
 		this.source = source;
 		this.priority = priority;
+	}
+
+	@Override
+	public String toString()
+	{
+		return format( "@%s(%s) -> \"%s\"", this.type, this.priority, this.source );
 	}
 
 	@Override
 	public synchronized Map<String, String> getProperties()
 	{
 		if( this.properties == null || this.rd.isModified( this.source ) ) {
-			L.trace( "Reading '%s'", this.source );
+			L.trace( "Reading '%s'", this );
 
 			this.properties = this.rd.readConfiguration( this.source );
 
