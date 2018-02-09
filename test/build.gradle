@@ -8,6 +8,7 @@ dependencies {
 	testCompile project( ':jmx' )
 	testCompile project( ':eclipse' )
 
+	testCompile 'com.google.code.gson:gson'
 	testCompile 'ascelion.shared:junit-ext'
 	testCompile 'ascelion.shared:cdi-unit-impl'
 	testCompile 'ascelion.shared:cdi-unit-weld'

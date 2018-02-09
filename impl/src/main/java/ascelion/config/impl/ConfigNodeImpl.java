@@ -1,7 +1,6 @@
 
 package ascelion.config.impl;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -23,41 +22,8 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-
 public final class ConfigNodeImpl implements ConfigNode
 {
-
-	static class ConfigNodeTA extends TypeAdapter<ConfigNodeImpl>
-	{
-
-		@Override
-		public void write( JsonWriter out, ConfigNodeImpl node ) throws IOException
-		{
-			final String expression = node.expression.getExpression();
-			final Map<String, ConfigNodeImpl> tree = node.nodes;
-
-			out.beginObject();
-			if( expression != null ) {
-				out.name( "expression" ).value( expression );
-			}
-			if( tree != null ) {
-				for( final ConfigNode child : tree.values() ) {
-					out.name( child.getName() );
-					write( out, (ConfigNodeImpl) child );
-				}
-			}
-			out.endObject();
-		}
-
-		@Override
-		public ConfigNodeImpl read( JsonReader in ) throws IOException
-		{
-			throw new UnsupportedOperationException();
-		}
-	}
 
 	private final ConfigNodeImpl root;
 	private final String name;

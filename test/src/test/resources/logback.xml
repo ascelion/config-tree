@@ -7,8 +7,6 @@
 	</appender>
 
 	<logger name="ascelion.config" level="INFO" />
-	<!-- <logger name="ascelion.config.eclipse.References" level="ALL" /> -->
-	<!-- <logger name="ascelion.config.eclipse.ConfigImpl" level="ALL" /> -->
 
 	<root level="ERROR">
 		<appender-ref ref="CONSOLE" />

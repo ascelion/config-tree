@@ -8,9 +8,6 @@ dependencies {
 	compile 'ascelion.shared:fmt-log'
 
 	compile 'org.apache.commons:commons-text'
-	compile 'com.google.guava:guava'
-	compile 'com.google.code.gson:gson'
-
 	compile 'io.github.lukehutch:fast-classpath-scanner'
 }
 

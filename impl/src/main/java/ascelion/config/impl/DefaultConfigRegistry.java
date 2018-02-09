@@ -13,12 +13,10 @@ import ascelion.config.api.ConfigReader;
 import ascelion.config.api.ConfigRegistry;
 import ascelion.config.api.ConfigSource;
 import ascelion.config.eclipse.ext.ConfigExt;
-import ascelion.config.impl.ConfigNodeImpl.ConfigNodeTA;
 import ascelion.logging.LOG;
 
 import static java.util.Arrays.asList;
 
-import com.google.gson.GsonBuilder;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -100,13 +98,17 @@ public class DefaultConfigRegistry extends ConfigRegistry
 		} );
 
 		if( L.isTraceEnabled() ) {
-			final String s = new GsonBuilder()
-				.setPrettyPrinting()
-				.registerTypeHierarchyAdapter( ConfigNode.class, new ConfigNodeTA() )
-				.create()
-				.toJson( root );
+			final StringBuilder b = new StringBuilder();
 
-			L.trace( "Config: %s", s );
+			root.getKeys()
+				.stream()
+				.sorted()
+				.forEach( k -> b.append( k )
+					.append( " = " )
+					.append( root.getNode( k ).getRawValue() )
+					.append( "\n" ) );
+
+			L.trace( "Config: %s", b );
 		}
 	}
 }
