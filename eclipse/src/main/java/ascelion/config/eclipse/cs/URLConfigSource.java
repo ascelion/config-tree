@@ -92,6 +92,12 @@ public abstract class URLConfigSource implements ConfigSourceExt
 		this.cls.remove( cl );
 	}
 
+	@Override
+	public String toString()
+	{
+		return format( "%s(%d) -> \"%s\"", getClass().getSimpleName(), getOrdinal(), getName() );
+	}
+
 	protected abstract Map<String, String> readConfiguration( InputStream is ) throws IOException;
 
 	private void load()

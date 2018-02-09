@@ -57,13 +57,13 @@ public class AnnotatedConfigSourceProvider implements ConfigSourceProvider
 		final List<URL> keys = new ArrayList<>();
 
 		try {
-			keys.addAll( list( cld.getResources( source ) ) );
-
 			final File file = new File( source );
 
 			if( file.exists() ) {
 				keys.add( file.toURI().toURL() );
 			}
+
+			keys.addAll( list( cld.getResources( source ) ) );
 
 			return keys;
 		}

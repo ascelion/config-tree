@@ -5,6 +5,7 @@ import java.util.Map;
 
 import ascelion.config.eclipse.ext.ConfigSourceExt;
 
+import static java.lang.String.format;
 import static java.util.Collections.unmodifiableMap;
 
 public final class ENVConfigSource implements ConfigSourceExt
@@ -39,5 +40,11 @@ public final class ENVConfigSource implements ConfigSourceExt
 	public int getOrdinal()
 	{
 		return 300;
+	}
+
+	@Override
+	public String toString()
+	{
+		return format( "ENV(%d)", getOrdinal() );
 	}
 }

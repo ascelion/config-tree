@@ -71,7 +71,7 @@ public class DefaultConfigRegistry extends ConfigRegistry
 	}
 
 	@Override
-	protected ConfigNode load( ClassLoader cld )
+	protected final ConfigNode load( ClassLoader cld )
 	{
 		final Config config = ConfigProviderResolver.instance().getConfig( cld );
 		final ConfigNodeImpl root = new ConfigNodeImpl();
@@ -94,6 +94,8 @@ public class DefaultConfigRegistry extends ConfigRegistry
 		Collections.reverse( sources );
 
 		sources.forEach( cs -> {
+			L.debug( "Reading:%s", cs );
+
 			root.setValue( cs.getProperties() );
 		} );
 

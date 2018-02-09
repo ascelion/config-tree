@@ -44,8 +44,6 @@ final class AnnotatedConfigSource implements ConfigSourceExt
 	public synchronized Map<String, String> getProperties()
 	{
 		if( this.properties == null || this.rd.isModified( this.source ) ) {
-			L.trace( "Reading '%s'", this );
-
 			this.properties = this.rd.readConfiguration( this.source );
 
 			this.cls.fireChanged();

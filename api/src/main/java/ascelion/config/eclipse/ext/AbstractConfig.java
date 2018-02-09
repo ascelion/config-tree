@@ -3,14 +3,20 @@ package ascelion.config.eclipse.ext;
 
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import ascelion.config.api.ConvertersRegistry;
 import ascelion.config.utils.Expression;
+
+import static java.lang.String.format;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 public abstract class AbstractConfig implements ConfigExt
 {
+
+	static private final Logger L = Logger.getLogger( org.eclipse.microprofile.config.Config.class.getName() );
 
 	private final ConvertersRegistry cvs;
 
@@ -57,6 +63,10 @@ public abstract class AbstractConfig implements ConfigExt
 	protected final Value readValue( String key )
 	{
 		for( final ConfigSource cs : getConfigSources() ) {
+			if( L.isLoggable( Level.FINEST ) ) {
+				L.finest( format( "Checking %s in %s", key, cs ) );
+			}
+
 			final Map<String, String> map = cs.getProperties();
 
 			if( map.containsKey( key ) ) {

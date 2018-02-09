@@ -3,6 +3,7 @@ package ascelion.config.eclipse.cs;
 
 import java.util.Map;
 
+import static java.lang.String.format;
 import static java.util.Collections.unmodifiableMap;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -32,5 +33,11 @@ public final class SYSConfigSource implements ConfigSource
 	public int getOrdinal()
 	{
 		return 400;
+	}
+
+	@Override
+	public String toString()
+	{
+		return format( "SYS(%d)", getOrdinal() );
 	}
 }
