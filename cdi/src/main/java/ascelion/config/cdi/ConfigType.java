@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.literal.InjectLiteral;
@@ -71,7 +73,27 @@ final class ConfigType<X> extends AnnotatedTypeW<X>
 			} );
 	}
 
-	private void addInject( Annotated e )
+	private void addInject( AnnotatedCallable<?> e )
+	{
+		if( e.isAnnotationPresent( Produces.class ) ) {
+			return;
+		}
+		for( final AnnotatedParameter<?> p : e.getParameters() ) {
+			if( p.isAnnotationPresent( Observes.class ) ) {
+				return;
+			}
+			if( p.isAnnotationPresent( Disposes.class ) ) {
+				return;
+			}
+		}
+		if( !e.isAnnotationPresent( Inject.class ) ) {
+			e.getAnnotations().add( InjectLiteral.INSTANCE );
+
+			this.modified = true;
+		}
+	}
+
+	private void addInject( AnnotatedField<?> e )
 	{
 		if( !e.isAnnotationPresent( Inject.class ) ) {
 			e.getAnnotations().add( InjectLiteral.INSTANCE );
