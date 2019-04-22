@@ -1,9 +1,10 @@
-apply plugin: 'java'
 
 dependencies {
-	compile project( ':api' )
-	compile project( ':impl' )
+	api project( ':api' )
+	implementation project( ':read' )
+	implementation project( ':impl' )
+	implementation 'org.apache.commons:commons-lang3'
 
-	compile 'ascelion.shared:cdi-utils'
-	compile 'ascelion.shared:fmt-log'
+	implementation 'ascelion.shared:cdi-utils'
+	implementation 'ascelion.shared:fmt-log'
 }

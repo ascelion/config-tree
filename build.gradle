@@ -1,7 +1,7 @@
 buildscript {
 	dependencies {
-		classpath 'ascelion.gradle.plugins:gradle-ascelion-plugin:1.1.1-SNAPSHOT'
 		classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.1'
+		classpath 'ascelion.gradle:gradle-ascelion-plugin:2.0.2-SNAPSHOT'
 	}
 }
 
@@ -12,21 +12,16 @@ allprojects {
 }
 
 subprojects {
-	apply plugin: 'java'
+	apply plugin: 'java-library'
 
 	tasks.withType( JavaCompile ) {
 		options.compilerArgs << '-parameters'
 	}
-	plugins.withType( JavaPlugin ) {
-		sourceSets.all {
-			dependencies.add( it.compileOnlyConfigurationName, 'org.projectlombok:lombok' )
-		}
-	}
 
 	def fullName = "${rootProject.name}${path.replace(':', '-')}"
 
+	sourceSets.main.publish.artifactId = fullName
 	eclipse.project.name = fullName
-	ascelion.java.main.artifactId = fullName
 }
 
 task( name: 'test-report', type: TestReport) { rep ->

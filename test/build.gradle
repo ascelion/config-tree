@@ -1,16 +1,18 @@
-apply plugin: 'java'
 
 dependencies {
-	testCompile project( ':conv' )
-	testCompile project( ':read' )
-	testCompile project( ':impl' )
-	testCompile project( ':cdi' )
-	testCompile project( ':jmx' )
-	testCompile project( ':eclipse' )
+	testImplementation project( ':conv' )
+	testImplementation project( ':read' )
+	testImplementation project( ':impl' )
+	testImplementation project( ':cdi' )
+	testImplementation project( ':jmx' )
+	testImplementation project( ':eclipse' )
 
-	testCompile 'com.google.code.gson:gson'
-	testCompile 'ascelion.shared:junit-ext'
-	testCompile 'ascelion.shared:cdi-unit-impl'
-	testCompile 'ascelion.shared:cdi-unit-weld'
+	testImplementation 'io.leangen.geantyref:geantyref'
+	testImplementation 'org.apache.commons:commons-lang3'
+	testImplementation 'com.google.code.gson:gson'
+	testImplementation 'ascelion.shared:junit-ext'
+	testImplementation 'ascelion.shared:cdi-unit-impl'
+	testImplementation 'ascelion.shared:cdi-unit-weld'
+
 	testRuntime 'org.postgresql:postgresql'
 }

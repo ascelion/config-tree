@@ -1,50 +1,57 @@
-apply plugin: 'java'
-
-sourceSets {
-	tckTest {
-		java {
-			srcDirs 'microprofile/tck/src/main/java'
-		}
-		resources {
-			srcDirs 'microprofile/tck/src/main/resources'
-		}
-	}
-}
-
 dependencies {
-	compile project( ':conv' )
+	api project( ':api' )
+	implementation project( ':conv' )
 
-	compile 'ascelion.shared:fmt-log'
-	compile 'ascelion.shared:cdi-utils'
+	implementation 'ascelion.shared:fmt-log'
+	implementation 'ascelion.shared:cdi-utils'
 
-	testCompile configurations.runtime
-	testCompile 'ascelion.shared:cdi-unit-impl'
-	testCompile 'ascelion.shared:cdi-unit-weld'
-
-	tckTestCompileOnly 'org.eclipse.microprofile.config:microprofile-config-tck'
-	tckTestCompile 'org.testng:testng'
-	tckTestCompile 'org.hamcrest:hamcrest-library'
-	tckTestCompile 'org.jboss.arquillian.testng:arquillian-testng-container'
-	tckTestRuntime 'org.jboss.arquillian.container:arquillian-weld-embedded'
-	tckTestRuntime 'org.jboss.weld.se:weld-se-shaded'
-	tckTestRuntime 'ch.qos.logback:logback-classic'
-	tckTestRuntime configurations.runtime
+	testImplementation 'ascelion.shared:cdi-unit-impl'
+	testImplementation 'ascelion.shared:cdi-unit-weld'
 }
 
-testReportDirName = file( "$buildDir/test-output" )
-
-tckTest {
-	scanForTestClasses = false
-
-	classpath += files( 'src/test/resources' )
-
-	useTestNG() {
-		suites 'tck-suite.xml'
-	}
-}
-
-eclipse {
-	classpath {
-		plusConfigurations += [configurations.tckTestRuntime]
-	}
-}
+//sourceSets {
+//	tck {
+//		java {
+//			srcDirs 'microprofile/tck/src/main/java'
+//		}
+//		resources {
+//			srcDirs 'microprofile/tck/src/main/resources'
+//		}
+//	}
+//}
+//
+//configurations {
+//	tckImplementation.extendsFrom implementation
+//	tckRuntimeOnly.extendsFrom runtimeOnly
+//}
+//
+//dependencies {
+//	tckImplementation 'org.eclipse.microprofile.config:microprofile-config-tck'
+//	tckImplementation 'org.testng:testng'
+//	tckImplementation 'org.hamcrest:hamcrest-library'
+//	tckImplementation 'org.jboss.arquillian.testng:arquillian-testng-container'
+//
+//	tckRuntime 'org.jboss.arquillian.container:arquillian-weld-embedded'
+//	tckRuntime 'org.jboss.weld.se:weld-se-shaded'
+//	tckRuntime 'ch.qos.logback:logback-classic'
+//}
+//
+//testReportDirName = file( "$buildDir/test-output" )
+//
+//task tck(type: Test) {
+//	scanForTestClasses = false
+//
+//	classpath += files( 'src/test/resources' )
+//
+//	useTestNG() {
+//		suites 'tck-suite.xml'
+//	}
+//}
+//
+//check.dependsOn tck
+//
+//eclipse {
+//	classpath {
+//		plusConfigurations += [configurations.tckRuntimeClasspath]
+//	}
+//}

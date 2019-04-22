@@ -1,0 +1,92 @@
+
+def versions = [
+	slf4j: '1.7.25',
+	asm: '7.0',
+	commons: [
+		text: '1.6'
+	],
+	cxf: '3.3.0',
+	hamcrest: '2.1',
+	jakarta: [
+		annotation: '1.3.4',
+		el: '3.0.2',
+		interceptor: '1.2.4',
+		jaxrs: '2.1.5',
+		jaxb: '2.3.2',
+		json: '1.1.5',
+		jsonb: '1.0.1',
+		servlet: '4.0.2'
+	],
+	micro: [
+		rest: '1.2.1',
+		config: '1.3',
+	],
+
+	'': ''
+]
+
+configurations {
+	lombok
+
+	all {
+		if( name.endsWith( 'ompileOnly') ) {
+			extendsFrom lombok
+		}
+		if( name.endsWith( 'nnotationProcessor') ) {
+			extendsFrom lombok
+		}
+	}
+}
+
+dependencies {
+	lombok 'org.projectlombok:lombok'
+
+	constraints {
+		implementation 'jakarta.ws.rs:jakarta.ws.rs-api:2.1.5'
+		implementation "jakarta.annotation:jakarta.annotation-api:$versions.jakarta.annotation"
+		implementation 'jakarta.enterprise:jakarta.enterprise.cdi-api:2.0.1'
+		implementation 'jakarta.validation:jakarta.validation-api:2.0.2.Final'
+		implementation 'jakarta.json:jakarta.json-api:1.1.5'
+		implementation 'jakarta.json.bind:jakarta.json.bind-api:1.0.1'
+
+		implementation "org.eclipse.microprofile.config:microprofile-config-api:$versions.micro.config"
+		implementation "org.eclipse.microprofile.config:microprofile-config-tck:$versions.micro.config"
+
+		implementation 'io.leangen.geantyref:geantyref:1.3.7'
+		implementation 'org.apache.commons:commons-lang3:3.9'
+		implementation 'org.apache.commons:commons-text:1.6'
+		implementation 'commons-io:commons-io:2.6'
+		implementation 'org.yaml:snakeyaml:1.24'
+		implementation 'org.ini4j:ini4j:0.5.4'
+		implementation 'com.google.code.gson:gson:2.8.2'
+		implementation 'io.github.lukehutch:fast-classpath-scanner:2.9.3'
+
+		implementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+		implementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
+		implementation 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+		implementation 'org.junit.platform:junit-platform-launcher:1.4.2'
+
+		implementation 'org.hamcrest:hamcrest-core:2.1'
+		implementation 'org.hamcrest:hamcrest-library:2.1'
+
+		implementation 'ch.qos.logback:logback-classic:1.2.3'
+		implementation 'org.testng:testng:6.14.3'
+
+		implementation 'org.jboss.arquillian.container:arquillian-weld-embedded:2.0.1.Final'
+		implementation 'org.jboss.weld.se:weld-se-shaded:3.1.0.Final'
+
+		implementation 'org.postgresql:postgresql:42.2.5'
+
+		lombok 'org.projectlombok:lombok:1.18.6'
+	}
+
+	implementation platform( 'ascelion.shared:fmt-log-bom:2.0.4-SNAPSHOT' )
+	implementation platform( 'ascelion.shared:cdi-unit-bom:2.0.0-SNAPSHOT' )
+	implementation platform( 'ascelion.shared:cdi-utils-bom:2.0.0-SNAPSHOT' )
+	implementation platform( 'ascelion.shared:junit-bom:2.0.0-SNAPSHOT' )
+
+	implementation platform( 'org.apache.deltaspike.distribution:distributions-bom:1.9.0' )
+	implementation platform( 'org.jboss.arquillian:arquillian-bom:1.1.14.Final' )
+	implementation platform( 'org.jboss.shrinkwrap:shrinkwrap-bom:1.2.6' )
+	implementation platform( 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:3.1.3' )
+}

@@ -1,5 +1,7 @@
-apply plugin: 'java'
 
 dependencies {
-	compile project( ':cdi' )
+	api project( ':api' )
+	implementation project( ':cdi' )
+	implementation 'org.apache.commons:commons-lang3'
+	implementation 'ascelion.shared:cdi-utils'
 }
