@@ -1,0 +1,18 @@
+rootProject.name = 'config-tree'
+
+include 'api'
+include 'cdi'
+include 'core'
+
+//def renameChildren( ProjectDescriptor desc ) {
+//	desc.children.each { child ->
+//		child.name = "${rootProject.name}-${child.path.substring(1).replace(':', '-')}"
+//
+//		renameChildren child
+//	}
+//}
+
+//renameChildren rootProject
+
+apply from: 'composite.gradle'
+

@@ -1,0 +1,185 @@
+apply plugin: 'maven-publish'
+
+def forPublic  = project.hasProperty( 'forPublic' ) &&
+		(project.getProperty( 'forPublic' ) == '' || project.getProperty( 'forPublic' ) )
+
+def isSnapshot = rootProject.version.endsWith( '-SNAPSHOT' )
+def isRelease  = !isSnapshot
+
+def signKey    = "${publishName}.sign.keyId"
+def signSecret = "${publishName}.sign.keySecret"
+def bintrayUSR = "${publishName}.bintray.username"
+def bintrayPWD = "${publishName}.bintray.password"
+
+plugins.withType( JavaPlugin ) {
+	task sourcesJar(type: Jar) {
+		from sourceSets.main.allJava
+
+		classifier = 'sources'
+	}
+	task javadocJar(type: Jar) {
+		from javadoc
+
+		classifier = 'javadoc'
+	}
+	javadoc {
+		failOnError = true
+
+		options {
+			source = sourceCompatibility
+			memberLevel = 'PROTECTED'
+
+			String javaApi = "https://docs.oracle.com/javase/${source.replace('1.', '')}/docs/api"
+
+			links += [javaApi]
+		}
+	}
+}
+
+if( isRelease ) {
+	tasks.withType( Jar ) {
+		manifest {
+			attributes(
+					'Built-By'       : 'ascelion',
+					'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+					'Build-Branch'   : scmVersion.scmPosition.branch,
+					'Build-Commit'   : scmVersion.scmPosition.revision,
+					'Build-Revision' : "${scmVersion.version}-${scmVersion.scmPosition.shortRevision}",
+					'Created-By'     : "Gradle ${gradle.gradleVersion}",
+					'Build-Jdk'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+					'Build-OS'       : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
+					)
+		}
+	}
+}
+
+publishing {
+	publications {
+		maven( MavenPublication ) {
+			if( project != rootProject ) {
+				artifactId = "$rootProject.name-$project.name"
+			}
+
+			plugins.withType( JavaPlugin ) {
+				from components.java
+
+				artifact sourcesJar
+				artifact javadocJar
+			}
+			plugins.withType( DistributionPlugin ) {
+				artifact distTar
+				artifact distZip
+			}
+			pom {
+				name = artifactId
+				url = "${publishBase}/${publishName}"
+				scm {
+					url = "${publishBase}/${publishName}"
+					connection = "${publishBase}/${publishName}.git"
+					developerConnection = "${publishRepo}/${publishName}.git"
+				}
+				licenses {
+					license {
+						name = 'GNU Affero General Public License version 3'
+						url = 'https://opensource.org/licenses/AGPL-3.0'
+						distribution = 'repo'
+					}
+				}
+				withXml {
+					def xml = it.asNode()
+
+					if( project == rootProject ) {
+						def dm = xml.appendNode( 'dependencyManagement' ).appendNode( 'dependencies' )
+
+						rootProject.subprojects { sub ->
+							plugins.withType( MavenPublishPlugin ) {
+								publishing {
+									publications {
+										all { pub ->
+											def dep = dm.appendNode 'dependency'
+
+											dep.appendNode 'groupId', pub.groupId
+											dep.appendNode 'artifactId', pub.artifactId
+											dep.appendNode 'version', pub.version
+										}
+									}
+								}
+							}
+						}
+					} else {
+						def dm = xml.dependencyManagement.dependencies
+
+						if( dm.size() > 0 ) {
+							def dd = xml.dependencies
+
+							dd.'*'
+									.findAll { node -> node.version.text() == '' }
+									.each { node ->
+										def dep =  dm.'*'.find {
+											node.groupId.text() == it.groupId.text() &&
+													node.artifactId.text() == it.artifactId.text() &&
+													node.classifier.text() == it.classifier.text()
+										}
+
+										node.appendNode( 'version', dep.version.text() )
+									}
+
+							xml.remove xml.dependencyManagement
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if( forPublic && gradle.hasProperty( bintrayUSR ) ) {
+		repositories {
+			maven {
+				name = 'jfrog'
+				url = "https://oss.jfrog.org/artifactory/oss-${isSnapshot ? 'snapshot' : 'release'}-local"
+
+				credentials {
+					username = gradle.ext.getProperty( bintrayUSR )
+					password = gradle.decryptPassword( gradle.ext.getProperty( bintrayPWD ) )
+				}
+			}
+		}
+	}
+}
+
+if( gradle.hasProperty( signKey ) ) {
+	apply plugin: 'signing'
+
+	ext['signing.gnupg.keyName'] = gradle.ext.getProperty( signKey )
+
+	signing {
+		useGpgCmd()
+		sign publishing.publications.maven
+	}
+}
+
+if( isRelease && forPublic && gradle.hasProperty( bintrayUSR ) ) {
+	apply plugin: 'com.jfrog.bintray'
+
+	bintray {
+		user = gradle.ext.getProperty( bintrayUSR )
+		key = gradle.decryptPassword( gradle.ext.getProperty( bintrayPWD ) )
+
+		publications = ['maven']
+
+		pkg {
+			repo = 'repo'
+			userOrg = 'ascelion'
+			name = publishName
+			licenses = ['AGPL-3.0']
+			vcsUrl = "${publishBase}/${publishName}"
+			version {
+				name = rootProject.version
+
+				gpg {
+					sign = true
+				}
+			}
+		}
+	}
+}

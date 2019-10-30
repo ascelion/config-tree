@@ -1,0 +1,97 @@
+buildscript {
+	repositories {
+		mavenCentral()
+		jcenter()
+	}
+	dependencies {
+		classpath 'pl.allegro.tech.build:axion-release-plugin:1.10.+'
+		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
+	}
+}
+
+apply plugin: 'pl.allegro.tech.build.axion-release'
+
+scmVersion {
+	ignoreUncommittedChanges = false
+}
+
+group = 'ascelion.config'
+version = scmVersion.version
+
+allprojects {
+	apply plugin: 'lifecycle-base'
+	apply plugin: 'eclipse'
+
+	ext {
+		publishName = rootProject.name
+		publishBase = 'https://github.com/ascelion'
+		publishRepo = 'git@github.com:ascelion'
+	}
+
+	repositories {
+		mavenLocal()
+		jcenter()
+	}
+
+	clean {
+		delete 'bin', 'target', '*.log'
+	}
+
+	defaultTasks 'clean', 'build'
+}
+
+subprojects { sub ->
+	group = rootProject.group
+	version = rootProject.version
+
+	apply plugin: 'java-library'
+
+	sourceCompatibility = '1.8'
+	targetCompatibility = '1.8'
+
+	sourceSets {
+		all {
+			output.resourcesDir = output.classesDirs[0]
+		}
+	}
+
+	tasks.withType( JavaCompile ) {
+		options.compilerArgs << '-parameters'
+	}
+	tasks.withType( AbstractArchiveTask ) {
+		duplicatesStrategy = 'exclude'
+		archiveVersion = ''
+	}
+
+	dependencies {
+		constraints {
+			implementation 'jakarta.enterprise:jakarta.enterprise.cdi-api:2.0.2'
+			implementation 'org.eclipse.microprofile.config:microprofile-config-api:1.3'
+
+			implementation 'org.apache.commons:commons-lang3:3.9'
+			implementation 'org.apache.commons:commons-text:1.8'
+
+			implementation 'org.slf4j:slf4j-api:1.7.28'
+			implementation 'ch.qos.logback:logback-classic:1.2.3'
+
+			implementation 'ascelion.public:cdi-utils:0.2.1-SNAPSHOT'
+
+			implementation 'org.jboss.weld:weld-junit4:2.0.1.Final'
+
+			implementation 'io.smallrye:smallrye-config:1.3.9'
+			implementation 'org.apache.geronimo.config:geronimo-config-impl:1.2.2'
+
+			implementation 'org.yaml:snakeyaml:1.25'
+		}
+
+		testImplementation 'junit:junit:4.12'
+		testImplementation 'org.hamcrest:hamcrest-core:1.3'
+		testImplementation 'org.hamcrest:hamcrest-library:1.3'
+	}
+
+	apply from: rootProject.file('lombok.gradle')
+
+	eclipse.project.name = "$rootProject.name-$project.name"
+}
+
+apply from: 'publish.gradle'

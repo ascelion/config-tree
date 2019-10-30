@@ -1,0 +1,8 @@
+bin/
+target/
+build/
+*.log
+*.launch
+*.tmp
+.*
+!.gitignore

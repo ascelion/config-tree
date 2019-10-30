@@ -1,0 +1,13 @@
+
+def compBuild( String dir, String mod, String path ) {
+	if( file(dir).exists() ) {
+		includeBuild( dir ) {
+			dependencySubstitution {
+				substitute module( mod ) with project( path )
+			}
+		}
+	}
+}
+
+compBuild '../cdi-utils', 'ascelion.public:cdi-utils', ':'
+
