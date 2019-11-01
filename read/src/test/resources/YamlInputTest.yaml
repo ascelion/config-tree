@@ -1,0 +1,9 @@
+
+config_order: 20
+
+prop2:
+  prop21:
+    - value211
+    - value212
+  prop22:
+    prop221: ok

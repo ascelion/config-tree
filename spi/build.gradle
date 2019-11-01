@@ -1,0 +1,6 @@
+
+dependencies {
+	api project( ':api' )
+}
+
+apply from: rootProject.file( 'publish.gradle' )

@@ -1,0 +1,8 @@
+
+dependencies {
+	api project( ':spi' )
+
+	implementation 'org.yaml:snakeyaml'
+}
+
+apply from: rootProject.file( 'publish.gradle' )

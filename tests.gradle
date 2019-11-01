@@ -1,0 +1,25 @@
+
+configurations {
+	tests
+}
+dependencies {
+	tests sourceSets.test.output
+}
+
+dependencies {
+	testImplementation platform( 'org.junit:junit-bom:5.5.2' )
+
+	constraints {
+		testImplementation 'org.jboss.weld:weld-junit5:2.0.1.Final'
+		testImplementation 'org.hamcrest:hamcrest:2.2'
+	}
+
+	testImplementation 'org.hamcrest:hamcrest'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+	testRuntimeOnly 'ch.qos.logback:logback-classic'
+}
+
+tasks.withType( Test ) {
+	useJUnitPlatform()
+}

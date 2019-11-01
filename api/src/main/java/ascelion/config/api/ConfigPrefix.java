@@ -1,5 +1,5 @@
 
-package ascelion.config.annotations;
+package ascelion.config.api;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

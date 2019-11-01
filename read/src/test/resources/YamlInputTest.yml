@@ -1,0 +1,8 @@
+
+config_order: 10
+
+prop1:
+  - value11
+  - value12
+
+prop2: value2

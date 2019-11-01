@@ -1,16 +1,14 @@
 configurations {
-	lombok
-
 	all {
 		if( name.endsWith( 'ompileOnly') ) {
-			extendsFrom lombok
+			dependencies {
+				add name, 'org.projectlombok:lombok:1.18.8'
+			}
 		}
 		if( name.endsWith( 'nnotationProcessor') ) {
-			extendsFrom lombok
+			dependencies {
+				add name, 'org.projectlombok:lombok:1.18.8'
+			}
 		}
 	}
-}
-
-dependencies {
-	lombok 'org.projectlombok:lombok:1.18.8'
 }

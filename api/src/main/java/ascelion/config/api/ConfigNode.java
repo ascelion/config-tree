@@ -12,7 +12,7 @@ public interface ConfigNode {
 
 	Optional<String> getValue();
 
-	Optional<ConfigNode> child(String name);
+	Optional<ConfigNode> getChild(String name);
 
-	Collection<? extends ConfigNode> children();
+	Collection<ConfigNode> getChildren();
 }

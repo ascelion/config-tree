@@ -3,9 +3,9 @@ package ascelion.config.cdi;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 
-import ascelion.config.annotations.ConfigValue;
+import ascelion.config.api.ConfigValue;
 
-class ConfigProducer {
+class ConfigValueProducer {
 
 	@Produces
 	@ConfigValue("")

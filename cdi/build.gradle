@@ -2,6 +2,10 @@
 dependencies {
 	api project( ':core' )
 
+	implementation 'org.slf4j:slf4j-api'
 	implementation 'ascelion.public:cdi-utils'
 	implementation 'jakarta.enterprise:jakarta.enterprise.cdi-api:2.0.2'
+
+	testImplementation project( path: ':api', configuration: 'tests' )
+	testImplementation 'org.jboss.weld:weld-junit5'
 }

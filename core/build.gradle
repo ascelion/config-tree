@@ -1,6 +1,10 @@
 
 dependencies {
-	api project( ':api' )
+	api project( ':spi' )
+	implementation project( ':spi' )
+	implementation project( ':convert' )
+
+	testImplementation project( ':read' )
 }
 
 apply from: rootProject.file( 'publish.gradle' )

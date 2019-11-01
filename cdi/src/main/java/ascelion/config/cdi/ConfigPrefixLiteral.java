@@ -2,7 +2,7 @@ package ascelion.config.cdi;
 
 import javax.enterprise.util.AnnotationLiteral;
 
-import ascelion.config.annotations.ConfigPrefix;
+import ascelion.config.api.ConfigPrefix;
 
 import lombok.RequiredArgsConstructor;
 

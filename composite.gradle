@@ -9,5 +9,5 @@ def compBuild( String dir, String mod, String path ) {
 	}
 }
 
-compBuild '../cdi-utils', 'ascelion.public:cdi-utils', ':'
+//compBuild '../cdi-utils', 'ascelion.public:cdi-utils', ':'
 
