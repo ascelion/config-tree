@@ -1,7 +1,6 @@
 
 package ascelion.config.spi;
 
-import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Collection;
@@ -37,9 +36,9 @@ public interface ConfigInputReader {
 		return "config";
 	}
 
-	default Collection<ConfigInput> read() throws IOException {
+	default Collection<ConfigInput> read() {
 		return read(defaultResource());
 	}
 
-	Collection<ConfigInput> read(String source) throws IOException;
+	Collection<ConfigInput> read(String source);
 }

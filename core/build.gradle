@@ -1,10 +1,12 @@
 
 dependencies {
 	api project( ':spi' )
+	
 	implementation project( ':spi' )
+	implementation project( ':read' )
 	implementation project( ':convert' )
 
-	testImplementation project( ':read' )
+	implementation 'org.slf4j:slf4j-api'
 }
 
 apply from: rootProject.file( 'publish.gradle' )

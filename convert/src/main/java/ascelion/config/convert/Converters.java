@@ -62,6 +62,7 @@ public final class Converters implements ConverterFactory {
 	public Converters() {
 		add(String.class, UnaryOperator.identity());
 
+		add(boolean.class, Boolean::valueOf);
 		add(byte.class, Byte::parseByte);
 		add(short.class, Short::parseShort);
 		add(int.class, Integer::parseInt);
@@ -69,6 +70,7 @@ public final class Converters implements ConverterFactory {
 		add(float.class, Float::parseFloat);
 		add(double.class, Double::parseDouble);
 
+		add(Boolean.class, Boolean::valueOf);
 		add(Byte.class, Byte::parseByte);
 		add(Short.class, Short::parseShort);
 		add(Integer.class, Integer::parseInt);

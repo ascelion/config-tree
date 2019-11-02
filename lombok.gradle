@@ -1,13 +1,18 @@
-configurations {
-	all {
-		if( name.endsWith( 'ompileOnly') ) {
-			dependencies {
-				add name, 'org.projectlombok:lombok:1.18.8'
-			}
-		}
-		if( name.endsWith( 'nnotationProcessor') ) {
-			dependencies {
-				add name, 'org.projectlombok:lombok:1.18.8'
+
+subprojects {
+	plugins.withType( JavaPlugin ) {
+		configurations {
+			all {
+				if( name.endsWith( 'ompileOnly') ) {
+					dependencies {
+						add name, 'org.projectlombok:lombok:1.18.8'
+					}
+				}
+				if( name.endsWith( 'nnotationProcessor') ) {
+					dependencies {
+						add name, 'org.projectlombok:lombok:1.18.8'
+					}
+				}
 			}
 		}
 	}

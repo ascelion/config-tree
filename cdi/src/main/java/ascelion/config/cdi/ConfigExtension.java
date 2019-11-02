@@ -8,8 +8,10 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedMember;
+import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -22,11 +24,14 @@ import javax.enterprise.inject.spi.ProcessInjectionPoint;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
 import javax.enterprise.inject.spi.ProcessManagedBean;
 import javax.enterprise.inject.spi.ProcessProducer;
+import javax.enterprise.inject.spi.ProducerFactory;
 import javax.enterprise.inject.spi.WithAnnotations;
 
+import ascelion.cdi.bean.BeanAttributesModifier;
 import ascelion.config.api.ConfigValue;
 
 import static ascelion.cdi.metadata.AnnotatedTypeModifier.makeQualifier;
+import static java.util.stream.Collectors.joining;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +54,7 @@ public class ConfigExtension implements Extension {
 		this.prodType = bm.createAnnotatedType(ConfigValueProducer.class);
 
 		event.addAnnotatedType(this.prodType, ConfigValueProducer.class.getName());
-		event.addAnnotatedType(ConfigProvider.class, ConfigProvider.class.getName());
+		event.addAnnotatedType(CDIConfigProvider.class, CDIConfigProvider.class.getName());
 	}
 
 	void processConfigProducerBean(@Observes ProcessManagedBean<ConfigValueProducer> event) {
@@ -110,7 +115,7 @@ public class ConfigExtension implements Extension {
 			final Type type = event.getAnnotatedMember().getBaseType();
 
 			if (this.skippedTypes.add(type)) {
-				LOG.debug("Will not create @ConfigValue producer for {}", type);
+				LOG.debug("Will not create @ConfigValue producer for {} -- ", type, annotated);
 
 				if (type instanceof ParameterizedType) {
 					this.skippedTypes.add(((ParameterizedType) type).getRawType());
@@ -119,4 +124,53 @@ public class ConfigExtension implements Extension {
 		}
 	}
 
+	void afterBeanDiscovery(BeanManager bm, @Observes AfterBeanDiscovery event) {
+		this.types.removeIf(this::filterType);
+
+		if (this.types.isEmpty()) {
+			return;
+		}
+
+		if (LOG.isInfoEnabled()) {
+			LOG.info("Adding @ConfigValue producer(s) for {}", this.types.stream().map(Type::getTypeName).collect(joining(", ")));
+		}
+
+		final AnnotatedMethod<? super ConfigValueProducer> method = this.prodType.getMethods().stream()
+				.filter(m -> m.getJavaMember().getName().equals("produceValue"))
+				.findFirst()
+				.get();
+
+		final ProducerFactory<ConfigValueProducer> prodFactory = bm.getProducerFactory(method, this.prodBean);
+		final BeanAttributesModifier<?> prodAttributes = BeanAttributesModifier.create(bm.createBeanAttributes(method));
+
+		prodAttributes.types().clear().addAll(this.types);
+
+		final Bean<?> prodBean = bm.createBean(prodAttributes.get(), ConfigValueProducer.class, prodFactory);
+
+		event.addBean(prodBean);
+	}
+
+	private boolean filterType(Type type) {
+		if (this.skippedTypes.contains(type)) {
+			return true;
+		}
+
+		if (type instanceof ParameterizedType) {
+			final Type rawType = ((ParameterizedType) type).getRawType();
+
+			if (this.skippedTypes.contains(rawType)) {
+				return true;
+			}
+			if (rawType instanceof Class) {
+				final Class rawClass = (Class) rawType;
+
+				return this.skippedTypes.stream()
+						.filter(t -> Class.class.isInstance(t))
+						.map(Class.class::cast)
+						.anyMatch(c -> c.isAssignableFrom(rawClass));
+			}
+		}
+
+		return false;
+	}
 }

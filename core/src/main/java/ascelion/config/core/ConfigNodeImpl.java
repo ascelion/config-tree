@@ -14,7 +14,8 @@ import lombok.Getter;
 
 public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 
-	private final ConfigNodeImpl parent;
+	private final ConfigRootImpl root;
+	private final ConfigNodeImpl base;
 	@Getter
 	private final String name;
 	@Getter
@@ -24,15 +25,17 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 	private final Map<String, ConfigNodeImpl> children = new TreeMap<>();
 
 	ConfigNodeImpl() {
-		this.parent = null;
+		this.root = (ConfigRootImpl) this;
+		this.base = null;
 		this.name = "";
 		this.path = "";
 	}
 
-	ConfigNodeImpl(ConfigNodeImpl parent, String name) {
-		this.parent = parent;
+	ConfigNodeImpl(ConfigNodeImpl base, String name) {
+		this.root = base.root;
+		this.base = base;
 		this.name = name;
-		this.path = parent.path.isEmpty() ? name : parent.path + "." + name;
+		this.path = base.path.isEmpty() ? name : base.path + "." + name;
 	}
 
 	@Override
@@ -42,7 +45,8 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 
 	@Override
 	public final Optional<String> getValue() {
-		return ofNullable(this.value);
+		return ofNullable(this.value)
+				.map(this.root::eval);
 	}
 
 	@Override
@@ -56,10 +60,6 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 		return (Collection) children().values();
 	}
 
-	final String value() {
-		return this.value;
-	}
-
 	final ConfigNodeImpl child(String name, boolean create) {
 		return create
 				? children().computeIfAbsent(name, n -> new ConfigNodeImpl(this, n))
@@ -70,8 +70,8 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 		return this.children;
 	}
 
-	final ConfigNodeImpl parent() {
-		return this.parent;
+	final ConfigNodeImpl base() {
+		return this.base;
 	}
 
 	final ConfigNodeImpl value(String value) {

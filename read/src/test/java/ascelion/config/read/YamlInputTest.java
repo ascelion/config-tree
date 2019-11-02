@@ -1,6 +1,5 @@
 package ascelion.config.read;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +15,7 @@ import org.junit.jupiter.api.Test;
 public class YamlInputTest {
 
 	@Test
-	public void run() throws IOException {
+	public void run() {
 		final YamlInputReader reader = new YamlInputReader();
 		final List<ConfigInput> inputs = reader.read(getClass().getSimpleName())
 				.stream().sorted().collect(toList());

@@ -1,5 +1,8 @@
 buildscript {
 	repositories {
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
 		mavenCentral()
 		jcenter()
 	}
@@ -85,10 +88,10 @@ subprojects { sub ->
 		}
 	}
 
-	apply from: rootProject.file('lombok.gradle')
-	apply from: rootProject.file('tests.gradle')
-
 	eclipse.project.name = "$rootProject.name-$project.name"
 }
 
+apply from: 'lombok.gradle'
+apply from: 'tests.gradle'
+apply from: 'jacoco.gradle'
 apply from: 'publish.gradle'

@@ -15,10 +15,9 @@ import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Test;
 
 @EnableWeld
-public class ConfigValueTest {
+public class ConfigPrefixTest {
 
-	@ConfigPrefix("values1")
-	static class Values1 {
+	static abstract class Values {
 		@ConfigValue
 		boolean booleanValue;
 		@ConfigValue
@@ -33,19 +32,12 @@ public class ConfigValueTest {
 		String value;
 	}
 
-	static class Values2 {
-		@ConfigValue("values2.booleanValue")
-		boolean booleanValue;
-		@ConfigValue("values2.intValue")
-		int intValue;
-		@ConfigValue("values2.longValue")
-		long longValue;
-		@ConfigValue("values2.floatValue")
-		float floatValue;
-		@ConfigValue("values2.doubleValue")
-		double doubleValue;
-		@ConfigValue("values2.value")
-		String value;
+	@ConfigPrefix("values1")
+	static class Values1 extends Values {
+	}
+
+	@ConfigPrefix("values2")
+	static class Values2 extends Values {
 	}
 
 	@WeldSetup
@@ -57,22 +49,20 @@ public class ConfigValueTest {
 	private Values1 values2;
 
 	@Test
-	public void withPrefix() {
+	public void prefix1() {
 		assertThat(this.values1.booleanValue, equalTo(true));
 		assertThat(this.values1.intValue, equalTo(12));
 		assertThat(this.values1.longValue, equalTo(123L));
 		assertThat(this.values1.floatValue, equalTo(1234F));
 		assertThat(this.values1.doubleValue, equalTo(12345D));
-		assertThat(this.values1.value, equalTo("text"));
 	}
 
 	@Test
-	public void withoutPrefix() {
+	public void prefix2() {
 		assertThat(this.values2.booleanValue, equalTo(true));
 		assertThat(this.values2.intValue, equalTo(12));
 		assertThat(this.values2.longValue, equalTo(123L));
 		assertThat(this.values2.floatValue, equalTo(1234F));
 		assertThat(this.values2.doubleValue, equalTo(12345D));
-		assertThat(this.values2.value, equalTo("text"));
 	}
 }

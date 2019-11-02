@@ -1,6 +1,5 @@
 package ascelion.config.core;
 
-import java.io.IOException;
 import java.util.Optional;
 
 import ascelion.config.read.PropertiesInputReader;
@@ -20,13 +19,13 @@ public class ConfigRootTest {
 		this.root
 			.child("1", true).value("1")
 				.child("1", true).value( "11")
-			.parent()
+			.base()
 				.child("2", true).value("12")
-			.parent()
-		.parent()
+			.base()
+		.base()
 			.child("2",true).value( "2")
 				.child("1",true).value( "21")
-			.parent()
+			.base()
 				.child("2", true).value("22")
 		;
 		//@formatter:on
@@ -41,7 +40,7 @@ public class ConfigRootTest {
 	}
 
 	@Test
-	public void build() throws IOException {
+	public void build() {
 		final PropertiesInputReader reader = new PropertiesInputReader();
 
 		this.root.addConfigInputs(reader.read(getClass().getSimpleName()));
@@ -56,7 +55,7 @@ public class ConfigRootTest {
 	}
 
 	@Test
-	public void priority() throws IOException {
+	public void priority() {
 		final PropertiesInputReader reader = new PropertiesInputReader();
 
 		this.root.addConfigInputs(reader.read(getClass().getSimpleName()));

@@ -1,6 +1,6 @@
 
 dependencies {
-	api project( ':core' )
+	implementation project( ':core' )
 
 	implementation 'org.slf4j:slf4j-api'
 	implementation 'ascelion.public:cdi-utils'

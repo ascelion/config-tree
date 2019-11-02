@@ -1,6 +1,5 @@
 package ascelion.config.read;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import ascelion.config.spi.ConfigInput;
@@ -17,12 +16,12 @@ public class SystemInputReader implements ConfigInputReader {
 	}
 
 	@Override
-	public Collection<ConfigInput> read() throws IOException {
-		return asList(/* new EnvironmentInput(), */new SystemPropertiesInput());
+	public Collection<ConfigInput> read() {
+		return asList(new EnvironmentInput(), new SystemPropertiesInput());
 	}
 
 	@Override
-	public Collection<ConfigInput> read(String source) throws IOException {
+	public Collection<ConfigInput> read(String source) {
 		return emptyList();
 	}
 

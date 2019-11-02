@@ -1,0 +1,29 @@
+
+allprojects {
+	apply plugin: 'jacoco'
+}
+
+task jacocoReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) { task ->
+	reports {
+		xml.enabled false
+		csv.enabled false
+		html.destination file("${buildDir}/reports/jacoco")
+	}
+
+	subprojects {
+		tasks.withType( Test ) {
+			jacocoTestReport.executionData it
+			jacocoTestReport.dependsOn it
+		}
+
+		jacocoTestReport {
+			sourceSets sourceSets.main
+		}
+
+		sourceSets sourceSets.main
+		dependsOn jacocoTestReport
+		executionData files( jacocoTestReport.executionData.filter { it.exists() } )
+	}
+}
+
+check.dependsOn jacocoReport

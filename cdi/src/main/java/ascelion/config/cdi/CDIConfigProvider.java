@@ -1,18 +1,18 @@
 package ascelion.config.cdi;
 
-import java.io.IOException;
-
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import ascelion.config.api.ConfigRoot;
-import ascelion.config.core.AbstractConfigProvider;
+import ascelion.config.core.ConfigProviderImpl;
 import ascelion.config.spi.ConfigConverter;
 import ascelion.config.spi.ConfigInputReader;
 
-class ConfigProvider extends AbstractConfigProvider {
+@ApplicationScoped
+class CDIConfigProvider extends ConfigProviderImpl {
 	@Inject
 	private Instance<ConfigInputReader> readers;
 	@Inject
@@ -24,7 +24,7 @@ class ConfigProvider extends AbstractConfigProvider {
 	}
 
 	@PostConstruct
-	private void postConstruct() throws IOException {
+	private void postConstruct() {
 		initReaders(this.readers);
 		initConverters(this.converters);
 	}

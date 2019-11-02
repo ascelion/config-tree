@@ -13,10 +13,15 @@ import ascelion.config.spi.ConfigInputReader;
 
 import static java.lang.Thread.currentThread;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class ResourceInputReader implements ConfigInputReader {
 
+	static private final Logger LOG = LoggerFactory.getLogger(ResourceInputReader.class);
+
 	@Override
-	public final Collection<ConfigInput> read(String source) throws IOException {
+	public final Collection<ConfigInput> read(String source) {
 		final Collection<ConfigInput> inputs = new ArrayList<>();
 
 		final int suffixIdx = source.lastIndexOf('.');
@@ -38,17 +43,39 @@ public abstract class ResourceInputReader implements ConfigInputReader {
 		return inputs;
 	}
 
-	private void collect(String source, Collection<ConfigInput> inputs) throws IOException {
+	private void collect(String source, Collection<ConfigInput> inputs) {
 		final File file = new File(source);
 
 		if (file.exists()) {
-			inputs.add(read(file.toURI().toURL()));
+			try {
+				LOG.debug("Reading {}", file.getAbsolutePath());
+
+				inputs.add(read(file.toURI().toURL()));
+			} catch (final IOException e) {
+				LOG.warn(file.getAbsolutePath(), e);
+			}
 		}
 
-		final Enumeration<URL> resources = currentThread().getContextClassLoader().getResources(source);
+		Enumeration<URL> resources;
+
+		try {
+			resources = currentThread().getContextClassLoader().getResources(source);
+		} catch (final IOException e) {
+			LOG.warn(source, e);
+
+			return;
+		}
 
 		while (resources.hasMoreElements()) {
-			inputs.add(read(resources.nextElement()));
+			final URL resource = resources.nextElement();
+
+			try {
+				LOG.debug("Reading {}", resource);
+
+				inputs.add(read(resource));
+			} catch (final IOException e) {
+				LOG.warn(resource.toExternalForm(), e);
+			}
 		}
 	}
 
