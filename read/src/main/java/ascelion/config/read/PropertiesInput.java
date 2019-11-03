@@ -7,7 +7,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import static java.util.Collections.unmodifiableMap;
+import ascelion.config.api.ConfigProvider.Builder;
+import ascelion.config.spi.ConfigInput;
 
 class PropertiesInput extends ResourceInput {
 	private final Map<String, String> properties = new TreeMap<>();
@@ -24,8 +25,13 @@ class PropertiesInput extends ResourceInput {
 	}
 
 	@Override
-	public Map<String, String> properties() {
-		return unmodifiableMap(this.properties);
+	public int priority() {
+		return ConfigInput.priority(this.properties.get(CONFIG_PRIORITY));
+	}
+
+	@Override
+	public void update(Builder bld) {
+		bld.set(this.properties);
 	}
 
 }

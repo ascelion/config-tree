@@ -1,12 +1,14 @@
 
 dependencies {
 	api project( ':spi' )
-	
+
 	implementation project( ':spi' )
 	implementation project( ':read' )
 	implementation project( ':convert' )
 
 	implementation 'org.slf4j:slf4j-api'
+
+	testRuntimeOnly project( path: ':api', configuration: 'tests' )
 }
 
 apply from: rootProject.file( 'publish.gradle' )

@@ -1,21 +1,27 @@
 package ascelion.config.api;
 
-public abstract class ConfigProvider {
-	static private volatile ConfigProvider INSTANCE;
+import java.util.Map;
 
-	public static ConfigProvider load() {
-		if (INSTANCE != null) {
-			return INSTANCE;
-		}
-
-		synchronized (ConfigProvider.class) {
-			if (INSTANCE != null) {
-				return INSTANCE;
-			}
-
-			return INSTANCE = new Service<>(ConfigProvider.class).load();
-		}
+public interface ConfigProvider {
+	static ConfigProvider load() {
+		return new Service<>(ConfigProvider.class).load();
 	}
 
-	public abstract ConfigRoot get();
+	public interface Builder {
+		Builder child();
+
+		Builder child(String path);
+
+		Builder value(String value);
+
+		Builder set(Map<String, String> properties);
+
+		Builder set(String path, String value);
+
+		Builder back();
+
+		ConfigRoot get();
+	}
+
+	ConfigRoot get();
 }

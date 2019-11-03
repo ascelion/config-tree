@@ -1,8 +1,8 @@
 
-config_order: 10
+config_ordinal: 10
 
 prop1:
   - value11
   - value12
 
-prop2: value2
+prop2: value1

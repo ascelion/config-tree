@@ -1,17 +1,16 @@
 package ascelion.config.spi;
 
-import java.util.Map;
+import ascelion.config.api.ConfigProvider;
 
 public interface ConfigInput extends Comparable<ConfigInput> {
 	String CONFIG_PRIORITY = "config_ordinal";
 	int DEFAULT_PRIORITY = 100;
 
-	default int priority() {
-		final String configOrdinal = properties().get(CONFIG_PRIORITY);
+	static int priority(String value) {
 
-		if (configOrdinal != null) {
+		if (value != null) {
 			try {
-				return Integer.parseInt(configOrdinal);
+				return Integer.parseInt(value);
 			} catch (final NumberFormatException ignored) {
 			}
 		}
@@ -28,5 +27,7 @@ public interface ConfigInput extends Comparable<ConfigInput> {
 		return Integer.compare(priority(), o.priority());
 	}
 
-	Map<String, String> properties();
+	int priority();
+
+	void update(ConfigProvider.Builder bld);
 }

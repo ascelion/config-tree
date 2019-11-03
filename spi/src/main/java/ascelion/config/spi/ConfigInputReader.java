@@ -33,7 +33,7 @@ public interface ConfigInputReader {
 	}
 
 	default String defaultResource() {
-		return "config";
+		return "config-tree";
 	}
 
 	default Collection<ConfigInput> read() {

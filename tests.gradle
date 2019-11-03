@@ -1,6 +1,9 @@
 
 subprojects {
 	tasks.withType( Test ) {
+//		testLogging.showStandardStreams = true
+//	 	testLogging.exceptionFormat = 'full'
+
 		useJUnitPlatform()
 	}
 

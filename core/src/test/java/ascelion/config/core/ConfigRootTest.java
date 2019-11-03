@@ -14,32 +14,6 @@ public class ConfigRootTest {
 	private final ConfigRootImpl root = new ConfigRootImpl();
 
 	@Test
-	public void paths() {
-		//@formatter:off
-		this.root
-			.child("1", true).value("1")
-				.child("1", true).value( "11")
-			.base()
-				.child("2", true).value("12")
-			.base()
-		.base()
-			.child("2",true).value( "2")
-				.child("1",true).value( "21")
-			.base()
-				.child("2", true).value("22")
-		;
-		//@formatter:on
-
-		checkValue(this.root, "1", "1");
-		checkValue(this.root, "1.1", "11");
-		checkValue(this.root, "1.2", "12");
-
-		checkValue(this.root, "2", "2");
-		checkValue(this.root, "2.1", "21");
-		checkValue(this.root, "2.2", "22");
-	}
-
-	@Test
 	public void build() {
 		final PropertiesInputReader reader = new PropertiesInputReader();
 
@@ -71,7 +45,7 @@ public class ConfigRootTest {
 	}
 
 	private void checkValue(ConfigRootImpl root, String path, String expected) {
-		final Optional<String> value = root.eval(path, String.class);
+		final Optional<String> value = root.getValue(path, String.class);
 
 		assertThat(path, value.isPresent(), equalTo(expected != null));
 

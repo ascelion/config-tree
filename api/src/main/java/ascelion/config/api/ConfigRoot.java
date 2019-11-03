@@ -1,10 +1,27 @@
 package ascelion.config.api;
 
 import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-public interface ConfigRoot extends ConfigNode {
-	<T> Optional<T> eval(String expression, Type type);
+import static java.util.Collections.emptyList;
 
-	<T> Optional<T> eval(String expression, Class<T> type);
+public interface ConfigRoot extends ConfigNode {
+
+	default <T> Optional<T> getValue(String path, Class<T> type) {
+		return getValue(path, (Type) type);
+	}
+
+	default String getValue(String path) {
+		return getValue(path, String.class).orElse(null);
+	}
+
+	default List<String> getValues(String path) {
+		return getValue(path, String[].class)
+				.map(Arrays::asList)
+				.orElse(emptyList());
+	}
+
+	<T> Optional<T> getValue(String path, Type type);
 }

@@ -4,6 +4,7 @@ include 'api'
 include 'cdi'
 include 'convert'
 include 'core'
+include 'microprofile'
 include 'read'
 include 'spi'
 

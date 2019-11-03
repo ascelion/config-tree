@@ -14,4 +14,9 @@ abstract class ResourceInput implements ConfigInput {
 	public String name() {
 		return this.source.toExternalForm();
 	}
+
+	@Override
+	public String toString() {
+		return name();
+	}
 }

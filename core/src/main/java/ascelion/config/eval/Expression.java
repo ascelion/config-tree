@@ -1,9 +1,13 @@
 package ascelion.config.eval;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 public final class Expression {
 	static final String PREFIX_DEF = "${";
@@ -11,7 +15,7 @@ public final class Expression {
 	static final String VALUE_DEF = ":-";
 
 	@NonNull
-	Function<String, Optional<String>> lookup = x -> Optional.of(x);
+	Function<String, Lookup> lookup = x -> new Lookup(Optional.of(x));
 	@NonNull
 	char[] varPrefix = PREFIX_DEF.toCharArray();
 	@NonNull
@@ -19,13 +23,46 @@ public final class Expression {
 	@NonNull
 	char[] varSuffix = SUFFIX_DEF.toCharArray();
 
-	public String eval(String expression) {
-		return new Replacer(this)
-				.replace(new Buffer(expression))
-				.toString();
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	static public class Lookup {
+		private final Optional<String> value;
+		@Getter
+		private final boolean undefined;
+
+		public Lookup() {
+			this(null, true);
+		}
+
+		public Lookup(Optional<String> value) {
+			this(value, false);
+		}
+
+		public Optional<String> getValue() {
+			if (this.undefined) {
+				throw new NoSuchElementException();
+			}
+
+			return this.value;
+		}
 	}
 
-	public Expression withLookup(@NonNull Function<String, Optional<String>> lookup) {
+	@RequiredArgsConstructor
+	@Getter
+	static public class Result {
+		private final String expression;
+		private final String value;
+		private final String lastVariable;
+	}
+
+	public Result eval(String expression) {
+		final Replacer rep = new Replacer(this);
+		final Buffer buf = rep.replace(expression);
+		final String val = buf.toString().trim();
+
+		return new Result(expression, val.isEmpty() ? null : val, rep.getLastVariable());
+	}
+
+	public Expression withLookup(@NonNull Function<String, Lookup> lookup) {
 		this.lookup = lookup;
 
 		return this;

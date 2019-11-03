@@ -4,9 +4,12 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
+import ascelion.config.eval.Expression.Lookup;
+
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +27,16 @@ final class Replacer {
 	private final Expression exp;
 	private final Deque<Buffer> vars = new LinkedList<>();
 
-	Buffer replace(Buffer buf) {
+	@Getter
+	private String lastVariable;
+
+	Buffer replace(String expression) {
+		this.lastVariable = expression;
+
+		return replace(new Buffer(expression));
+	}
+
+	private Buffer replace(Buffer buf) {
 		DUMP.get().addLast(buf);
 
 		try {
@@ -103,6 +115,8 @@ final class Replacer {
 			throw new IllegalStateException(m);
 		}
 
+		this.lastVariable = var.toString();
+
 		this.vars.addLast(var);
 	}
 
@@ -121,15 +135,15 @@ final class Replacer {
 
 		if (defIx < 0) {
 			var = place;
-			def = null;
+			def = "";
 		} else {
 			var = place.subBuffer(0, defIx);
 			def = place.subBuffer(defIx + this.exp.valueSep.length, place.count - defIx - this.exp.valueSep.length).toString();
 		}
 
-		String val = this.exp.lookup.apply(var.toString()).orElse(def);
+		final Lookup res = this.exp.lookup.apply(var.toString());
 
-		if (val == null) {
+		if (res.isUndefined()) {
 			final String text = format("Reference to undefined variable %s%s%s", new String(this.exp.varPrefix), var, new String(this.exp.varSuffix));
 
 			if (LOG.isErrorEnabled()) {
@@ -143,9 +157,15 @@ final class Replacer {
 			throw new NoSuchElementException(text);
 		}
 
+		String val = res.getValue().orElse(def);
+
 		pushName(var);
-		val = replace(new Buffer(val)).toString();
-		popName();
+
+		try {
+			val = replace(new Buffer(val)).toString();
+		} finally {
+			popName();
+		}
 
 		buf.replace(ofs, cnt + this.exp.varSuffix.length, val);
 	}

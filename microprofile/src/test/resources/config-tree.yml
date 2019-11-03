@@ -1,0 +1,12 @@
+
+ascelion:
+  values:
+    booleanValue: true
+    intValue: 12
+    longValue: 123
+    floatValue: 1234
+    doubleValue: 12345
+    value: text
+    values:
+      - text1
+      - text2

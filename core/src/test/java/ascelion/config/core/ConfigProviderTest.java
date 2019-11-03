@@ -31,10 +31,10 @@ public class ConfigProviderTest {
 	public void string_read() {
 		final ConfigRoot root = ConfigProvider.load().get();
 
-		final String sv1 = root.eval("value", String.class).orElse(null);
-		final String[] sv2 = root.eval("value", String[].class).orElse(null);
-		final String sv3 = root.eval("values", String.class).orElse(null);
-		final String[] sv4 = root.eval("values", String[].class).orElse(null);
+		final String sv1 = root.getValue("value", String.class).orElse(null);
+		final String[] sv2 = root.getValue("value", String[].class).orElse(null);
+		final String sv3 = root.getValue("values", String.class).orElse(null);
+		final String[] sv4 = root.getValue("values", String[].class).orElse(null);
 
 		assertThat(sv1, is(notNullValue()));
 		assertThat(sv2, is(notNullValue()));
@@ -50,10 +50,10 @@ public class ConfigProviderTest {
 	public void integer_read() {
 		final ConfigRoot root = ConfigProvider.load().get();
 
-		final Integer sv1 = root.eval("value", Integer.class).orElse(null);
-		final Integer[] sv2 = root.eval("value", Integer[].class).orElse(null);
-		final Integer sv3 = root.eval("values", Integer.class).orElse(null);
-		final Integer[] sv4 = root.eval("values", Integer[].class).orElse(null);
+		final Integer sv1 = root.getValue("value", Integer.class).orElse(null);
+		final Integer[] sv2 = root.getValue("value", Integer[].class).orElse(null);
+		final Integer sv3 = root.getValue("values", Integer.class).orElse(null);
+		final Integer[] sv4 = root.getValue("values", Integer[].class).orElse(null);
 
 		assertThat(sv1, is(notNullValue()));
 		assertThat(sv2, is(notNullValue()));
@@ -69,10 +69,10 @@ public class ConfigProviderTest {
 	public void int_read() {
 		final ConfigRoot root = ConfigProvider.load().get();
 
-		final int sv1 = root.eval("value", int.class).orElse(0);
-		final int[] sv2 = root.eval("value", int[].class).orElse(null);
-		final int sv3 = root.eval("values", int.class).orElse(0);
-		final int[] sv4 = root.eval("values", int[].class).orElse(null);
+		final int sv1 = root.getValue("value", int.class).orElse(0);
+		final int[] sv2 = root.getValue("value", int[].class).orElse(null);
+		final int sv3 = root.getValue("values", int.class).orElse(0);
+		final int[] sv4 = root.getValue("values", int[].class).orElse(null);
 
 		assertThat(sv1, is(notNullValue()));
 		assertThat(sv2, is(notNullValue()));

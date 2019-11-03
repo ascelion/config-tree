@@ -3,9 +3,8 @@ package ascelion.config.read;
 import java.util.Map;
 import java.util.TreeMap;
 
+import ascelion.config.api.ConfigProvider.Builder;
 import ascelion.config.spi.ConfigInput;
-
-import static java.util.Collections.unmodifiableMap;
 
 class SystemPropertiesInput implements ConfigInput {
 	private final Map<String, String> properties = new TreeMap<>();
@@ -20,7 +19,7 @@ class SystemPropertiesInput implements ConfigInput {
 	}
 
 	@Override
-	public Map<String, String> properties() {
-		return unmodifiableMap(this.properties);
+	public void update(Builder bld) {
+		bld.set(this.properties);
 	}
 }

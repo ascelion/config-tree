@@ -78,7 +78,7 @@ class ConfigInjectionTarget<T> implements InjectionTarget<T> {
 		final ConfigValue cval = annotated.getAnnotation(ConfigValue.class);
 		final String prop = cval.value();
 		final Type type = annotated.getBaseType();
-		final Optional<?> value = root.eval(prop, type);
+		final Optional<?> value = root.getValue(prop, type);
 
 		if (value.isPresent()) {
 			final Field field = annotated.getJavaMember();
@@ -96,7 +96,7 @@ class ConfigInjectionTarget<T> implements InjectionTarget<T> {
 		final ConfigValue cval = param.getAnnotation(ConfigValue.class);
 		final String prop = cval.value();
 		final Type type = param.getBaseType();
-		final Optional<?> value = root.eval(prop, type);
+		final Optional<?> value = root.getValue(prop, type);
 
 		if (value.isPresent()) {
 			final Method method = annotated.getJavaMember();

@@ -1,5 +1,5 @@
 
-config_order: 20
+config_ordinal: 20
 
 prop2:
   prop21:
@@ -7,3 +7,9 @@ prop2:
     - value212
   prop22:
     prop221: ok
+
+---
+
+config_ordinal: 30
+
+prop2: value2

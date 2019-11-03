@@ -20,7 +20,7 @@ class ConfigValueProducer {
 		final ConfigValue annotation = ip.getAnnotated().getAnnotation(ConfigValue.class);
 		final String property = annotation.value();
 		final Type type = ip.getType();
-		final Optional<Object> opt = this.config.eval(property, type);
+		final Optional<Object> opt = this.config.getValue(property, type);
 
 		if (type instanceof ParameterizedType && ((ParameterizedType) type).getRawType() == Optional.class) {
 			return opt;

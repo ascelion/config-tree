@@ -11,7 +11,7 @@ import ascelion.config.convert.Converters;
 import ascelion.config.spi.ConfigConverter;
 import ascelion.config.spi.ConfigInputReader;
 
-public class ConfigProviderImpl extends ConfigProvider {
+public class ConfigProviderImpl implements ConfigProvider {
 	private final Converters converters = new Converters();
 	private final ConfigRootImpl root = new ConfigRootImpl(this.converters);
 
@@ -30,8 +30,8 @@ public class ConfigProviderImpl extends ConfigProvider {
 
 		readAll(skip, readers, null);
 
-		final File directory = this.root.eval(ConfigInputReader.DIRECTORY_PROP, File.class).orElse(null);
-		final String[] resources = this.root.eval(ConfigInputReader.RESOURCE_PROP, String[].class).orElseGet(() -> new String[0]);
+		final File directory = this.root.getValue(ConfigInputReader.DIRECTORY_PROP, File.class).orElse(null);
+		final String[] resources = this.root.getValue(ConfigInputReader.RESOURCE_PROP, String[].class).orElseGet(() -> new String[0]);
 
 		for (final String resource : resources) {
 			if (directory != null) {
