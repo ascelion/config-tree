@@ -1,8 +1,8 @@
 
 subprojects {
 	tasks.withType( Test ) {
-//		testLogging.showStandardStreams = true
-//	 	testLogging.exceptionFormat = 'full'
+		//		testLogging.showStandardStreams = true
+		//	 	testLogging.exceptionFormat = 'full'
 
 		useJUnitPlatform()
 	}
@@ -23,7 +23,10 @@ subprojects {
 		}
 
 		testImplementation 'org.hamcrest:hamcrest'
+
 		testImplementation 'org.junit.jupiter:junit-jupiter-api'
+		testImplementation 'org.junit.jupiter:junit-jupiter-params'
+
 		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 		testRuntimeOnly 'ch.qos.logback:logback-classic'
 	}

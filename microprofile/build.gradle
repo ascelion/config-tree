@@ -7,5 +7,7 @@ dependencies {
 	implementation project(':spi')
 	implementation project(':cdi')
 
-	testRuntimeOnly 'io.smallrye:smallrye-config'
+	testImplementation 'io.smallrye:smallrye-config'
+	testImplementation 'org.apache.geronimo.config:geronimo-config-impl'
+	testImplementation 'io.helidon.microprofile.config:helidon-microprofile-config'
 }

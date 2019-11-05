@@ -4,15 +4,19 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigProvider;
 import ascelion.config.api.ConfigRoot;
 
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 public class ExpressionConfigSource implements ConfigSource {
+	static private final Mediator MEDIATOR = new Mediator();
 
 	@Override
 	public int getOrdinal() {
@@ -21,12 +25,21 @@ public class ExpressionConfigSource implements ConfigSource {
 
 	@Override
 	public Map<String, String> getProperties() {
-		final ConfigRoot root = ConfigRootInstance.get();
-		final Map<String, String> properties = new HashMap<>();
+		if (MEDIATOR.acquire()) {
+			try {
+				final Supplier<ConfigRoot> prov = () -> ConfigProvider.root();
+				final ConfigRoot root = new InstanceProvider<>(ConfigRoot.class, prov).get();
+				final Map<String, String> properties = new HashMap<>();
 
-		fillMap(properties, root);
+				fillMap(properties, root);
 
-		return properties;
+				return properties;
+			} finally {
+				MEDIATOR.release();
+			}
+		} else {
+			return emptyMap();
+		}
 	}
 
 	@Override
