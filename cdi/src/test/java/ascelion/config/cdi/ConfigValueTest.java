@@ -4,6 +4,7 @@ import javax.inject.Inject;
 
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigValue;
+import ascelion.config.core.AbstractTest;
 
 import static ascelion.config.cdi.WeldRule.createWeldRule;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,7 +16,7 @@ import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Test;
 
 @EnableWeld
-public class ConfigValueTest {
+public class ConfigValueTest extends AbstractTest {
 
 	@ConfigPrefix("values1")
 	static class Values1 {

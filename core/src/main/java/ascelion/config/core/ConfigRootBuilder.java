@@ -7,7 +7,7 @@ import java.util.Map;
 import ascelion.config.api.ConfigProvider;
 import ascelion.config.spi.ConverterFactory;
 
-import static ascelion.config.core.Utils.pathElements;
+import static ascelion.config.spi.Utils.pathElements;
 import static java.lang.String.format;
 
 import org.slf4j.Logger;

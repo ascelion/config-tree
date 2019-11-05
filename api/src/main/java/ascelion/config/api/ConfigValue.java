@@ -26,13 +26,11 @@ public @interface ConfigValue {
 		private final String value;
 		private final boolean usePrefix;
 		private final boolean required;
-		private final Class<?> type;
 
 		public static Builder from(ConfigValue annotation) {
 			return new Builder()
 					.required(annotation.required())
-					.usePrefix(annotation.usePrefix())
-					.type(annotation.type());
+					.usePrefix(annotation.usePrefix());
 		}
 
 		@Override
@@ -54,11 +52,6 @@ public @interface ConfigValue {
 		public boolean required() {
 			return this.required;
 		}
-
-		@Override
-		public Class<?> type() {
-			return this.type;
-		}
 	}
 
 	String value() default "";
@@ -66,6 +59,4 @@ public @interface ConfigValue {
 	boolean usePrefix() default true;
 
 	boolean required() default true;
-
-	Class<?> type() default Object.class;
 }

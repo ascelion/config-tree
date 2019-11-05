@@ -7,5 +7,9 @@ dependencies {
 	implementation 'jakarta.enterprise:jakarta.enterprise.cdi-api:2.0.2'
 
 	testImplementation project( path: ':api', configuration: 'tests' )
+	testImplementation project( path: ':core', configuration: 'tests' )
+
 	testImplementation 'org.jboss.weld:weld-junit5'
 }
+
+apply from: rootProject.file( 'publish.gradle' )

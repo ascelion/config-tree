@@ -1,8 +1,10 @@
-package ascelion.config.core;
+package ascelion.config.spi;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Pattern;
+
+import ascelion.config.api.ConfigNode;
 
 import static java.lang.String.format;
 
@@ -11,11 +13,11 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class Utils {
+public final class Utils {
 
 	static private final Pattern ARRAY_INDEX = Pattern.compile("^\\[\\d+\\]$");
 
-	static String[] pathElements(@NonNull String path) {
+	static public String[] pathElements(@NonNull String path) {
 		final int size = path.length();
 
 		if (size == 0) {
@@ -80,11 +82,65 @@ final class Utils {
 		return elements.toArray(new String[elements.size()]);
 	}
 
-	static boolean isArrayName(String name) {
+	static public boolean isSimpleArray(ConfigNode node) {
+		if (node.getValue().isPresent()) {
+			return false;
+		}
+
+		final Collection<ConfigNode> children = node.getChildren();
+
+		if (children.isEmpty()) {
+			return false;
+		}
+		if (!isArrayName(children.iterator().next().getName())) {
+			return false;
+		}
+
+		final long gchildren = children.stream()
+				.flatMap(child -> child.getChildren().stream())
+				.count();
+
+		return gchildren == 0;
+	}
+
+	static public boolean isSimpleMap(ConfigNode node) {
+		if (node.getValue().isPresent()) {
+			return false;
+		}
+
+		final Collection<ConfigNode> children = node.getChildren();
+
+		if (children.isEmpty()) {
+			return false;
+		}
+		if (isArrayName(children.iterator().next().getName())) {
+			return false;
+		}
+
+		final long gchildren = children.stream()
+				.flatMap(child -> child.getChildren().stream())
+				.count();
+
+		return gchildren == 0;
+	}
+
+	static public boolean isMapNode(ConfigNode node) {
+		final Collection<ConfigNode> children = node.getChildren();
+
+		return children.size() > 0 && !isArrayName(children.iterator().next().getName());
+	}
+
+	static public boolean isArrayNode(ConfigNode node) {
+		final Collection<ConfigNode> children = node.getChildren();
+
+		return children.size() > 0 && isArrayName(children.iterator().next().getName());
+	}
+
+	static public boolean isArrayName(String name) {
 		return ARRAY_INDEX.matcher(name).matches();
 	}
 
-	private static void append(Collection<String> items, StringBuilder item, String path, int pos) {
+	static private void append(Collection<String> items, StringBuilder item, String path, int pos) {
 		if (item.length() == 0) {
 			throw new IllegalArgumentException(format("Invalid path format at position %d: %s", pos, path));
 		}

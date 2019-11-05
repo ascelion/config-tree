@@ -6,10 +6,13 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigRoot;
 import ascelion.config.eval.Expression;
 
-import static ascelion.config.core.Utils.isArrayName;
-import static ascelion.config.core.Utils.pathElements;
+import static ascelion.config.spi.Utils.isArrayName;
+import static ascelion.config.spi.Utils.isArrayNode;
+import static ascelion.config.spi.Utils.isMapNode;
+import static ascelion.config.spi.Utils.pathElements;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
@@ -45,6 +48,11 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 	@Override
 	public String toString() {
 		return format("[path: %s, value: %s, children: %d]", this.path, this.value, this.children.size());
+	}
+
+	@Override
+	public ConfigRoot root() {
+		return this.root;
 	}
 
 	@Override
@@ -118,10 +126,10 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 	final ConfigNodeImpl create(String name) {
 		final boolean isArray = isArrayName(name);
 
-		if (isArray && isMap()) {
+		if (isArray && isMapNode(this)) {
 			throw new IllegalStateException(format("The node %s already contains a map", this.path));
 		}
-		if (!isArray && isArray()) {
+		if (!isArray && isArrayNode(this)) {
 			throw new IllegalStateException(format("The node %s already contains an array", this.path));
 		}
 
@@ -150,13 +158,5 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 		this.value = value;
 
 		return this;
-	}
-
-	private boolean isMap() {
-		return this.children.size() > 0 && !isArrayName(this.children.values().iterator().next().name);
-	}
-
-	private boolean isArray() {
-		return this.children.size() > 0 && isArrayName(this.children.values().iterator().next().name);
 	}
 }

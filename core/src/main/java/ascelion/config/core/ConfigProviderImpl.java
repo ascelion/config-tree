@@ -10,28 +10,48 @@ import ascelion.config.api.ConfigRoot;
 import ascelion.config.convert.Converters;
 import ascelion.config.spi.ConfigConverter;
 import ascelion.config.spi.ConfigInputReader;
+import ascelion.config.spi.ConverterFactory;
 
 public class ConfigProviderImpl extends ConfigProvider {
-	private final Converters converters = new Converters();
-	private final ConfigRootImpl root = new ConfigRootImpl(this.converters);
+	static private volatile ConfigRootImpl INSTANCE;
+	static private Converters CONVERTERS;
 
-	public ConfigProviderImpl() {
-		initReaders(ServiceLoader.load(ConfigInputReader.class));
-		initConverters(ServiceLoader.load(ConfigConverter.class));
+	public static void reset() {
+		synchronized (ConfigProviderImpl.class) {
+			CONVERTERS = null;
+			INSTANCE = null;
+		}
 	}
 
 	@Override
 	public ConfigRoot get() {
-		return this.root;
+		if (INSTANCE != null) {
+			return INSTANCE;
+		}
+
+		synchronized (ConfigProviderImpl.class) {
+			if (INSTANCE != null) {
+				return INSTANCE;
+			}
+
+			CONVERTERS = new Converters();
+			INSTANCE = new ConfigRootImpl(CONVERTERS);
+
+			initConverters(ServiceLoader.load(ConfigConverter.class));
+			initFactories(ServiceLoader.load(ConverterFactory.class));
+			initReaders(ServiceLoader.load(ConfigInputReader.class));
+
+			return INSTANCE;
+		}
 	}
 
-	protected void initReaders(Iterable<ConfigInputReader> readers) {
+	protected final void initReaders(Iterable<ConfigInputReader> readers) {
 		final Set<String> skip = new HashSet<>();
 
 		readAll(skip, readers, "");
 
-		final File directory = this.root.getValue(ConfigInputReader.DIRECTORY_PROP, File.class).orElse(null);
-		final String[] resources = this.root.getValue(ConfigInputReader.RESOURCE_PROP, String[].class).orElseGet(() -> new String[0]);
+		final File directory = INSTANCE.getValue(ConfigInputReader.DIRECTORY_PROP, File.class).orElse(null);
+		final String[] resources = INSTANCE.getValue(ConfigInputReader.RESOURCE_PROP, String[].class).orElseGet(() -> new String[0]);
 
 		for (final String resource : resources) {
 			if (directory != null) {
@@ -42,14 +62,18 @@ public class ConfigProviderImpl extends ConfigProvider {
 		}
 	}
 
-	protected void initConverters(@SuppressWarnings("rawtypes") Iterable<ConfigConverter> converters) {
-		converters.forEach(this.converters::register);
+	protected final void initFactories(Iterable<ConverterFactory> factories) {
+		factories.forEach(CONVERTERS::register);
+	}
+
+	protected final void initConverters(@SuppressWarnings("rawtypes") Iterable<ConfigConverter> converters) {
+		converters.forEach(CONVERTERS::register);
 	}
 
 	private void readAll(Set<String> skip, Iterable<ConfigInputReader> readers, String source) {
 		if (skip.add(source)) {
 			for (final ConfigInputReader rd : readers) {
-				this.root.addConfigInputs(source.isEmpty() ? rd.read() : rd.read(source));
+				INSTANCE.addConfigInputs(source.isEmpty() ? rd.read() : rd.read(source));
 			}
 		}
 	}

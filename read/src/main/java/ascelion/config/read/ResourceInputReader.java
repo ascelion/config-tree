@@ -59,7 +59,7 @@ public abstract class ResourceInputReader implements ConfigInputReader {
 		Enumeration<URL> resources;
 
 		try {
-			resources = currentThread().getContextClassLoader().getResources(source);
+			resources = getClassLoader().getResources(source);
 		} catch (final IOException e) {
 			LOG.warn(source, e);
 
@@ -80,4 +80,10 @@ public abstract class ResourceInputReader implements ConfigInputReader {
 	}
 
 	protected abstract ConfigInput read(URL source) throws IOException;
+
+	private ClassLoader getClassLoader() {
+		final ClassLoader cld = currentThread().getContextClassLoader();
+
+		return cld != null ? cld : getClass().getClassLoader();
+	}
 }

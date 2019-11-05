@@ -1,0 +1,7 @@
+
+prop2:
+  # cannot be parsed
+  #values1: 211,212
+  values2:
+    - 221
+    - 222

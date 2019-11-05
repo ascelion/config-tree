@@ -2,6 +2,10 @@
 dependencies {
 	api project( ':spi' )
 
+	implementation 'org.slf4j:slf4j-api'
 	implementation 'jakarta.annotation:jakarta.annotation-api'
+	implementation 'org.apache.commons:commons-lang3'
 	implementation 'io.leangen.geantyref:geantyref'
 }
+
+apply from: rootProject.file( 'publish.gradle' )

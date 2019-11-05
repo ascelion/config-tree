@@ -6,6 +6,8 @@ import java.util.Optional;
 
 public interface ConfigNode {
 
+	ConfigRoot root();
+
 	String getName();
 
 	String getPath();

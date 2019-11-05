@@ -5,9 +5,12 @@ dependencies {
 
 	implementation project(':api')
 	implementation project(':spi')
+	implementation project(':core')
 	implementation project(':cdi')
-
+	
 	testImplementation 'io.smallrye:smallrye-config'
 	testImplementation 'org.apache.geronimo.config:geronimo-config-impl'
 	testImplementation 'io.helidon.microprofile.config:helidon-microprofile-config'
 }
+
+apply from: rootProject.file( 'publish.gradle' )

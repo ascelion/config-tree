@@ -1,5 +1,7 @@
 
 prop2:
-  values:
-    - value1
-    - value2
+  # not to be parsed as array
+  values1: value211,value212
+  values2:
+    - value221
+    - value222

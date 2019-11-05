@@ -23,6 +23,7 @@ import ascelion.cdi.metadata.AnnotatedTypeModifier.Annotations;
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigValue;
 
+import static ascelion.config.spi.Utils.isArrayName;
 import static java.lang.String.format;
 import static java.util.Collections.newSetFromMap;
 import static java.util.Collections.unmodifiableSet;
@@ -166,14 +167,18 @@ final class ConfigProcessor<T> {
 					expr.append(this.typeName);
 				}
 
-				expr.append(".");
+				if (!isArrayName(expr.toString())) {
+					expr.append(".");
+				}
 			}
 
 			expr.append(name);
 		} else {
 			if (cval.usePrefix() && this.hasPrefix) {
 				expr.append(this.prefix);
-				expr.append(".");
+				if (!isArrayName(this.prefix)) {
+					expr.append(".");
+				}
 			}
 
 			expr.append(prop);

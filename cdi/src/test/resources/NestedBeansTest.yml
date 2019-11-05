@@ -1,0 +1,13 @@
+
+bean:
+  users:
+  - username: u1
+    password: p1
+    roles:
+    - role11
+    - role12
+  - username: u2
+    password: p2
+    roles:
+    - role21
+    - role22

@@ -2,7 +2,6 @@ package ascelion.config.core;
 
 import ascelion.config.api.ConfigProvider;
 import ascelion.config.api.ConfigRoot;
-import ascelion.config.spi.ConfigInputReader;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -12,15 +11,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ConfigProviderTest {
-
-	@BeforeEach
-	public void setUp() {
-		System.setProperty(ConfigInputReader.RESOURCE_PROP, getClass().getSimpleName());
-	}
+public class ConfigProviderTest extends AbstractTest {
 
 	@Test
 	public void string_read() {

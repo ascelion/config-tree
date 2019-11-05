@@ -74,7 +74,7 @@ class ConfigInjectionTarget<T> implements InjectionTarget<T> {
 	}
 
 	@SneakyThrows
-	<T> void inject(ConfigRoot root, T instance, AnnotatedField<T> annotated) {
+	static <T> void inject(ConfigRoot root, T instance, AnnotatedField<T> annotated) {
 		final ConfigValue cval = annotated.getAnnotation(ConfigValue.class);
 		final String prop = cval.value();
 		final Type type = annotated.getBaseType();
@@ -91,7 +91,7 @@ class ConfigInjectionTarget<T> implements InjectionTarget<T> {
 	}
 
 	@SneakyThrows
-	<T> void inject(ConfigRoot root, T instance, AnnotatedMethod<T> annotated) {
+	static <T> void inject(ConfigRoot root, T instance, AnnotatedMethod<T> annotated) {
 		final AnnotatedParameter<T> param = annotated.getParameters().get(0);
 		final ConfigValue cval = param.getAnnotation(ConfigValue.class);
 		final String prop = cval.value();

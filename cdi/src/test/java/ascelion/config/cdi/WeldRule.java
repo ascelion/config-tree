@@ -3,6 +3,9 @@ package ascelion.config.cdi;
 import java.util.ArrayList;
 import java.util.List;
 
+import ascelion.config.core.ConfigProviderImpl;
+import ascelion.config.spi.ConfigInputReader;
+
 import static java.util.Arrays.asList;
 
 import lombok.AccessLevel;
@@ -12,6 +15,9 @@ import org.jboss.weld.junit5.WeldInitiator;
 @NoArgsConstructor(access = AccessLevel.NONE)
 class WeldRule {
 	static WeldInitiator createWeldRule(Object test, Class<?>... beans) {
+		ConfigProviderImpl.reset();
+		System.setProperty(ConfigInputReader.RESOURCE_PROP, test.getClass().getSimpleName());
+
 		final List<Class<?>> classes = new ArrayList<>(asList(beans));
 
 		classes.add(ascelion.config.cdi.ConfigExtension.class);

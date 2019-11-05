@@ -7,6 +7,7 @@ import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
 
 import ascelion.config.api.ConfigValue;
+import ascelion.config.core.AbstractTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-public class ConfigRequiredTest {
+public class ConfigRequiredTest extends AbstractTest {
 
 	static class Bean1 {
 		@ConfigValue

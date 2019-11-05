@@ -1,6 +1,6 @@
 package ascelion.config.core;
 
-import static ascelion.config.core.Utils.pathElements;
+import static ascelion.config.spi.Utils.pathElements;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

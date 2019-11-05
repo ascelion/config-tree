@@ -55,6 +55,7 @@ public class ConfigExtension implements Extension {
 		this.prodType = bm.createAnnotatedType(ConfigValueProducer.class);
 
 		event.addAnnotatedType(this.prodType, ConfigValueProducer.class.getName());
+		event.addAnnotatedType(BeanConverterFactory.class, BeanConverterFactory.class.getName());
 		event.addAnnotatedType(CDIConfigProvider.class, CDIConfigProvider.class.getName());
 	}
 

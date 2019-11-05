@@ -27,12 +27,16 @@ final class MapConverter<M extends Map<String, T>, T> extends WrappedConverter<M
 		}
 
 		final M map = this.sup.get();
+		final String base = node.getPath();
+		final int baseLen = base.length() + 1;
 
 		for (final ConfigNode child : children) {
 			final Optional<T> opt = this.conv.convert(child);
 
 			if (opt.isPresent()) {
-				map.put(node.getPath(), opt.get());
+				final String key = child.getPath().substring(baseLen);
+
+				map.put(key, opt.get());
 			}
 		}
 

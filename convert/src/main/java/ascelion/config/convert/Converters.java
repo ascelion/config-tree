@@ -7,11 +7,10 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -23,8 +22,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import javax.annotation.Priority;
-
 import ascelion.config.api.ConfigException;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.spi.ConfigConverter;
@@ -32,88 +29,87 @@ import ascelion.config.spi.ConverterFactory;
 
 import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
 import static java.lang.String.format;
-import static java.util.Optional.ofNullable;
 
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public final class Converters implements ConverterFactory {
+	static private final Logger LOG = LoggerFactory.getLogger(Converters.class);
 	static final TypeVariable<? extends Class<?>> CV_TYPE = ConfigConverter.class.getTypeParameters()[0];
+	static private final String[] CREATE_METHODS = { "valueOf", "parse", "create", "from", "fromValue", "of" };
 
-	static private final String[] CREATE_METHODS = { "valueOf", "parse", "create", "from", "fromValue" };
-
-	@RequiredArgsConstructor
-	static class ConverterInfo<T> implements Comparable<ConverterInfo<T>> {
-		private final ConfigConverter<T> instance;
-		private final int priority;
-
-		@Override
-		public int compareTo(ConverterInfo<T> that) {
-			return Integer.compare(this.priority, that.priority);
-		}
-
-		ConfigConverter<T> instance() {
-			return this.instance;
-		}
-	}
-
-	private final Map<Type, SortedSet<ConverterInfo<?>>> cached = new HashMap<>();
+	private final Map<Type, PrioritizedCollection<ConfigConverter<?>>> cached = new HashMap<>();
+	private final PrioritizedCollection<ConverterFactory> factories = new PrioritizedCollection<>();
 
 	public Converters() {
-		add(String.class, UnaryOperator.identity());
+		addFunction(String.class, UnaryOperator.identity());
 
-		add(boolean.class, Boolean::valueOf);
-		add(byte.class, Byte::parseByte);
-		add(short.class, Short::parseShort);
-		add(int.class, Integer::parseInt);
-		add(long.class, Long::parseLong);
-		add(float.class, Float::parseFloat);
-		add(double.class, Double::parseDouble);
+		addFunction(boolean.class, Boolean::valueOf);
+		addFunction(byte.class, Byte::parseByte);
+		addFunction(short.class, Short::parseShort);
+		addFunction(int.class, Integer::parseInt);
+		addFunction(long.class, Long::parseLong);
+		addFunction(float.class, Float::parseFloat);
+		addFunction(double.class, Double::parseDouble);
 
-		add(Boolean.class, Boolean::valueOf);
-		add(Byte.class, Byte::parseByte);
-		add(Short.class, Short::parseShort);
-		add(Integer.class, Integer::parseInt);
-		add(Long.class, Long::parseLong);
-		add(Float.class, Float::parseFloat);
-		add(Double.class, Double::parseDouble);
+		addFunction(Boolean.class, Boolean::valueOf);
+		addFunction(Byte.class, Byte::parseByte);
+		addFunction(Short.class, Short::parseShort);
+		addFunction(Integer.class, Integer::parseInt);
+		addFunction(Long.class, Long::parseLong);
+		addFunction(Float.class, Float::parseFloat);
+		addFunction(Double.class, Double::parseDouble);
 	}
 
 	public void register(ConfigConverter<?> converter) {
 		final Class<? extends ConfigConverter> type = converter.getClass();
 
-		this.cached.compute(getTypeParameter(type, CV_TYPE), (t, s) -> {
-			return createInfo(s, converter);
-		});
+		this.cached.compute(getTypeParameter(type, CV_TYPE), (t, s) -> addConverter(t, s, converter));
+	}
+
+	public void register(ConverterFactory factory) {
+		LOG.debug("Registering {}", factory.getClass().getName());
+
+		this.factories.add(factory);
 	}
 
 	@Override
 	public <T> ConfigConverter<T> get(Type type) {
 		return (ConfigConverter<T>) this.cached
-				.computeIfAbsent(type, t -> createInfo(null, inferConverter(t)))
-				.first()
-				.instance();
+				.computeIfAbsent(type, t -> addConverter(t, null, inferConverter(t), Integer.MAX_VALUE))
+				.head();
 	}
 
-	private <T> void add(Type type, Function<String, T> func) {
+	private <T> void addFunction(Type type, Function<String, T> func) {
 		final ConfigConverter<T> conv = node -> node.getValue().map(func);
 
-		this.cached.put(type, createInfo(null, conv));
+		this.cached.compute(type, (t, s) -> addConverter(t, s, conv, Integer.MAX_VALUE));
 	}
 
-	private SortedSet<ConverterInfo<?>> createInfo(SortedSet<ConverterInfo<?>> set, ConfigConverter<?> cvt) {
-		if (set == null) {
-			set = new TreeSet<>();
+	private PrioritizedCollection<ConfigConverter<?>> addConverter(Type type, PrioritizedCollection<ConfigConverter<?>> col, ConfigConverter<?> cvt) {
+		if (col == null) {
+			col = new PrioritizedCollection<>();
 		}
 
-		final int prio = ofNullable(cvt.getClass().getAnnotation(Priority.class))
-				.map(Priority::value)
-				.orElse(Integer.MAX_VALUE);
+		LOG.debug("Registering {} for {}", cvt.getClass().getName(), type.getTypeName());
 
-		set.add(new ConverterInfo<>(cvt, prio));
+		col.add(cvt);
 
-		return set;
+		return col;
+	}
+
+	private PrioritizedCollection<ConfigConverter<?>> addConverter(Type type, PrioritizedCollection<ConfigConverter<?>> col, ConfigConverter<?> cvt, int pri) {
+		if (col == null) {
+			col = new PrioritizedCollection<>();
+		}
+
+		LOG.debug("Registering {} for {}", cvt.getClass().getName(), type.getTypeName());
+
+		col.add(cvt, pri);
+
+		return col;
 	}
 
 	private <T> ConfigConverter<T> inferConverter(Type type) {
@@ -134,6 +130,11 @@ public final class Converters implements ConverterFactory {
 				return conv;
 			}
 		}
+		for (final ConverterFactory factory : this.factories) {
+			if ((conv = factory.get(type)) != null) {
+				return conv;
+			}
+		}
 
 		throw new ConfigException(format("NO WAY to construct a %s", type.getTypeName()));
 	}
@@ -147,40 +148,63 @@ public final class Converters implements ConverterFactory {
 
 		final Class<?> rawClass = (Class<?>) rawType;
 
-		if (!rawClass.isInterface()) {
-			return null;
-		}
-
 		if (Collection.class.isAssignableFrom(rawClass)) {
 			final Type actual = type.getActualTypeArguments()[0];
 			final ConfigConverter<?> conv = get(actual);
 			Supplier<? extends Collection<?>> sup = null;
 
-			if (SortedSet.class == rawClass) {
-				sup = TreeSet::new;
-			} else if (Set.class == rawClass) {
-				sup = HashSet::new;
+			if (rawClass.isInterface()) {
+				if (SortedSet.class == rawClass) {
+					if (rawClass.isAssignableFrom(TreeSet.class)) {
+						sup = TreeSet::new;
+					}
+				} else if (Set.class == rawClass) {
+					if (rawClass.isAssignableFrom(HashSet.class)) {
+						sup = HashSet::new;
+					}
+				} else {
+					if (rawClass.isAssignableFrom(ArrayList.class)) {
+						sup = ArrayList::new;
+					}
+				}
 			} else {
-				sup = LinkedList::new;
+				sup = () -> (Collection) newInstance(rawClass);
 			}
 
-			return new CollectionConverter(sup, actual, conv);
+			if (sup != null) {
+				return new CollectionConverter(sup, actual, conv);
+			}
+
+			return null;
 		}
 		if (Map.class.isAssignableFrom(rawClass)) {
 			final Type actual = type.getActualTypeArguments()[1];
 			final ConfigConverter<?> conv = get(actual);
 			Supplier<? extends Map<?, ?>> sup = null;
 
-			if (SortedMap.class == rawClass) {
-				sup = TreeMap::new;
+			if (rawClass.isInterface()) {
+				if (SortedMap.class == rawClass) {
+					if (rawClass.isAssignableFrom(TreeMap.class)) {
+						sup = TreeMap::new;
+					}
+				} else {
+					if (rawClass.isAssignableFrom(HashMap.class)) {
+						sup = HashMap::new;
+					}
+				}
 			} else {
-				sup = LinkedHashMap::new;
+				sup = () -> (Map) newInstance(rawClass);
 			}
 
 			return new MapConverter(sup, actual, conv);
 		}
 
 		return null;
+	}
+
+	@SneakyThrows
+	private <T> T newInstance(Class<T> type) {
+		return type.newInstance();
 	}
 
 	private <T> ConfigConverter<T> genericArrayConverter(GenericArrayType type) {

@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.spi.ConfigConverter;
 
+import static ascelion.config.spi.Utils.isArrayNode;
+
 final class CollectionConverter<C extends Collection<T>, T> extends WrappedConverter<C, T> {
 	private final Supplier<C> sup;
 
@@ -21,17 +23,14 @@ final class CollectionConverter<C extends Collection<T>, T> extends WrappedConve
 	@Override
 	public Optional<C> convert(ConfigNode node) {
 		final Collection<ConfigNode> children = node.getChildren();
+		final Stream<Optional<T>> stream;
 
-		if (children.isEmpty() && !node.getValue().isPresent()) {
-			return Optional.empty();
-		}
-
-		Stream<Optional<T>> stream;
-
-		if (children.isEmpty()) {
+		if (isArrayNode(node)) {
+			stream = children.stream().map(this.conv::convert);
+		} else if (node.getValue().isPresent()) {
 			stream = Stream.of(this.conv.convert(node));
 		} else {
-			stream = children.stream().map(this.conv::convert);
+			stream = Stream.empty();
 		}
 
 		final C col = this.sup.get();

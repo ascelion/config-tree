@@ -10,6 +10,7 @@ import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigProvider;
 import ascelion.config.api.ConfigRoot;
 
+import static ascelion.config.spi.Utils.isSimpleArray;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 
@@ -56,26 +57,17 @@ public class ExpressionConfigSource implements ConfigSource {
 		if (node.getValue().isPresent()) {
 			properties.put(node.getPath(), node.getValue().get());
 		} else {
-			// check to see if it's a simple array
 			final Collection<ConfigNode> children = node.getChildren();
 
-			if (children.size() > 1) {
-				final long gchildren = children.stream()
-						.flatMap(child -> child.getChildren().stream())
-						.count();
+			if (isSimpleArray(node)) {
+				final String value = children.stream()
+						.map(ConfigNode::getValue)
+						.filter(Optional::isPresent)
+						.map(Optional::get)
+						.map(s -> s.replace(",", "\\,"))
+						.collect(joining(","));
 
-				if (gchildren == 0) {
-					final String value = children.stream()
-							.map(ConfigNode::getValue)
-							.filter(Optional::isPresent)
-							.map(Optional::get)
-							.map(s -> s.replace(",", "\\,"))
-							.collect(joining(","));
-
-					properties.put(node.getPath(), value);
-
-					return;
-				}
+				properties.put(node.getPath(), value);
 			}
 
 			children.forEach(child -> fillMap(properties, child));

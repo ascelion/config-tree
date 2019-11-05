@@ -1,8 +1,5 @@
 buildscript {
 	repositories {
-		maven {
-			url "https://plugins.gradle.org/m2/"
-		}
 		mavenCentral()
 		jcenter()
 	}
@@ -22,9 +19,6 @@ group = 'ascelion.config'
 version = scmVersion.version
 
 allprojects {
-	apply plugin: 'lifecycle-base'
-	apply plugin: 'eclipse'
-
 	ext {
 		publishName = rootProject.name
 		publishBase = 'https://github.com/ascelion'
@@ -33,11 +27,19 @@ allprojects {
 
 	repositories {
 		mavenLocal()
+		mavenCentral()
 		jcenter()
 	}
 
+	apply plugin: 'lifecycle-base'
+	apply plugin: 'eclipse'
+
 	clean {
 		delete 'bin', 'target', '*.log'
+	}
+
+	cleanEclipse {
+		delete '.settings', '.classpath', '.project'
 	}
 
 	defaultTasks 'clean', 'build'
@@ -90,6 +92,7 @@ subprojects { sub ->
 	}
 
 	eclipse.project.name = "$rootProject.name-$project.name"
+	eclipse.classpath.downloadSources = true
 }
 
 apply from: 'lombok.gradle'

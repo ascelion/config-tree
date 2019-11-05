@@ -13,14 +13,14 @@ import ascelion.config.api.ConfigValue;
 
 class ConfigValueProducer {
 	@Inject
-	private ConfigRoot config;
+	private ConfigRoot root;
 
 	@ConfigValue("")
 	Object produceValue(InjectionPoint ip) {
 		final ConfigValue annotation = ip.getAnnotated().getAnnotation(ConfigValue.class);
 		final String property = annotation.value();
 		final Type type = ip.getType();
-		final Optional<Object> opt = this.config.getValue(property, type);
+		final Optional<Object> opt = this.root.getValue(property, type);
 
 		if (type instanceof ParameterizedType && ((ParameterizedType) type).getRawType() == Optional.class) {
 			return opt;
