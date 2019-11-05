@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.spi.ConfigConverter;
 
-class PrimitiveArrayConverter<A, T> extends WrappedConverter<A, T> {
+final class PrimitiveArrayConverter<A, T> extends WrappedConverter<A, T> {
 
 	PrimitiveArrayConverter(Type type, ConfigConverter<T> conv) {
 		super(type, conv);

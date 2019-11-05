@@ -2,11 +2,7 @@ package ascelion.config.api;
 
 import java.util.Map;
 
-public interface ConfigProvider {
-	static ConfigProvider load() {
-		return new Service<>(ConfigProvider.class).load();
-	}
-
+public abstract class ConfigProvider {
 	public interface Builder {
 		Builder child();
 
@@ -23,5 +19,9 @@ public interface ConfigProvider {
 		ConfigRoot get();
 	}
 
-	ConfigRoot get();
+	static public ConfigRoot root() {
+		return new Service<>(ConfigProvider.class).load().get();
+	}
+
+	protected abstract ConfigRoot get();
 }

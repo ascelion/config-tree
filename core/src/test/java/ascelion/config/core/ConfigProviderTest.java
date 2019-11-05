@@ -23,13 +23,8 @@ public class ConfigProviderTest {
 	}
 
 	@Test
-	public void load() {
-		ConfigProvider.load();
-	}
-
-	@Test
 	public void string_read() {
-		final ConfigRoot root = ConfigProvider.load().get();
+		final ConfigRoot root = ConfigProvider.root();
 
 		final String sv1 = root.getValue("value", String.class).orElse(null);
 		final String[] sv2 = root.getValue("value", String[].class).orElse(null);
@@ -48,7 +43,7 @@ public class ConfigProviderTest {
 
 	@Test
 	public void integer_read() {
-		final ConfigRoot root = ConfigProvider.load().get();
+		final ConfigRoot root = ConfigProvider.root();
 
 		final Integer sv1 = root.getValue("value", Integer.class).orElse(null);
 		final Integer[] sv2 = root.getValue("value", Integer[].class).orElse(null);
@@ -67,7 +62,7 @@ public class ConfigProviderTest {
 
 	@Test
 	public void int_read() {
-		final ConfigRoot root = ConfigProvider.load().get();
+		final ConfigRoot root = ConfigProvider.root();
 
 		final int sv1 = root.getValue("value", int.class).orElse(0);
 		final int[] sv2 = root.getValue("value", int[].class).orElse(null);

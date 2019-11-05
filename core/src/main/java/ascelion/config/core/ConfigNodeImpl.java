@@ -8,6 +8,8 @@ import java.util.TreeMap;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.eval.Expression;
 
+import static ascelion.config.core.Utils.isArrayName;
+import static ascelion.config.core.Utils.pathElements;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
@@ -35,13 +37,9 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 	}
 
 	private ConfigNodeImpl(ConfigNodeImpl parent, String name) {
-		if (name.isEmpty() || name.contains(".")) {
-			throw new IllegalArgumentException(name);
-		}
-
 		this.root = parent.root;
 		this.name = name;
-		this.path = parent.path.isEmpty() ? name : parent.path + (isArrayName(name) ? name : "." + name);
+		this.path = parent.newPath(name);
 	}
 
 	@Override
@@ -55,10 +53,10 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 				.map(this.root::eval);
 	}
 
-//	@Override
-//	public final Optional<ConfigNode> getChild(String name) {
-//		return ofNullable(children().get(name));
-//	}
+	@Override
+	public Optional<ConfigNode> getNode(String path) {
+		return findNode(path);
+	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
@@ -89,16 +87,32 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 				.orElse(emptyList());
 	}
 
-	final ConfigNodeImpl child(String name) {
+	String newPath(String name) {
+		if (name.isEmpty() || name.contains(".")) {
+			throw new IllegalArgumentException(name);
+		}
+
+		return this.path.isEmpty() ? name : this.path + (isArrayName(name) ? name : "." + name);
+	}
+
+	@SuppressWarnings("unchecked")
+	final <N extends ConfigNode> Optional<N> findNode(String path) {
+		final String[] elements = pathElements(path);
+		ConfigNodeImpl node = this;
+
+		for (int k = 0; node != null && k < elements.length; k++) {
+			node = node.child(elements[k]);
+		}
+
+		return (Optional<N>) ofNullable(node);
+	}
+
+	private ConfigNodeImpl child(String name) {
 		if (name.isEmpty()) {
 			throw new IllegalArgumentException("The node name cannot be empty");
 		}
 
 		return children().get(name);
-	}
-
-	static private boolean isArrayName(String name) {
-		return name.matches("^\\[\\d+\\]$");
 	}
 
 	final ConfigNodeImpl create(String name) {
@@ -138,11 +152,11 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 		return this;
 	}
 
-	boolean isMap() {
+	private boolean isMap() {
 		return this.children.size() > 0 && !isArrayName(this.children.values().iterator().next().name);
 	}
 
-	boolean isArray() {
+	private boolean isArray() {
 		return this.children.size() > 0 && isArrayName(this.children.values().iterator().next().name);
 	}
 }

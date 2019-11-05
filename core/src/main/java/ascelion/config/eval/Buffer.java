@@ -117,26 +117,23 @@ final class Buffer {
 	}
 
 	int insert(int offset, String text) {
-		if (text != null) {
-			final int z = text.length();
-
-			if (z > 0) {
-				final int newZ = this.count + z;
-
-				if (newZ > this.content.length) {
-					this.content = copyOf(this.content, newZ);
-				}
-
-				arraycopy(this.content, offset, this.content, offset + z, newZ - offset - z);
-				arraycopy(text.toCharArray(), 0, this.content, offset, z);
-
-				this.count = newZ;
-			}
-
-			return z;
+		if (text == null || text.isEmpty()) {
+			return 0;
 		}
 
-		return 0;
+		final int z = text.length();
+		final int newZ = this.count + z;
+
+		if (newZ > this.content.length) {
+			this.content = copyOf(this.content, newZ);
+		}
+
+		arraycopy(this.content, offset, this.content, offset + z, newZ - offset - z);
+		arraycopy(text.toCharArray(), 0, this.content, offset, z);
+
+		this.count = newZ;
+
+		return z;
 	}
 
 	Buffer newBuffer(int offset, int count) {

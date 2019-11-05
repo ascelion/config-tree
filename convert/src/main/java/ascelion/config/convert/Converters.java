@@ -37,6 +37,7 @@ import static java.util.Optional.ofNullable;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public final class Converters implements ConverterFactory {
 	static final TypeVariable<? extends Class<?>> CV_TYPE = ConfigConverter.class.getTypeParameters()[0];
 
@@ -79,7 +80,6 @@ public final class Converters implements ConverterFactory {
 		add(Double.class, Double::parseDouble);
 	}
 
-	@SuppressWarnings("rawtypes")
 	public void register(ConfigConverter<?> converter) {
 		final Class<? extends ConfigConverter> type = converter.getClass();
 
@@ -88,7 +88,6 @@ public final class Converters implements ConverterFactory {
 		});
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> ConfigConverter<T> get(Type type) {
 		return (ConfigConverter<T>) this.cached
@@ -98,9 +97,9 @@ public final class Converters implements ConverterFactory {
 	}
 
 	private <T> void add(Type type, Function<String, T> func) {
-		final ConfigConverter<T> cv = node -> node.getValue().map(func);
+		final ConfigConverter<T> conv = node -> node.getValue().map(func);
 
-		this.cached.put(type, createInfo(null, cv));
+		this.cached.put(type, createInfo(null, conv));
 	}
 
 	private SortedSet<ConverterInfo<?>> createInfo(SortedSet<ConverterInfo<?>> set, ConfigConverter<?> cvt) {
@@ -108,107 +107,123 @@ public final class Converters implements ConverterFactory {
 			set = new TreeSet<>();
 		}
 
-		final int p = ofNullable(cvt.getClass().getAnnotation(Priority.class))
+		final int prio = ofNullable(cvt.getClass().getAnnotation(Priority.class))
 				.map(Priority::value)
 				.orElse(Integer.MAX_VALUE);
 
-		set.add(new ConverterInfo<>(cvt, p));
+		set.add(new ConverterInfo<>(cvt, prio));
 
 		return set;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T> ConfigConverter<T> inferConverter(Type type) {
+		ConfigConverter<T> conv;
+
 		if (type instanceof ParameterizedType) {
-			final ParameterizedType pt = (ParameterizedType) type;
-			final Type rt = pt.getRawType();
-
-			if (rt instanceof Class) {
-				final Class<?> rc = (Class<?>) rt;
-
-				if (rc.isInterface()) {
-					if (Collection.class.isAssignableFrom(rc)) {
-						final Type it = pt.getActualTypeArguments()[0];
-						final ConfigConverter<?> cv = get(it);
-						Supplier<? extends Collection<?>> sup = null;
-
-						if (SortedSet.class == rc) {
-							sup = TreeSet::new;
-						} else if (Set.class == rc) {
-							sup = HashSet::new;
-						} else {
-							sup = LinkedList::new;
-						}
-
-						return new CollectionConverter(sup, it, cv);
-					}
-					if (Map.class.isAssignableFrom(rc)) {
-						final Type it = pt.getActualTypeArguments()[1];
-						final ConfigConverter<?> cv = get(it);
-						Supplier<? extends Map<?, ?>> sup = null;
-
-						if (SortedMap.class == rc) {
-							sup = TreeMap::new;
-						} else {
-							sup = LinkedHashMap::new;
-						}
-
-						return new MapConverter(sup, it, cv);
-					}
-				}
+			if ((conv = parameterizedTypeConverter((ParameterizedType) type)) != null) {
+				return conv;
 			}
 		}
 		if (type instanceof GenericArrayType) {
-			final GenericArrayType at = (GenericArrayType) type;
-			final Type ct = at.getGenericComponentType();
-			final ConfigConverter<T> cv = get(ct);
-
-			return new ArrayConverter(ct, cv);
+			if ((conv = genericArrayConverter((GenericArrayType) type)) != null) {
+				return conv;
+			}
 		}
 		if (type instanceof Class) {
-			final Class<T> cls = (Class<T>) type;
-
-			if (cls.isEnum()) {
-				return new EnumConverter(cls);
-			}
-			if (cls.isArray()) {
-				final Class<?> ct = cls.getComponentType();
-
-				if (ct.isPrimitive()) {
-					return new PrimitiveArrayConverter(ct, get(ct));
-				} else {
-					return new ArrayConverter(ct, get(ct));
-				}
-			}
-//			if (cls.isInterface()) {
-//				return new InterfaceConverter<>(cls);
-//			}
-
-			final ConfigConverter<T> fc = fromClass(cls);
-
-			if (fc != null) {
-				return fc;
+			if ((conv = classConverter((Class<T>) type)) != null) {
+				return conv;
 			}
 		}
 
 		throw new ConfigException(format("NO WAY to construct a %s", type.getTypeName()));
 	}
 
-	private <T> ConfigConverter<T> fromClass(Class<T> cls) {
+	private <T> ConfigConverter<T> parameterizedTypeConverter(ParameterizedType type) {
+		final Type rawType = type.getRawType();
+
+		if (!(rawType instanceof Class)) {
+			return null;
+		}
+
+		final Class<?> rawClass = (Class<?>) rawType;
+
+		if (!rawClass.isInterface()) {
+			return null;
+		}
+
+		if (Collection.class.isAssignableFrom(rawClass)) {
+			final Type actual = type.getActualTypeArguments()[0];
+			final ConfigConverter<?> conv = get(actual);
+			Supplier<? extends Collection<?>> sup = null;
+
+			if (SortedSet.class == rawClass) {
+				sup = TreeSet::new;
+			} else if (Set.class == rawClass) {
+				sup = HashSet::new;
+			} else {
+				sup = LinkedList::new;
+			}
+
+			return new CollectionConverter(sup, actual, conv);
+		}
+		if (Map.class.isAssignableFrom(rawClass)) {
+			final Type actual = type.getActualTypeArguments()[1];
+			final ConfigConverter<?> conv = get(actual);
+			Supplier<? extends Map<?, ?>> sup = null;
+
+			if (SortedMap.class == rawClass) {
+				sup = TreeMap::new;
+			} else {
+				sup = LinkedHashMap::new;
+			}
+
+			return new MapConverter(sup, actual, conv);
+		}
+
+		return null;
+	}
+
+	private <T> ConfigConverter<T> genericArrayConverter(GenericArrayType type) {
+		final Type compType = type.getGenericComponentType();
+
+		return new ArrayConverter(compType, get(compType));
+	}
+
+	private <T> ConfigConverter<T> classConverter(Class<T> type) {
+		if (type.isEnum()) {
+			return new EnumConverter(type);
+		}
+		if (type.isArray()) {
+			final Class<?> compType = type.getComponentType();
+
+			if (compType.isPrimitive()) {
+				return new PrimitiveArrayConverter(compType, get(compType));
+			} else {
+				return new ArrayConverter(compType, get(compType));
+			}
+		}
+		if (type.isInterface()) {
+			return new InterfaceConverter<>(type, this);
+		}
+
+		return fromClass(type);
+	}
+
+	private <T> ConfigConverter<T> fromClass(Class<T> type) {
 		ConfigConverter<T> c;
 
-		if ((c = fromConstructor(cls, String.class)) != null) {
+		if ((c = fromConstructor(type, String.class)) != null) {
 			return c;
 		}
-		if ((c = fromConstructor(cls, CharSequence.class)) != null) {
+		if ((c = fromConstructor(type, CharSequence.class)) != null) {
 			return c;
 		}
 
 		for (final String name : CREATE_METHODS) {
-			if ((c = fromMethod(cls, name, String.class)) != null) {
+			if ((c = fromMethod(type, name, String.class)) != null) {
 				return c;
 			}
-			if ((c = fromMethod(cls, name, CharSequence.class)) != null) {
+			if ((c = fromMethod(type, name, CharSequence.class)) != null) {
 				return c;
 			}
 		}
@@ -216,55 +231,60 @@ public final class Converters implements ConverterFactory {
 		return null;
 	}
 
-	private <T> ConfigConverter<T> fromConstructor(Class<T> cls, Class<? extends CharSequence> paramType) {
+	private <T> ConfigConverter<T> fromConstructor(Class<T> type, Class<? extends CharSequence> paramType) {
+		final Constructor<T> c;
+
 		try {
-			final Constructor<T> c = cls.getDeclaredConstructor(paramType);
-
-			return new ConfigConverter<T>() {
-				@Override
-				@SneakyThrows
-				public Optional<T> convert(ConfigNode node) {
-					final String value = node.getValue().orElse(null);
-
-					if (value == null) {
-						return Optional.empty();
-					}
-
-					c.setAccessible(true);
-
-					return Optional.of(c.newInstance(value));
-				}
-			};
+			c = type.getDeclaredConstructor(paramType);
 		} catch (final NoSuchMethodException e) {
 			return null;
 		}
+
+		return new ConfigConverter<T>() {
+			@Override
+			@SneakyThrows
+			public Optional<T> convert(ConfigNode node) {
+				final String value = node.getValue().orElse(null);
+
+				if (value == null) {
+					return Optional.empty();
+				}
+
+				c.setAccessible(true);
+
+				return Optional.of(c.newInstance(value));
+			}
+		};
 	}
 
-	private <T> ConfigConverter<T> fromMethod(Class<T> cls, String name, Class<? extends CharSequence> paramType) {
+	private <T> ConfigConverter<T> fromMethod(Class<T> type, String name, Class<? extends CharSequence> paramType) {
+		final Method m;
+
 		try {
-			final Method m = cls.getDeclaredMethod(name, paramType);
-
-			if (!Modifier.isStatic(m.getModifiers())) {
-				return null;
-			}
-
-			return new ConfigConverter<T>() {
-				@Override
-				@SneakyThrows
-				public Optional<T> convert(ConfigNode node) {
-					final String value = node.getValue().orElse(null);
-
-					if (value == null) {
-						return Optional.empty();
-					}
-
-					m.setAccessible(true);
-
-					return Optional.of((T) m.invoke(null, value));
-				}
-			};
+			m = type.getDeclaredMethod(name, paramType);
 		} catch (final NoSuchMethodException e) {
 			return null;
 		}
+
+		if (!Modifier.isStatic(m.getModifiers())) {
+			return null;
+		}
+
+		return new ConfigConverter<T>() {
+			@SuppressWarnings("unchecked")
+			@Override
+			@SneakyThrows
+			public Optional<T> convert(ConfigNode node) {
+				final String value = node.getValue().orElse(null);
+
+				if (value == null) {
+					return Optional.empty();
+				}
+
+				m.setAccessible(true);
+
+				return Optional.of((T) m.invoke(null, value));
+			}
+		};
 	}
 }

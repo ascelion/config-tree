@@ -179,7 +179,7 @@ final class ConfigProcessor<T> {
 			expr.append(prop);
 		}
 
-		cval = ConfigValueLiteral.builder(cval)
+		cval = ConfigValue.Literal.from(cval)
 				.value(expr.toString())
 				.build();
 

@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.spi.ConfigConverter;
 
-class ArrayConverter<T> extends WrappedConverter<Object[], T> {
+final class ArrayConverter<T> extends WrappedConverter<Object[], T> {
 
 	ArrayConverter(Type type, ConfigConverter<T> conv) {
 		super(type, conv);

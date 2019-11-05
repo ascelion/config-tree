@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.spi.ConfigConverter;
 
-public class MapConverter<M extends Map<String, T>, T> extends WrappedConverter<M, T> {
+final class MapConverter<M extends Map<String, T>, T> extends WrappedConverter<M, T> {
 	private final Supplier<M> sup;
 
 	MapConverter(Supplier<M> sup, Type type, ConfigConverter<T> conv) {

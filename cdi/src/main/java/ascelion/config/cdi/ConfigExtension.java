@@ -36,6 +36,7 @@ import static java.util.stream.Collectors.joining;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("unchecked")
 public class ConfigExtension implements Extension {
 	static private final Logger LOG = LoggerFactory.getLogger(ConfigExtension.class);
 
@@ -61,7 +62,6 @@ public class ConfigExtension implements Extension {
 		this.prodBean = event.getBean();
 	}
 
-	@SuppressWarnings("unchecked")
 	<X> void processConfigValue(BeanManager bm,
 			@Observes @WithAnnotations(ConfigValue.class) ProcessAnnotatedType<X> event) {
 
@@ -150,6 +150,7 @@ public class ConfigExtension implements Extension {
 		event.addBean(prodBean);
 	}
 
+	@SuppressWarnings({ "rawtypes" })
 	private boolean filterType(Type type) {
 		if (this.skippedTypes.contains(type)) {
 			return true;

@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import ascelion.config.api.ConfigNode;
 import ascelion.config.spi.ConfigConverter;
 
-public class CollectionConverter<C extends Collection<T>, T> extends WrappedConverter<C, T> {
+final class CollectionConverter<C extends Collection<T>, T> extends WrappedConverter<C, T> {
 	private final Supplier<C> sup;
 
 	CollectionConverter(Supplier<C> sup, Type type, ConfigConverter<T> conv) {

@@ -16,14 +16,16 @@ public class YamlInputTest {
 	public void run() {
 		System.setProperty(ConfigInputReader.RESOURCE_PROP, getClass().getSimpleName());
 
-		final ConfigRoot root = ConfigProvider.load().get();
+		final ConfigRoot root = ConfigProvider.root();
 
 		assertThat(root.getValues("prop1"), equalTo(asList("value11", "value12")));
 		assertThat(root.getValue("prop2"), equalTo("value2"));
 
-//		assertThat(m1, hasEntry("prop2.prop21.0", "value211"));
-//		assertThat(m1, hasEntry("prop2.prop21.1", "value212"));
-//		assertThat(m1, hasEntry("prop2.prop22.prop221", "ok"));
+		assertThat(root.getValues("prop2.prop21"), equalTo(asList("value211", "value212")));
+		assertThat(root.getValue("prop2.prop22.prop221"), equalTo("ok"));
+
+		assertThat(root.getValue("prop2.prop21[0]"), equalTo("value211"));
+		assertThat(root.getValue("prop2.prop21[1]"), equalTo("value212"));
 	}
 
 }

@@ -19,6 +19,7 @@
 
 	<logger name="org.jboss.weld" level="INFO" />
 	<logger name="ascelion" level="ALL" />
+	<logger name="ascelion.config.core.ConfigRootBuilder" level="OFF" />
 
 	<root level="INFO">
 		<appender-ref ref="FILE" />

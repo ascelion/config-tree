@@ -8,22 +8,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import ascelion.config.api.ConfigProvider.Builder;
-
-import static java.util.stream.Collectors.joining;
 
 import org.yaml.snakeyaml.Yaml;
 
 public class YamlInput extends ResourceInput {
-	static private String path(Object... names) {
-		return Stream.of(names)
-				.map(Object::toString)
-				.filter(s -> s.length() > 0)
-				.collect(joining("."));
-	}
-
 	private final List<Object> documents = new ArrayList<>();
 	private final int priority;
 
@@ -59,6 +49,7 @@ public class YamlInput extends ResourceInput {
 
 	private boolean update(Builder bld, Object value) {
 		if (value instanceof Map) {
+			@SuppressWarnings("unchecked")
 			final Map<String, Object> map = (Map<String, Object>) value;
 
 			for (final Map.Entry<String, Object> ent : map.entrySet()) {
@@ -100,29 +91,4 @@ public class YamlInput extends ResourceInput {
 		return false;
 	}
 
-//	private void add(String prefix, Object value) {
-//		if (value instanceof Map) {
-//			@SuppressWarnings("unchecked")
-//			final Map<String, Object> ms = (Map<String, Object>) value;
-//
-//			ms.forEach((k, s) -> {
-//				add(path(prefix, k), s);
-//			});
-//		} else if (value instanceof Collection) {
-//			final Collection<?> col = (Collection<?>) value;
-//			int idx = 0;
-//
-//			for (final Object v : col) {
-//				add(path(prefix, idx++), v);
-//			}
-//		} else if (value instanceof Object[]) {
-//			final Object[] vec = (Object[]) value;
-//
-//			for (int idx = 0; idx < vec.length; idx++) {
-//				add(path(prefix, idx++), vec[idx]);
-//			}
-//		} else if (value != null) {
-//			this.properties.put(prefix, value.toString());
-//		}
-//	}
 }

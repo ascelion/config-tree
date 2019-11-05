@@ -14,12 +14,15 @@ import ascelion.config.spi.ConfigConverter;
 import ascelion.config.spi.ConfigInput;
 import ascelion.config.spi.ConverterFactory;
 
-import static java.util.Optional.ofNullable;
+import static java.lang.String.format;
 
-import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
 class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
+	static private final Logger LOG = LoggerFactory.getLogger(ConfigRoot.class);
+
 	private final Collection<ConfigInput> inputs = new CopyOnWriteArrayList<>();
 
 	enum State {
@@ -74,7 +77,6 @@ class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 	}
 
 	@Override
-	@SneakyThrows
 	Map<String, ConfigNodeImpl> children() {
 		if (this.state.compareAndSet(State.DIRTY, State.LOADING)) {
 			readInputs();
@@ -87,12 +89,22 @@ class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 		return super.children();
 	}
 
-	@SneakyThrows
+	final String eval(String expression) {
+		return this.expression.eval(expression).getValue();
+	}
+
+	@Override
+	ConfigNodeImpl value(String value) {
+		throw new UnsupportedOperationException();
+	}
+
 	private void readInputs() {
 		try {
 			final ConfigRootBuilder bld = new ConfigRootBuilder();
 
-			this.inputs.stream().sorted().forEach(i -> i.update(bld));
+			this.inputs.stream()
+					.sorted()
+					.forEach(i -> update(bld, i));
 
 			super.children().clear();
 			super.children().putAll(bld.get().children());
@@ -105,33 +117,12 @@ class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 		}
 	}
 
-	final String eval(String expression) {
-		return this.expression.eval(expression).getValue();
-	}
-
-	final Optional<ConfigNodeImpl> findNode(String path) {
-		ConfigNodeImpl node = this;
-		int start = 0;
-		int end;
-
-		do {
-			end = path.indexOf('.', start);
-
-			final String name = end < 0
-					? path.substring(start)
-					: path.substring(start, end);
-
-			start = end + 1;
-
-			node = node.child(name);
-		} while (node != null && end >= 0);
-
-		return ofNullable(node);
-	}
-
-	@Override
-	ConfigNodeImpl value(String value) {
-		throw new UnsupportedOperationException();
+	private void update(ConfigRootBuilder bld, ConfigInput inp) {
+		try {
+			inp.update(bld);
+		} catch (final Exception e) {
+			LOG.error(format("Error reading %s", inp.name()), e);
+		}
 	}
 
 	private <T> T convert(ConfigNode node, Type type) {

@@ -7,11 +7,14 @@ import java.util.Map;
 import ascelion.config.api.ConfigProvider;
 import ascelion.config.spi.ConverterFactory;
 
+import static ascelion.config.core.Utils.pathElements;
+import static java.lang.String.format;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class ConfigRootBuilder implements ConfigProvider.Builder {
-	static private final Logger LOG = LoggerFactory.getLogger(ConfigRootBuilder.class);
+final class ConfigRootBuilder implements ConfigProvider.Builder {
+	static private final Logger LOG = LoggerFactory.getLogger(ConfigProvider.Builder.class);
 
 	private final Deque<ConfigNodeImpl> stack = new LinkedList<>();
 
@@ -25,47 +28,37 @@ class ConfigRootBuilder implements ConfigProvider.Builder {
 
 	@Override
 	public ConfigRootBuilder child() {
-		final ConfigNodeImpl last = this.stack.element();
-		final String name = "[" + last.children().size() + "]";
+		final ConfigNodeImpl node = this.stack.element();
 
-		this.stack.push(last.create(name));
+		push(node.create("[" + node.children().size() + "]"));
 
 		return this;
 	}
 
 	@Override
 	public ConfigRootBuilder child(String path) {
-		ConfigNodeImpl last = this.stack.element();
-		int start = 0;
-		int end;
+		final String[] elements = pathElements(path);
+		ConfigNodeImpl node = this.stack.element();
 
-		do {
-			end = path.indexOf('.', start);
+		for (final String element : elements) {
+			node = node.create(element);
+		}
 
-			final String name = end < 0
-					? path.substring(start)
-					: path.substring(start, end);
-
-			start = end + 1;
-
-			last = last.create(name);
-		} while (end >= 0);
-
-		this.stack.push(last);
+		push(node);
 
 		return this;
 	}
 
 	@Override
 	public ConfigRootBuilder value(String value) {
-		this.stack.pop().value(value);
+		pull().value(value);
 
 		return this;
 	}
 
 	@Override
 	public ConfigRootBuilder back() {
-		this.stack.pop();
+		pull();
 
 		return this;
 	}
@@ -79,18 +72,26 @@ class ConfigRootBuilder implements ConfigProvider.Builder {
 
 	@Override
 	public ConfigRootBuilder set(String path, String value) {
-		final String[] values = value.split("(?!\\\\),");
+		try {
+			final String[] values = value.split("(?!\\\\),");
 
-		child(path);
+			if (values.length > 1) {
+				child(path);
 
-		if (values.length > 1) {
-			for (final String v : values) {
-				child().value(v);
+				for (final String v : values) {
+					child().value(v);
+				}
+
+				back();
+			} else if (value.length() > 0) {
+				child(path).value(value);
 			}
+		} catch (final Throwable t) {
+			LOG.error(format("At %s, setting %s to %s", this.stack.peek().path, path, value), t);
 
-			back();
-		} else {
-			value(value);
+			reset();
+
+			throw t;
 		}
 
 		return this;
@@ -98,10 +99,28 @@ class ConfigRootBuilder implements ConfigProvider.Builder {
 
 	@Override
 	public ConfigRootImpl get() {
-		while (this.stack.size() > 1) {
-			this.stack.pop();
-		}
+		reset();
 
 		return (ConfigRootImpl) this.stack.pop();
+	}
+
+	private void reset() {
+		while (this.stack.size() > 1) {
+			pull();
+		}
+	}
+
+	private void push(ConfigNodeImpl node) {
+		LOG.trace("PUSH {}", node);
+
+		this.stack.push(node);
+	}
+
+	private ConfigNodeImpl pull() {
+		final ConfigNodeImpl node = this.stack.pop();
+
+		LOG.trace("PULL {}", node);
+
+		return node;
 	}
 }
