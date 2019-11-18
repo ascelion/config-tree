@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
-class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
+final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 	static private final Logger LOG = LoggerFactory.getLogger(ConfigRoot.class);
 
 	private final Collection<ConfigInput> inputs = new CopyOnWriteArrayList<>();
@@ -89,7 +89,7 @@ class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 		return super.children();
 	}
 
-	final String eval(String expression) {
+	String eval(String expression) {
 		return this.expression.eval(expression).getValue();
 	}
 

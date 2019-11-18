@@ -1,18 +1,14 @@
 package ascelion.config.read;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.security.PrivilegedAction;
+import java.util.Properties;
 
 import ascelion.config.api.ConfigProvider.Builder;
 import ascelion.config.spi.ConfigInput;
 
+import static java.security.AccessController.doPrivileged;
+
 class SystemPropertiesInput implements ConfigInput {
-	private final Map<String, String> properties = new TreeMap<>();
-
-	SystemPropertiesInput() {
-		System.getProperties().forEach((k, v) -> this.properties.put((String) k, (String) v));
-	}
-
 	@Override
 	public int priority() {
 		return 400;
@@ -20,6 +16,10 @@ class SystemPropertiesInput implements ConfigInput {
 
 	@Override
 	public void update(Builder bld) {
-		bld.set(this.properties);
+		properties().forEach((k, v) -> bld.set((String) k, (String) v));
+	}
+
+	private Properties properties() {
+		return doPrivileged((PrivilegedAction<Properties>) () -> System.getProperties());
 	}
 }
