@@ -11,6 +11,8 @@ import javax.inject.Inject;
 import ascelion.config.api.ConfigRoot;
 import ascelion.config.api.ConfigValue;
 
+import static java.lang.String.format;
+
 class ConfigValueProducer {
 	@Inject
 	private ConfigRoot root;
@@ -27,7 +29,7 @@ class ConfigValueProducer {
 		}
 
 		if (annotation.required()) {
-			return opt.orElseThrow(() -> new NoSuchElementException("Reference to undefined property " + property));
+			return opt.orElseThrow(() -> new NoSuchElementException(format("Reference to undefined property %s at %s", property, ip.getMember())));
 		} else {
 			return opt.orElseGet(() -> Primitives.toDefault(type));
 		}
