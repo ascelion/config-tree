@@ -4,8 +4,8 @@ buildscript {
 		jcenter()
 	}
 	dependencies {
-		classpath 'pl.allegro.tech.build:axion-release-plugin:1.10.+'
-		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
+		classpath 'pl.allegro.tech.build:axion-release-plugin:1.10.2'
+		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
 	}
 }
 
@@ -51,8 +51,8 @@ subprojects { sub ->
 
 	apply plugin: 'java-library'
 
-	sourceCompatibility = '1.8'
-	targetCompatibility = '1.8'
+	sourceCompatibility = '8'
+	targetCompatibility = '8'
 
 	sourceSets {
 		all {
@@ -91,7 +91,7 @@ subprojects { sub ->
 		}
 	}
 
-	eclipse.project.name = "$rootProject.name-$project.name"
+	eclipse.project.name = "$rootProject.name${project.path.replace(':', '-')}"
 	eclipse.classpath.downloadSources = true
 }
 

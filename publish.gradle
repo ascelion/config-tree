@@ -132,25 +132,36 @@ publishing {
 		}
 	}
 
-	if( forPublic && gradle.hasProperty( bintrayUSR ) ) {
-		repositories {
+	repositories {
+		if( gradle.isPropertyPresent( 'ascelion.deploy.url' ) ) {
+			maven {
+				name = 'ascelion'
+				url = "${gradle.mavenDecryptProperty( 'ascelion.deploy.url' )}-${isSnapshot ? 'snapshots' : 'releases'}"
+
+				credentials {
+					username = gradle.mavenDecryptProperty( 'ascelion.deploy.username' )
+					password = gradle.mavenDecryptProperty( 'ascelion.deploy.password' )
+				}
+			}
+		}
+		if( forPublic && gradle.isPropertyPresent( bintrayUSR ) ) {
 			maven {
 				name = 'jfrog'
 				url = "https://oss.jfrog.org/artifactory/oss-${isSnapshot ? 'snapshot' : 'release'}-local"
 
 				credentials {
-					username = gradle.ext.getProperty( bintrayUSR )
-					password = gradle.decryptPassword( gradle.ext.getProperty( bintrayPWD ) )
+					username = gradle.mavenDecryptProperty( bintrayUSR )
+					password = gradle.mavenDecryptProperty( bintrayPWD )
 				}
 			}
 		}
 	}
 }
 
-if( gradle.hasProperty( signKey ) ) {
+if( gradle.isPropertyPresent( signKey ) ) {
 	apply plugin: 'signing'
 
-	ext['signing.gnupg.keyName'] = gradle.ext.getProperty( signKey )
+	ext['signing.gnupg.keyName'] = gradle.mavenDecryptProperty( signKey )
 
 	signing {
 		useGpgCmd()
@@ -158,12 +169,12 @@ if( gradle.hasProperty( signKey ) ) {
 	}
 }
 
-if( isRelease && forPublic && gradle.hasProperty( bintrayUSR ) ) {
+if( isRelease && forPublic && gradle.isPropertyPresent( bintrayUSR ) ) {
 	apply plugin: 'com.jfrog.bintray'
 
 	bintray {
-		user = gradle.ext.getProperty( bintrayUSR )
-		key = gradle.decryptPassword( gradle.ext.getProperty( bintrayPWD ) )
+		user = gradle.mavenDecryptProperty( bintrayUSR )
+		key = gradle.mavenDecryptProperty( bintrayPWD )
 
 		publications = ['maven']
 
