@@ -1,26 +1,12 @@
 apply plugin: 'maven-publish'
 
-def forPublic  = project.hasProperty( 'forPublic' ) &&
-		(project.getProperty( 'forPublic' ) == '' || project.getProperty( 'forPublic' ) )
-
 def isSnapshot = rootProject.version.endsWith( '-SNAPSHOT' )
 def isRelease  = !isSnapshot
 
-def signKey    = "${publishName}.sign.keyId"
-def signSecret = "${publishName}.sign.keySecret"
-def bintrayUSR = "${publishName}.bintray.username"
-def bintrayPWD = "${publishName}.bintray.password"
-
 plugins.withType( JavaPlugin ) {
-	task sourcesJar(type: Jar) {
-		from sourceSets.main.allJava
-
-		classifier = 'sources'
-	}
-	task javadocJar(type: Jar) {
-		from javadoc
-
-		classifier = 'javadoc'
+	java {
+		withJavadocJar()
+		withSourcesJar()
 	}
 	javadoc {
 		failOnError = true
@@ -62,9 +48,6 @@ publishing {
 
 			plugins.withType( JavaPlugin ) {
 				from components.java
-
-				artifact sourcesJar
-				artifact javadocJar
 			}
 			plugins.withType( DistributionPlugin ) {
 				artifact distTar
@@ -131,66 +114,68 @@ publishing {
 			}
 		}
 	}
+}
 
-	repositories {
-		if( gradle.isPropertyPresent( 'ascelion.deploy.url' ) ) {
-			maven {
-				name = 'ascelion'
-				url = "${gradle.mavenDecryptProperty( 'ascelion.deploy.url' )}-${isSnapshot ? 'snapshots' : 'releases'}"
+def isExtended = gradle.metaClass.respondsTo( gradle, 'isPropertyPresent' )
 
-				credentials {
-					username = gradle.mavenDecryptProperty( 'ascelion.deploy.username' )
-					password = gradle.mavenDecryptProperty( 'ascelion.deploy.password' )
-				}
-			}
+if( isExtended ) {
+	def forPublic  = project.hasProperty( 'forPublic' ) &&
+					(project.getProperty( 'forPublic' ) == '' || project.getProperty( 'forPublic' ) )
+
+	def signKey    = "${publishName}.sign.keyId"
+	def signSecret = "${publishName}.sign.keySecret"
+	def bintrayUSR = "${publishName}.bintray.username"
+	def bintrayPWD = "${publishName}.bintray.password"
+
+//	publishing {
+//		if( forPublic && gradle.isPropertyPresent( bintrayUSR ) ) {
+//			repositories.maven {
+//				name = 'jfrog'
+//				url = "https://oss.jfrog.org/artifactory/oss-${isSnapshot ? 'snapshot' : 'release'}-local"
+//
+//				credentials {
+//					username = gradle.mavenDecryptProperty( bintrayUSR )
+//					password = gradle.mavenDecryptProperty( bintrayPWD )
+//				}
+//			}
+//		}
+//	}
+
+	if( isRelease && gradle.isPropertyPresent( signKey ) ) {
+		apply plugin: 'signing'
+
+		ext['signing.gnupg.keyName'] = gradle.mavenDecryptProperty( signKey )
+
+		signing {
+			useGpgCmd()
+			sign publishing.publications.maven
 		}
-		if( forPublic && gradle.isPropertyPresent( bintrayUSR ) ) {
-			maven {
-				name = 'jfrog'
-				url = "https://oss.jfrog.org/artifactory/oss-${isSnapshot ? 'snapshot' : 'release'}-local"
+	}
 
-				credentials {
-					username = gradle.mavenDecryptProperty( bintrayUSR )
-					password = gradle.mavenDecryptProperty( bintrayPWD )
+	if( isRelease && forPublic && gradle.isPropertyPresent( bintrayUSR ) ) {
+		apply plugin: 'com.jfrog.bintray'
+
+		bintray {
+			user = gradle.mavenDecryptProperty( bintrayUSR )
+			key = gradle.mavenDecryptProperty( bintrayPWD )
+
+			publications = ['maven']
+
+			pkg {
+				repo = 'repo'
+				userOrg = 'ascelion'
+				name = publishName
+				licenses = ['AGPL-3.0']
+				vcsUrl = "${publishBase}/${publishName}"
+				version {
+					name = rootProject.version
+
+					gpg {
+						sign = true
+					}
 				}
 			}
 		}
 	}
 }
 
-if( gradle.isPropertyPresent( signKey ) ) {
-	apply plugin: 'signing'
-
-	ext['signing.gnupg.keyName'] = gradle.mavenDecryptProperty( signKey )
-
-	signing {
-		useGpgCmd()
-		sign publishing.publications.maven
-	}
-}
-
-if( isRelease && forPublic && gradle.isPropertyPresent( bintrayUSR ) ) {
-	apply plugin: 'com.jfrog.bintray'
-
-	bintray {
-		user = gradle.mavenDecryptProperty( bintrayUSR )
-		key = gradle.mavenDecryptProperty( bintrayPWD )
-
-		publications = ['maven']
-
-		pkg {
-			repo = 'repo'
-			userOrg = 'ascelion'
-			name = publishName
-			licenses = ['AGPL-3.0']
-			vcsUrl = "${publishBase}/${publishName}"
-			version {
-				name = rootProject.version
-
-				gpg {
-					sign = true
-				}
-			}
-		}
-	}
-}
