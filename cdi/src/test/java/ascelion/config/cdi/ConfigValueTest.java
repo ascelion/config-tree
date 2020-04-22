@@ -1,3 +1,4 @@
+
 package ascelion.config.cdi;
 
 import static ascelion.config.cdi.WeldRule.createWeldRule;
@@ -16,10 +17,13 @@ import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Test;
 
 @EnableWeld
-public class ConfigValueTest extends AbstractTest {
+public class ConfigValueTest extends AbstractTest
+{
 
-	@ConfigPrefix("values1")
-	static class Values1 {
+	@ConfigPrefix( "values1" )
+	static class Values1
+	{
+
 		@ConfigValue
 		boolean booleanValue;
 		@ConfigValue
@@ -34,23 +38,25 @@ public class ConfigValueTest extends AbstractTest {
 		String value;
 	}
 
-	static class Values2 {
-		@ConfigValue("values2.booleanValue")
+	static class Values2
+	{
+
+		@ConfigValue( "values2.booleanValue" )
 		boolean booleanValue;
-		@ConfigValue("values2.intValue")
+		@ConfigValue( "values2.intValue" )
 		int intValue;
-		@ConfigValue("values2.longValue")
+		@ConfigValue( "values2.longValue" )
 		long longValue;
-		@ConfigValue("values2.floatValue")
+		@ConfigValue( "values2.floatValue" )
 		float floatValue;
-		@ConfigValue("values2.doubleValue")
+		@ConfigValue( "values2.doubleValue" )
 		double doubleValue;
-		@ConfigValue("values2.value")
+		@ConfigValue( "values2.value" )
 		String value;
 	}
 
 	@WeldSetup
-	public WeldInitiator weld = createWeldRule(this, Values1.class, Values2.class);
+	public WeldInitiator weld = createWeldRule( this, Values1.class, Values2.class );
 
 	@Inject
 	private Values1 values1;
@@ -58,22 +64,24 @@ public class ConfigValueTest extends AbstractTest {
 	private Values1 values2;
 
 	@Test
-	public void withPrefix() {
-		assertThat(this.values1.booleanValue, equalTo(true));
-		assertThat(this.values1.intValue, equalTo(12));
-		assertThat(this.values1.longValue, equalTo(123L));
-		assertThat(this.values1.floatValue, equalTo(1234F));
-		assertThat(this.values1.doubleValue, equalTo(12345D));
-		assertThat(this.values1.value, equalTo("text"));
+	public void withPrefix()
+	{
+		assertThat( this.values1.booleanValue, equalTo( true ) );
+		assertThat( this.values1.intValue, equalTo( 12 ) );
+		assertThat( this.values1.longValue, equalTo( 123L ) );
+		assertThat( this.values1.floatValue, equalTo( 1234F ) );
+		assertThat( this.values1.doubleValue, equalTo( 12345D ) );
+		assertThat( this.values1.value, equalTo( "text" ) );
 	}
 
 	@Test
-	public void withoutPrefix() {
-		assertThat(this.values2.booleanValue, equalTo(true));
-		assertThat(this.values2.intValue, equalTo(12));
-		assertThat(this.values2.longValue, equalTo(123L));
-		assertThat(this.values2.floatValue, equalTo(1234F));
-		assertThat(this.values2.doubleValue, equalTo(12345D));
-		assertThat(this.values2.value, equalTo("text"));
+	public void withoutPrefix()
+	{
+		assertThat( this.values2.booleanValue, equalTo( true ) );
+		assertThat( this.values2.intValue, equalTo( 12 ) );
+		assertThat( this.values2.longValue, equalTo( 123L ) );
+		assertThat( this.values2.floatValue, equalTo( 1234F ) );
+		assertThat( this.values2.doubleValue, equalTo( 12345D ) );
+		assertThat( this.values2.value, equalTo( "text" ) );
 	}
 }

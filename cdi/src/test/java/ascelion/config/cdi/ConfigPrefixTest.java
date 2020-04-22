@@ -1,3 +1,4 @@
+
 package ascelion.config.cdi;
 
 import static ascelion.config.cdi.WeldRule.createWeldRule;
@@ -16,9 +17,12 @@ import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Test;
 
 @EnableWeld
-public class ConfigPrefixTest extends AbstractTest {
+public class ConfigPrefixTest extends AbstractTest
+{
 
-	static abstract class Values {
+	static abstract class Values
+	{
+
 		@ConfigValue
 		boolean booleanValue;
 		@ConfigValue
@@ -33,16 +37,18 @@ public class ConfigPrefixTest extends AbstractTest {
 		String value;
 	}
 
-	@ConfigPrefix("values1")
-	static class Values1 extends Values {
+	@ConfigPrefix( "values1" )
+	static class Values1 extends Values
+	{
 	}
 
-	@ConfigPrefix("values2")
-	static class Values2 extends Values {
+	@ConfigPrefix( "values2" )
+	static class Values2 extends Values
+	{
 	}
 
 	@WeldSetup
-	public WeldInitiator weld = createWeldRule(this, Values1.class, Values2.class);
+	public WeldInitiator weld = createWeldRule( this, Values1.class, Values2.class );
 
 	@Inject
 	private Values1 values1;
@@ -50,20 +56,22 @@ public class ConfigPrefixTest extends AbstractTest {
 	private Values1 values2;
 
 	@Test
-	public void prefix1() {
-		assertThat(this.values1.booleanValue, equalTo(true));
-		assertThat(this.values1.intValue, equalTo(12));
-		assertThat(this.values1.longValue, equalTo(123L));
-		assertThat(this.values1.floatValue, equalTo(1234F));
-		assertThat(this.values1.doubleValue, equalTo(12345D));
+	public void prefix1()
+	{
+		assertThat( this.values1.booleanValue, equalTo( true ) );
+		assertThat( this.values1.intValue, equalTo( 12 ) );
+		assertThat( this.values1.longValue, equalTo( 123L ) );
+		assertThat( this.values1.floatValue, equalTo( 1234F ) );
+		assertThat( this.values1.doubleValue, equalTo( 12345D ) );
 	}
 
 	@Test
-	public void prefix2() {
-		assertThat(this.values2.booleanValue, equalTo(true));
-		assertThat(this.values2.intValue, equalTo(12));
-		assertThat(this.values2.longValue, equalTo(123L));
-		assertThat(this.values2.floatValue, equalTo(1234F));
-		assertThat(this.values2.doubleValue, equalTo(12345D));
+	public void prefix2()
+	{
+		assertThat( this.values2.booleanValue, equalTo( true ) );
+		assertThat( this.values2.intValue, equalTo( 12 ) );
+		assertThat( this.values2.longValue, equalTo( 123L ) );
+		assertThat( this.values2.floatValue, equalTo( 1234F ) );
+		assertThat( this.values2.doubleValue, equalTo( 12345D ) );
 	}
 }

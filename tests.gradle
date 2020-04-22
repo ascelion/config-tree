@@ -1,8 +1,10 @@
 
 subprojects {
 	tasks.withType( Test ) {
-		//		testLogging.showStandardStreams = true
-		//	 	testLogging.exceptionFormat = 'full'
+		testLogging.showStandardStreams = false
+		testLogging.exceptionFormat = 'full'
+
+		systemProperty 'forceExecution', UUID.randomUUID()
 
 		useJUnitPlatform()
 	}

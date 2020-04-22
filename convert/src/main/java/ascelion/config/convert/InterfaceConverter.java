@@ -11,17 +11,20 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-final class InterfaceConverter<T> implements ConfigConverter<T> {
+final class InterfaceConverter<T> implements ConfigConverter<T>
+{
+
 	private final Class<T> type;
 	private final ConverterFactory converters;
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings( "unchecked" )
 	@Override
-	public Optional<T> convert(ConfigNode node) {
+	public Optional<T> convert( ConfigNode node )
+	{
 		final Class<?>[] types = new Class[] { this.type };
 		final ClassLoader cld = this.type.getClassLoader();
-		final T instance = (T) Proxy.newProxyInstance(cld, types, new InterfaceValue(this.type, node, this.converters));
+		final T instance = (T) Proxy.newProxyInstance( cld, types, new InterfaceValue( this.type, node, this.converters ) );
 
-		return Optional.of(instance);
+		return Optional.of( instance );
 	}
 }

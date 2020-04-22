@@ -1,3 +1,4 @@
+
 package ascelion.config.cdi;
 
 import ascelion.cdi.metadata.AnnotatedTypeModifier;
@@ -11,51 +12,51 @@ import java.lang.reflect.Type;
 import java.util.Optional;
 
 import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.Unmanaged;
-import javax.inject.Inject;
 
-class BeanConverterFactory implements ConverterFactory {
-
-	@Inject
-	private BeanManager bm;
-	@Inject
-	private ConfigRoot root;
+public class BeanConverterFactory implements ConverterFactory
+{
 
 	@Override
-	public <T> ConfigConverter<T> get(Type type) {
-		if (!(type instanceof Class<?>)) {
+	public <T> ConfigConverter<T> get( Type type )
+	{
+		if( !( type instanceof Class<?> ) ) {
 			return null;
 		}
 
 		final Class<T> theType = (Class<T>) type;
 
-		if (!theType.isAnnotationPresent(ConfigValue.class)) {
+		if( !theType.isAnnotationPresent( ConfigValue.class ) ) {
 			return null;
 		}
 
-		return node -> buildType(theType, node.getPath());
+		return node -> buildType( theType, node.getPath() );
 	}
 
-	protected <T> Optional<T> buildType(Class<T> type, String path) {
-		final AnnotatedTypeModifier<T> tmod = AnnotatedTypeModifier.create(this.bm.createAnnotatedType(type));
+	protected <T> Optional<T> buildType( Class<T> type, String path )
+	{
+		final BeanManager bm = CDI.current().getBeanManager();
+		final AnnotatedTypeModifier<T> tmod = AnnotatedTypeModifier.create( bm.createAnnotatedType( type ) );
 
-		tmod.type().add(new ConfigPrefix.Literal(path));
+		tmod.type().add( new ConfigPrefix.Literal( path ) );
 
-		final T instance = new Unmanaged<>(this.bm, type)
-				.newInstance()
-				.produce()
-				.inject()
-				.postConstruct()
-				.get();
+		final T instance = new Unmanaged<>( bm, type )
+			.newInstance()
+			.produce()
+			.inject()
+			.postConstruct()
+			.get();
 
-		final ConfigProcessor<T> proc = new ConfigProcessor<>(tmod.get());
+		final ConfigProcessor<T> proc = new ConfigProcessor<>( tmod.get() );
 
-		if (proc.values().size() > 0) {
-			proc.fields().forEach(f -> ConfigInjectionTarget.inject(this.root, instance, f));
-			proc.methods().forEach(m -> ConfigInjectionTarget.inject(this.root, instance, m));
+		if( proc.values().size() > 0 ) {
+			final ConfigRoot root = CDI.current().select( ConfigRoot.class ).get();
+
+			proc.fields().forEach( f -> ConfigInjectionTarget.inject( root, instance, f ) );
+			proc.methods().forEach( m -> ConfigInjectionTarget.inject( root, instance, m ) );
 		}
 
-		return Optional.of(instance);
+		return Optional.of( instance );
 	}
-
 }

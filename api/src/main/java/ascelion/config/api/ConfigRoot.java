@@ -1,3 +1,4 @@
+
 package ascelion.config.api;
 
 import static java.util.Collections.emptyList;
@@ -7,21 +8,25 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public interface ConfigRoot extends ConfigNode {
+public interface ConfigRoot extends ConfigNode
+{
 
-	default <T> Optional<T> getValue(String path, Class<T> type) {
-		return getValue(path, (Type) type);
+	default <T> Optional<T> getValue( String path, Class<T> type )
+	{
+		return getValue( path, (Type) type );
 	}
 
-	default String getValue(String path) {
-		return getValue(path, String.class).orElse(null);
+	default String getValue( String path )
+	{
+		return getValue( path, String.class ).orElse( null );
 	}
 
-	default List<String> getValues(String path) {
-		return getValue(path, String[].class)
-				.map(Arrays::asList)
-				.orElse(emptyList());
+	default List<String> getValues( String path )
+	{
+		return getValue( path, String[].class )
+			.map( Arrays::asList )
+			.orElse( emptyList() );
 	}
 
-	<T> Optional<T> getValue(String path, Type type);
+	<T> Optional<T> getValue( String path, Type type );
 }

@@ -12,33 +12,40 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public interface ConfigInputReader {
+public interface ConfigInputReader
+{
+
 	String RESOURCE_PROP = "ascelion.config.resources";
 	String DIRECTORY_PROP = "ascelion.config.directory";
 
-	@Retention(RUNTIME)
-	@Target(TYPE)
-	@interface Type {
+	@Retention( RUNTIME )
+	@Target( TYPE )
+	@interface Type
+	{
+
 		String value();
 
 		String[] suffixes();
 	}
 
-	default Set<String> suffixes() {
-		return Optional.ofNullable(getClass().getAnnotation(ConfigInputReader.Type.class))
-				.map(ConfigInputReader.Type::suffixes)
-				.map(Stream::of)
-				.orElseThrow(() -> new IllegalStateException("Must override this method"))
-				.collect(toSet());
+	default Set<String> suffixes()
+	{
+		return Optional.ofNullable( getClass().getAnnotation( ConfigInputReader.Type.class ) )
+			.map( ConfigInputReader.Type::suffixes )
+			.map( Stream::of )
+			.orElseThrow( () -> new IllegalStateException( "Must override this method" ) )
+			.collect( toSet() );
 	}
 
-	default String defaultResource() {
+	default String defaultResource()
+	{
 		return "config-tree";
 	}
 
-	default Collection<ConfigInput> read() {
-		return read(defaultResource());
+	default Collection<ConfigInput> read()
+	{
+		return read( defaultResource() );
 	}
 
-	Collection<ConfigInput> read(String source);
+	Collection<ConfigInput> read( String source );
 }

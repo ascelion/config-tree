@@ -16,69 +16,77 @@ import java.util.Enumeration;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class ResourceInputReader implements ConfigInputReader {
+public abstract class ResourceInputReader implements ConfigInputReader
+{
+
 	@Override
-	public final Collection<ConfigInput> read(String source) {
+	public final Collection<ConfigInput> read( String source )
+	{
 		final Collection<ConfigInput> inputs = new ArrayList<>();
 
-		final int suffixIdx = source.lastIndexOf('.');
+		final int suffixIdx = source.lastIndexOf( '.' );
 
-		if (suffixIdx < 0) {
+		if( suffixIdx < 0 ) {
 			final Collection<String> suffixes = suffixes();
 
-			if (suffixes.size() > 0) {
-				for (final String suffix : suffixes) {
-					collect(source + "." + suffix, inputs);
+			if( suffixes.size() > 0 ) {
+				for( final String suffix : suffixes ) {
+					collect( source + "." + suffix, inputs );
 				}
 
 				return inputs;
 			}
 		}
 
-		collect(source, inputs);
+		collect( source, inputs );
 
 		return inputs;
 	}
 
-	private void collect(String source, Collection<ConfigInput> inputs) {
-		final File file = new File(source);
+	private void collect( String source, Collection<ConfigInput> inputs )
+	{
+		final File file = new File( source );
 
-		if (file.exists()) {
+		if( file.exists() ) {
 			try {
-				log.debug("Reading {}", file.getAbsolutePath());
+				log.debug( "Reading {}", file.getAbsolutePath() );
 
-				inputs.addAll(readFrom(file.toURI().toURL()));
-			} catch (final IOException e) {
-				log.warn(file.getAbsolutePath(), e);
+				inputs.addAll( readFrom( file.toURI().toURL() ) );
+			}
+			catch( final IOException e ) {
+				log.warn( file.getAbsolutePath(), e );
 			}
 		}
 
 		Enumeration<URL> resources;
 
 		try {
-			resources = getClassLoader().getResources(source);
-		} catch (final IOException e) {
-			log.warn(source, e);
+			resources = getClassLoader().getResources( source );
+		}
+		catch( final IOException e ) {
+			log.warn( source, e );
 
 			return;
 		}
 
-		while (resources.hasMoreElements()) {
+		while( resources.hasMoreElements() ) {
 			final URL resource = resources.nextElement();
 
 			try {
-				log.debug("Reading {}", resource);
+				log.debug( "Reading {}", resource );
 
-				inputs.addAll(readFrom(resource));
-			} catch (final IOException e) {
-				log.warn(resource.toExternalForm(), e);
+				inputs.addAll( readFrom( resource ) );
+			}
+			catch( final IOException e ) {
+				log.warn( resource.toExternalForm(), e );
 			}
 		}
 	}
 
-	protected abstract Collection<ConfigInput> readFrom(URL source) throws IOException;
+	protected abstract Collection<ConfigInput> readFrom( URL source ) throws IOException;
 
-	private ClassLoader getClassLoader() {
+	private ClassLoader getClassLoader()
+	{
 		final ClassLoader cld = currentThread().getContextClassLoader();
 
 		return cld != null ? cld : getClass().getClassLoader();

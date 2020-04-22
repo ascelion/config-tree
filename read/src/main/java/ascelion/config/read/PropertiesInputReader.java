@@ -1,3 +1,4 @@
+
 package ascelion.config.read;
 
 import static java.util.Collections.singleton;
@@ -9,11 +10,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 
-@ConfigInputReader.Type(value = "PRP", suffixes = "properties")
-public class PropertiesInputReader extends ResourceInputReader {
+@ConfigInputReader.Type( value = "PRP", suffixes = "properties" )
+public class PropertiesInputReader extends ResourceInputReader
+{
 
 	@Override
-	protected Collection<ConfigInput> readFrom(URL source) throws IOException {
-		return singleton(new PropertiesInput(source));
+	protected Collection<ConfigInput> readFrom( URL source ) throws IOException
+	{
+		return singleton( new PropertiesInput( source ) );
 	}
 }

@@ -36,7 +36,8 @@ final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot
 	}
 
 	private final AtomicReference<State> state = new AtomicReference<>( State.LOADED );
-	private final ConverterFactory converters;
+
+	final ConverterFactory converters;
 
 	ConfigRootImpl()
 	{

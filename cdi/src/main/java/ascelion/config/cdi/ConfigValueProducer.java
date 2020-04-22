@@ -1,3 +1,4 @@
+
 package ascelion.config.cdi;
 
 import static java.lang.String.format;
@@ -13,25 +14,29 @@ import java.util.Optional;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 
-class ConfigValueProducer {
+class ConfigValueProducer
+{
+
 	@Inject
 	private ConfigRoot root;
 
-	@ConfigValue("")
-	Object produceValue(InjectionPoint ip) {
-		final ConfigValue annotation = ip.getAnnotated().getAnnotation(ConfigValue.class);
+	@ConfigValue( "" )
+	Object produceValue( InjectionPoint ip )
+	{
+		final ConfigValue annotation = ip.getAnnotated().getAnnotation( ConfigValue.class );
 		final String property = annotation.value();
 		final Type type = ip.getType();
-		final Optional<Object> opt = this.root.getValue(property, type);
+		final Optional<Object> opt = this.root.getValue( property, type );
 
-		if (type instanceof ParameterizedType && ((ParameterizedType) type).getRawType() == Optional.class) {
+		if( type instanceof ParameterizedType && ( (ParameterizedType) type ).getRawType() == Optional.class ) {
 			return opt;
 		}
 
-		if (annotation.required()) {
-			return opt.orElseThrow(() -> new NoSuchElementException(format("Reference to undefined property %s at %s", property, ip.getMember())));
-		} else {
-			return opt.orElseGet(() -> Primitives.toDefault(type));
+		if( annotation.required() ) {
+			return opt.orElseThrow( () -> new NoSuchElementException( format( "Reference to undefined property %s at %s", property, ip.getMember() ) ) );
+		}
+		else {
+			return opt.orElseGet( () -> Primitives.toDefault( type ) );
 		}
 	}
 }

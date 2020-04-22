@@ -11,21 +11,27 @@ import java.lang.annotation.Target;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface ConfigPrefix {
+@Retention( RUNTIME )
+@Target( TYPE )
+public @interface ConfigPrefix
+{
+
 	@RequiredArgsConstructor
 	@ToString
-	class Literal implements ConfigPrefix {
+	class Literal implements ConfigPrefix
+	{
+
 		private final String value;
 
 		@Override
-		public Class<? extends Annotation> annotationType() {
+		public Class<? extends Annotation> annotationType()
+		{
 			return ConfigPrefix.class;
 		}
 
 		@Override
-		public String value() {
+		public String value()
+		{
 			return this.value;
 		}
 

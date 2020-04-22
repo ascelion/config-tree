@@ -1,3 +1,4 @@
+
 package ascelion.config.core;
 
 import ascelion.config.api.ConfigProvider;
@@ -9,71 +10,108 @@ import ascelion.config.spi.ConverterFactory;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ConfigProviderImpl extends ConfigProvider {
-	static private volatile ConfigRootImpl INSTANCE;
-	static private Converters CONVERTERS;
+public final class ConfigProviderImpl extends ConfigProvider
+{
 
-	public static void reset() {
-		synchronized (ConfigProviderImpl.class) {
-			CONVERTERS = null;
-			INSTANCE = null;
+	private static final Map<ClassLoader, ConfigRootImpl> ROOTS = new IdentityHashMap<>();
+	private static final ReadWriteLock RW_LOCK = new ReentrantReadWriteLock();
+
+	public static void reset()
+	{
+		final Lock lock = RW_LOCK.writeLock();
+
+		lock.lock();
+
+		try {
+			ROOTS.clear();
+		}
+		finally {
+			lock.unlock();
 		}
 	}
 
+	@SuppressWarnings( { "rawtypes", "unchecked" } )
 	@Override
-	public ConfigRoot get() {
-		if (INSTANCE != null) {
-			return INSTANCE;
-		}
+	public ConfigRoot get( ClassLoader cld )
+	{
+		Lock lock = RW_LOCK.readLock();
 
-		synchronized (ConfigProviderImpl.class) {
-			if (INSTANCE != null) {
-				return INSTANCE;
+		lock.lock();
+
+		try {
+			ConfigRootImpl root = ROOTS.get( cld );
+
+			if( root != null ) {
+				return root;
 			}
 
-			CONVERTERS = new Converters();
-			INSTANCE = new ConfigRootImpl(CONVERTERS);
+			lock.unlock();
 
-			initConverters(ServiceLoader.load(ConfigConverter.class));
-			initFactories(ServiceLoader.load(ConverterFactory.class));
-			initReaders(ServiceLoader.load(ConfigInputReader.class));
+			lock = RW_LOCK.writeLock();
 
-			return INSTANCE;
+			lock.lock();
+
+			root = new ConfigRootImpl( new Converters() );
+
+			addConverters( root, (Iterable) ServiceLoader.load( ConfigConverter.class ) );
+			addFactories( root, ServiceLoader.load( ConverterFactory.class ) );
+			addReaders( root, ServiceLoader.load( ConfigInputReader.class ) );
+
+			ROOTS.put( cld, root );
+
+			return root;
 		}
+		finally {
+			lock.unlock();
+		}
+
 	}
 
-	protected final void initReaders(Iterable<ConfigInputReader> readers) {
+	private void addConverters( ConfigRootImpl root, Iterable<ConfigConverter<?>> converters )
+	{
+		final Converters factory = (Converters) root.converters;
+
+		converters.forEach( factory::register );
+	}
+
+	private void addFactories( ConfigRootImpl root, Iterable<ConverterFactory> factories )
+	{
+		final Converters factory = (Converters) root.converters;
+
+		factories.forEach( factory::register );
+	}
+
+	private void addReaders( ConfigRootImpl root, Iterable<ConfigInputReader> readers )
+	{
 		final Set<String> skip = new HashSet<>();
 
-		readAll(skip, readers, "");
+		readAll( root, skip, readers, "" );
 
-		final File directory = INSTANCE.getValue(ConfigInputReader.DIRECTORY_PROP, File.class).orElse(null);
-		final String[] resources = INSTANCE.getValue(ConfigInputReader.RESOURCE_PROP, String[].class).orElseGet(() -> new String[0]);
+		final File directory = root.getValue( ConfigInputReader.DIRECTORY_PROP, File.class ).orElse( null );
+		final String[] resources = root.getValue( ConfigInputReader.RESOURCE_PROP, String[].class ).orElseGet( () -> new String[0] );
 
-		for (final String resource : resources) {
-			if (directory != null) {
-				readAll(skip, readers, new File(directory, resource).getAbsolutePath());
+		for( final String resource : resources ) {
+			if( directory != null ) {
+				readAll( root, skip, readers, new File( directory, resource ).getAbsolutePath() );
 			}
 
-			readAll(skip, readers, resource);
+			readAll( root, skip, readers, resource );
 		}
 	}
 
-	protected final void initFactories(Iterable<ConverterFactory> factories) {
-		factories.forEach(CONVERTERS::register);
-	}
-
-	protected final void initConverters(@SuppressWarnings("rawtypes") Iterable<ConfigConverter> converters) {
-		converters.forEach(CONVERTERS::register);
-	}
-
-	private void readAll(Set<String> skip, Iterable<ConfigInputReader> readers, String source) {
-		if (skip.add(source)) {
-			for (final ConfigInputReader rd : readers) {
-				INSTANCE.addConfigInputs(source.isEmpty() ? rd.read() : rd.read(source));
+	private void readAll( ConfigRootImpl root, Set<String> skip, Iterable<ConfigInputReader> readers, String source )
+	{
+		if( skip.add( source ) ) {
+			for( final ConfigInputReader rd : readers ) {
+				root.addConfigInputs( source.isEmpty() ? rd.read() : rd.read( source ) );
 			}
 		}
 	}

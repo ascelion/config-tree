@@ -8,14 +8,17 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-@Retention(RUNTIME)
-@Target(TYPE)
-@Repeatable(ConfigSource.Array.class)
-public @interface ConfigSource {
+@Retention( RUNTIME )
+@Target( TYPE )
+@Repeatable( ConfigSource.Array.class )
+public @interface ConfigSource
+{
 
-	@Retention(RUNTIME)
-	@Target(TYPE)
-	@interface Array {
+	@Retention( RUNTIME )
+	@Target( TYPE )
+	@interface Array
+	{
+
 		ConfigSource[] value();
 	}
 

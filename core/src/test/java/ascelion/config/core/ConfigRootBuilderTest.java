@@ -1,3 +1,4 @@
+
 package ascelion.config.core;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -11,10 +12,12 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-class ConfigRootBuilderTest {
+class ConfigRootBuilderTest
+{
 
 	@Test
-	void simpleBuild() {
+	void simpleBuild()
+	{
 		final ConfigRoot root = new ConfigRootBuilder()
 		//@formatter:off
 			.child("x.1")
@@ -29,11 +32,12 @@ class ConfigRootBuilderTest {
 			.get();
 		//@formatter:on
 
-		assertThat(check(root, root), equalTo(9));
+		assertThat( check( root, root ), equalTo( 9 ) );
 	}
 
 	@Test
-	void secondBuild() {
+	void secondBuild()
+	{
 		final ConfigRootImpl root1 = new ConfigRootBuilder()
 		//@formatter:off
 			.child("x.1")
@@ -53,23 +57,24 @@ class ConfigRootBuilderTest {
 			.get();
 		//@formatter:on
 
-		root1.merge(root2, false);
+		root1.merge( root2, false );
 
-		assertThat(check(root1, root1), equalTo(9));
+		assertThat( check( root1, root1 ), equalTo( 9 ) );
 	}
 
-	private int check(ConfigNode root, ConfigNode node) {
-		assertThat(node.getPath(), node.root(), sameInstance(root));
+	private int check( ConfigNode root, ConfigNode node )
+	{
+		assertThat( node.getPath(), node.root(), sameInstance( root ) );
 
 		final Optional<String> value = node.getValue();
 
-		if (value.isPresent()) {
-			assertThat(node.getPath(), value.get(), equalTo(node.getPath()));
+		if( value.isPresent() ) {
+			assertThat( node.getPath(), value.get(), equalTo( node.getPath() ) );
 		}
 
 		final int[] count = { 1 };
 
-		node.getChildren().forEach(c -> count[0] += check(root, c));
+		node.getChildren().forEach( c -> count[0] += check( root, c ) );
 
 		return count[0];
 	}

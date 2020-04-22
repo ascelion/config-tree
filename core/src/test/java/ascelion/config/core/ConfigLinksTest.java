@@ -1,3 +1,4 @@
+
 package ascelion.config.core;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,10 +13,12 @@ import java.util.Iterator;
 
 import org.junit.jupiter.api.Test;
 
-public class ConfigLinksTest {
+public class ConfigLinksTest
+{
 
 	@Test
-	public void case1() {
+	public void case1()
+	{
 		final ConfigRootBuilder bld = new ConfigRootBuilder();
 		final ConfigRoot root = bld
 //@formatter:off
@@ -29,11 +32,12 @@ public class ConfigLinksTest {
 		.get();
 //@formatter:on
 
-		checkNodes(root);
+		checkNodes( root );
 	}
 
 	@Test
-	public void case2() {
+	public void case2()
+	{
 		final ConfigRootBuilder bld = new ConfigRootBuilder();
 		final ConfigRoot root = bld
 //@formatter:off
@@ -46,11 +50,12 @@ public class ConfigLinksTest {
 				.get();
 //@formatter:on
 
-		checkNodes(root);
+		checkNodes( root );
 	}
 
 	@Test
-	public void case3() {
+	public void case3()
+	{
 		final ConfigRootBuilder bld = new ConfigRootBuilder();
 		final ConfigRoot root = bld
 //@formatter:off
@@ -63,28 +68,29 @@ public class ConfigLinksTest {
 				.get();
 //@formatter:on
 
-		checkNodes(root);
+		checkNodes( root );
 	}
 
-	private void checkNodes(ConfigRoot root) {
-		final ConfigNode a = root.getValue("X.a", ConfigNode.class).get();
-		final ConfigNode b = root.getValue("X.b", ConfigNode.class).get();
-		final ConfigNode c = root.getValue("X.c", ConfigNode.class).get();
+	private void checkNodes( ConfigRoot root )
+	{
+		final ConfigNode a = root.getValue( "X.a", ConfigNode.class ).get();
+		final ConfigNode b = root.getValue( "X.b", ConfigNode.class ).get();
+		final ConfigNode c = root.getValue( "X.c", ConfigNode.class ).get();
 
 		final Collection<ConfigNode> ca = a.getChildren();
 		final Collection<ConfigNode> cb = b.getChildren();
 		final Collection<ConfigNode> cc = c.getChildren();
 
-		assertThat(ca.size(), equalTo(cb.size()));
-		assertThat(cb.size(), equalTo(cc.size()));
+		assertThat( ca.size(), equalTo( cb.size() ) );
+		assertThat( cb.size(), equalTo( cc.size() ) );
 
-		for (Iterator<ConfigNode> ia = ca.iterator(), ib = cb.iterator(), ic = cc.iterator(); ia.hasNext();) {
+		for( Iterator<ConfigNode> ia = ca.iterator(), ib = cb.iterator(), ic = cc.iterator(); ia.hasNext(); ) {
 			final ConfigNode na = ia.next();
 			final ConfigNode nb = ib.next();
 			final ConfigNode nc = ic.next();
 
-			assertThat(na, sameInstance(nb));
-			assertThat(nb, sameInstance(nc));
+			assertThat( na, sameInstance( nb ) );
+			assertThat( nb, sameInstance( nc ) );
 		}
 	}
 }

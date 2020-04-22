@@ -1,3 +1,4 @@
+
 package ascelion.config.eval;
 
 import static java.lang.String.format;
@@ -15,10 +16,15 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
-final class Replacer {
-	static private final ThreadLocal<Deque<Buffer>> DUMP = new ThreadLocal<Deque<Buffer>>() {
+final class Replacer
+{
+
+	static private final ThreadLocal<Deque<Buffer>> DUMP = new ThreadLocal<Deque<Buffer>>()
+	{
+
 		@Override
-		protected Deque<Buffer> initialValue() {
+		protected Deque<Buffer> initialValue()
+		{
 			return new LinkedList<>();
 		};
 	};
@@ -29,35 +35,39 @@ final class Replacer {
 	@Getter
 	private String lastVariable;
 
-	Buffer replace(String expression) {
+	Buffer replace( String expression )
+	{
 		this.lastVariable = expression;
 
-		return replace(new Buffer(expression));
+		return replace( new Buffer( expression ) );
 	}
 
-	private Buffer replace(Buffer buf) {
-		DUMP.get().addLast(buf);
+	private Buffer replace( Buffer buf )
+	{
+		DUMP.get().addLast( buf );
 
 		try {
-			return doReplace(buf);
-		} finally {
+			return doReplace( buf );
+		}
+		finally {
 			final Deque<Buffer> stack = DUMP.get();
 
 			stack.pollLast();
 
-			if (stack.isEmpty()) {
+			if( stack.isEmpty() ) {
 				DUMP.remove();
 			}
 		}
 	}
 
-	private Buffer doReplace(Buffer buf) {
+	private Buffer doReplace( Buffer buf )
+	{
 		int ofs1 = buf.offset;
 
-		while (ofs1 < buf.offset + buf.count) {
-			int next = buf.match(this.exp.varPrefix, ofs1);
+		while( ofs1 < buf.offset + buf.count ) {
+			int next = buf.match( this.exp.varPrefix, ofs1 );
 
-			if (next > ofs1) {
+			if( next > ofs1 ) {
 				ofs1 = next;
 
 				continue;
@@ -67,10 +77,10 @@ final class Replacer {
 			int ofs2 = ofs1 + this.exp.varPrefix.length;
 			int open = 1;
 
-			while (ofs2 < buf.offset + buf.count) {
-				next = buf.match(this.exp.varPrefix, ofs2);
+			while( ofs2 < buf.offset + buf.count ) {
+				next = buf.match( this.exp.varPrefix, ofs2 );
 
-				if (next == ofs2) {
+				if( next == ofs2 ) {
 					// matched nested prefix
 					open++;
 
@@ -79,26 +89,26 @@ final class Replacer {
 					continue;
 				}
 
-				next = buf.match(this.exp.varSuffix, ofs2);
+				next = buf.match( this.exp.varSuffix, ofs2 );
 
-				if (next > ofs2) {
+				if( next > ofs2 ) {
 					ofs2 = next;
 
 					continue;
 				}
 				// matched suffix
-				if (--open > 0) {
+				if( --open > 0 ) {
 					ofs2 += this.exp.varSuffix.length;
 
 					continue;
 				}
 
-				handleLastSuffix(buf, ofs1, ofs2 - ofs1);
+				handleLastSuffix( buf, ofs1, ofs2 - ofs1 );
 
 				break;
 			}
 
-			if (open > 0) {
+			if( open > 0 ) {
 				break;
 			}
 		}
@@ -106,66 +116,71 @@ final class Replacer {
 		return buf;
 	}
 
-	private void pushName(Buffer var) {
-		if (this.vars.contains(var)) {
-			final String m = format("Recursive definition for ${%s}: %s", var,
-					this.vars.stream().map(Buffer::toString).collect(joining(" -> ")));
+	private void pushName( Buffer var )
+	{
+		if( this.vars.contains( var ) ) {
+			final String m = format( "Recursive definition for ${%s}: %s", var,
+				this.vars.stream().map( Buffer::toString ).collect( joining( " -> " ) ) );
 
-			throw new IllegalStateException(m);
+			throw new IllegalStateException( m );
 		}
 
 		this.lastVariable = var.toString();
 
-		this.vars.addLast(var);
+		this.vars.addLast( var );
 	}
 
-	private void popName() {
+	private void popName()
+	{
 		this.vars.pollLast();
 	}
 
-	private void handleLastSuffix(final Buffer buf, final int ofs, final int cnt) {
-		final Buffer place = buf.newBuffer(ofs + this.exp.varPrefix.length, cnt - this.exp.varPrefix.length);
+	private void handleLastSuffix( final Buffer buf, final int ofs, final int cnt )
+	{
+		final Buffer place = buf.newBuffer( ofs + this.exp.varPrefix.length, cnt - this.exp.varPrefix.length );
 
-		replace(place);
+		replace( place );
 
-		final int defIx = place.find(this.exp.valueSep, 0);
+		final int defIx = place.find( this.exp.valueSep, 0 );
 		final String def;
 		Buffer var;
 
-		if (defIx < 0) {
+		if( defIx < 0 ) {
 			var = place;
 			def = "";
-		} else {
-			var = place.subBuffer(0, defIx);
-			def = place.subBuffer(defIx + this.exp.valueSep.length, place.count - defIx - this.exp.valueSep.length).toString();
+		}
+		else {
+			var = place.subBuffer( 0, defIx );
+			def = place.subBuffer( defIx + this.exp.valueSep.length, place.count - defIx - this.exp.valueSep.length ).toString();
 		}
 
-		final Lookup res = this.exp.lookup.apply(var.toString());
-		String val = res.getValue(def);
+		final Lookup res = this.exp.lookup.apply( var.toString() );
+		String val = res.getValue( def );
 
-		if (val == null) {
-			final String text = format("Reference to undefined variable %s%s%s", new String(this.exp.varPrefix), var, new String(this.exp.varSuffix));
+		if( val == null ) {
+			final String text = format( "Reference to undefined variable %s%s%s", new String( this.exp.varPrefix ), var, new String( this.exp.varSuffix ) );
 
-			if (log.isErrorEnabled()) {
+			if( log.isErrorEnabled() ) {
 				final String dump = DUMP.get().stream()
-						.map(Buffer::toString)
-						.collect(joining("\n\t -> ", text + "\n\t -> ", "\n"));
+					.map( Buffer::toString )
+					.collect( joining( "\n\t -> ", text + "\n\t -> ", "\n" ) );
 
-				log.error(dump);
+				log.error( dump );
 			}
 
-			throw new NoSuchElementException(text);
+			throw new NoSuchElementException( text );
 		}
 
-		pushName(var);
+		pushName( var );
 
 		try {
-			val = replace(new Buffer(val)).toString();
-		} finally {
+			val = replace( new Buffer( val ) ).toString();
+		}
+		finally {
 			popName();
 		}
 
-		buf.replace(ofs, cnt + this.exp.varSuffix.length, val);
+		buf.replace( ofs, cnt + this.exp.varSuffix.length, val );
 	}
 
 }

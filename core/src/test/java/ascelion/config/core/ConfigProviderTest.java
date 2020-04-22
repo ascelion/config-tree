@@ -1,3 +1,4 @@
+
 package ascelion.config.core;
 
 import static java.util.Arrays.asList;
@@ -13,62 +14,66 @@ import ascelion.config.api.ConfigRoot;
 
 import org.junit.jupiter.api.Test;
 
-public class ConfigProviderTest extends AbstractTest {
+public class ConfigProviderTest extends AbstractTest
+{
 
 	@Test
-	public void string_read() {
+	public void string_read()
+	{
 		final ConfigRoot root = ConfigProvider.root();
 
-		final String sv1 = root.getValue("value", String.class).orElse(null);
-		final String[] sv2 = root.getValue("value", String[].class).orElse(null);
-		final String sv3 = root.getValue("values", String.class).orElse(null);
-		final String[] sv4 = root.getValue("values", String[].class).orElse(null);
+		final String sv1 = root.getValue( "value", String.class ).orElse( null );
+		final String[] sv2 = root.getValue( "value", String[].class ).orElse( null );
+		final String sv3 = root.getValue( "values", String.class ).orElse( null );
+		final String[] sv4 = root.getValue( "values", String[].class ).orElse( null );
 
-		assertThat(sv1, is(notNullValue()));
-		assertThat(sv2, is(notNullValue()));
-		assertThat(sv3, is(nullValue()));
-		assertThat(sv4, is(notNullValue()));
+		assertThat( sv1, is( notNullValue() ) );
+		assertThat( sv2, is( notNullValue() ) );
+		assertThat( sv3, is( nullValue() ) );
+		assertThat( sv4, is( notNullValue() ) );
 
-		assertThat(sv1, equalTo("1"));
-		assertThat(asList(sv2), contains("1"));
-		assertThat(asList(sv4), contains("2", "3"));
+		assertThat( sv1, equalTo( "1" ) );
+		assertThat( asList( sv2 ), contains( "1" ) );
+		assertThat( asList( sv4 ), contains( "2", "3" ) );
 	}
 
 	@Test
-	public void integer_read() {
+	public void integer_read()
+	{
 		final ConfigRoot root = ConfigProvider.root();
 
-		final Integer sv1 = root.getValue("value", Integer.class).orElse(null);
-		final Integer[] sv2 = root.getValue("value", Integer[].class).orElse(null);
-		final Integer sv3 = root.getValue("values", Integer.class).orElse(null);
-		final Integer[] sv4 = root.getValue("values", Integer[].class).orElse(null);
+		final Integer sv1 = root.getValue( "value", Integer.class ).orElse( null );
+		final Integer[] sv2 = root.getValue( "value", Integer[].class ).orElse( null );
+		final Integer sv3 = root.getValue( "values", Integer.class ).orElse( null );
+		final Integer[] sv4 = root.getValue( "values", Integer[].class ).orElse( null );
 
-		assertThat(sv1, is(notNullValue()));
-		assertThat(sv2, is(notNullValue()));
-		assertThat(sv3, is(nullValue()));
-		assertThat(sv4, is(notNullValue()));
+		assertThat( sv1, is( notNullValue() ) );
+		assertThat( sv2, is( notNullValue() ) );
+		assertThat( sv3, is( nullValue() ) );
+		assertThat( sv4, is( notNullValue() ) );
 
-		assertThat(sv1, equalTo(1));
-		assertThat(asList(sv2), contains(1));
-		assertThat(asList(sv4), contains(2, 3));
+		assertThat( sv1, equalTo( 1 ) );
+		assertThat( asList( sv2 ), contains( 1 ) );
+		assertThat( asList( sv4 ), contains( 2, 3 ) );
 	}
 
 	@Test
-	public void int_read() {
+	public void int_read()
+	{
 		final ConfigRoot root = ConfigProvider.root();
 
-		final int sv1 = root.getValue("value", int.class).orElse(0);
-		final int[] sv2 = root.getValue("value", int[].class).orElse(null);
-		final int sv3 = root.getValue("values", int.class).orElse(0);
-		final int[] sv4 = root.getValue("values", int[].class).orElse(null);
+		final int sv1 = root.getValue( "value", int.class ).orElse( 0 );
+		final int[] sv2 = root.getValue( "value", int[].class ).orElse( null );
+		final int sv3 = root.getValue( "values", int.class ).orElse( 0 );
+		final int[] sv4 = root.getValue( "values", int[].class ).orElse( null );
 
-		assertThat(sv1, is(notNullValue()));
-		assertThat(sv2, is(notNullValue()));
-		assertThat(sv3, is(0));
-		assertThat(sv4, is(notNullValue()));
+		assertThat( sv1, is( notNullValue() ) );
+		assertThat( sv2, is( notNullValue() ) );
+		assertThat( sv3, is( 0 ) );
+		assertThat( sv4, is( notNullValue() ) );
 
-		assertThat(sv1, equalTo(1));
-		assertThat(sv2, equalTo(new int[] { 1 }));
-		assertThat(sv4, equalTo(new int[] { 2, 3 }));
+		assertThat( sv1, equalTo( 1 ) );
+		assertThat( sv2, equalTo( new int[] { 1 } ) );
+		assertThat( sv4, equalTo( new int[] { 2, 3 } ) );
 	}
 }

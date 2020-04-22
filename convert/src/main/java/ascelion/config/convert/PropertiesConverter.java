@@ -1,3 +1,4 @@
+
 package ascelion.config.convert;
 
 import ascelion.config.api.ConfigNode;
@@ -11,35 +12,39 @@ import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-final class PropertiesConverter implements ConfigConverter<Properties> {
+final class PropertiesConverter implements ConfigConverter<Properties>
+{
 
 	private final ConverterFactory cvf;
 
 	@Override
-	public Optional<Properties> convert(ConfigNode node) {
+	public Optional<Properties> convert( ConfigNode node )
+	{
 		final Collection<ConfigNode> children = node.getChildren();
 		final Properties map = new Properties();
 		final String base = node.getPath();
 		final int baseLen = base.length() + 1;
 
-		fillMap(map, children, baseLen);
+		fillMap( map, children, baseLen );
 
-		return Optional.of(map);
+		return Optional.of( map );
 	}
 
-	private void fillMap(Properties map, Collection<ConfigNode> children, int baseLen) {
-		children.forEach(child -> fillMap(map, child, baseLen));
+	private void fillMap( Properties map, Collection<ConfigNode> children, int baseLen )
+	{
+		children.forEach( child -> fillMap( map, child, baseLen ) );
 	}
 
-	private void fillMap(Properties map, ConfigNode child, int baseLen) {
-		final Optional<String> opt = this.cvf.<String>get(String.class).convert(child);
+	private void fillMap( Properties map, ConfigNode child, int baseLen )
+	{
+		final Optional<String> opt = this.cvf.<String> get( String.class ).convert( child );
 
-		if (opt.isPresent()) {
-			final String key = child.getPath().substring(baseLen);
+		if( opt.isPresent() ) {
+			final String key = child.getPath().substring( baseLen );
 
-			map.put(key, opt.get());
+			map.put( key, opt.get() );
 		}
 
-		fillMap(map, child.getChildren(), baseLen);
+		fillMap( map, child.getChildren(), baseLen );
 	}
 }

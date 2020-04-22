@@ -1,3 +1,4 @@
+
 package ascelion.config.convert;
 
 import static java.util.Optional.ofNullable;
@@ -14,71 +15,86 @@ import javax.annotation.Priority;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
-final class PrioritizedCollection<T> extends AbstractCollection<T> {
-	@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-	static class Holder<T> implements Comparable<Holder<T>> {
+final class PrioritizedCollection<T> extends AbstractCollection<T>
+{
+
+	@RequiredArgsConstructor( access = AccessLevel.PACKAGE )
+	static class Holder<T> implements Comparable<Holder<T>>
+	{
+
 		final T instance;
 		final int priority;
 
-		Holder(T instance) {
+		Holder( T instance )
+		{
 			this.instance = instance;
-			this.priority = ofNullable(instance.getClass().getAnnotation(Priority.class))
-					.map(Priority::value)
-					.orElse(0);
+			this.priority = ofNullable( instance.getClass().getAnnotation( Priority.class ) )
+				.map( Priority::value )
+				.orElse( 0 );
 		}
 
 		@Override
-		public int compareTo(Holder<T> that) {
-			return Integer.compare(this.priority, that.priority);
+		public int compareTo( Holder<T> that )
+		{
+			return Integer.compare( this.priority, that.priority );
 		}
 	}
 
 	private final List<Holder<T>> delegate = new ArrayList<>();
 
 	@Override
-	public Iterator<T> iterator() {
+	public Iterator<T> iterator()
+	{
 		final Iterator<Holder<T>> delegate = this.delegate.iterator();
 
-		return new Iterator<T>() {
+		return new Iterator<T>()
+		{
+
 			@Override
-			public boolean hasNext() {
+			public boolean hasNext()
+			{
 				return delegate.hasNext();
 			}
 
 			@Override
-			public T next() {
+			public T next()
+			{
 				return delegate.next().instance;
 			}
 		};
 	}
 
 	@Override
-	public int size() {
+	public int size()
+	{
 		return this.delegate.size();
 	}
 
-	public boolean add(T e, int p) {
-		this.delegate.add(new Holder<>(e, p));
+	public boolean add( T e, int p )
+	{
+		this.delegate.add( new Holder<>( e, p ) );
 
-		Collections.sort(this.delegate);
+		Collections.sort( this.delegate );
 
 		return true;
 	}
 
 	@Override
-	public boolean add(T e) {
-		this.delegate.add(new Holder<>(e));
+	public boolean add( T e )
+	{
+		this.delegate.add( new Holder<>( e ) );
 
-		Collections.sort(this.delegate);
+		Collections.sort( this.delegate );
 
 		return true;
 	}
 
-	public T head() {
-		if (isEmpty()) {
+	public T head()
+	{
+		if( isEmpty() ) {
 			throw new NoSuchElementException();
 		}
 
-		return this.delegate.get(0).instance;
+		return this.delegate.get( 0 ).instance;
 	}
 }

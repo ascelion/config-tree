@@ -24,18 +24,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-final class InterfaceValue implements InvocationHandler {
+final class InterfaceValue implements InvocationHandler
+{
 
-	static private final Set<Method> O_METHODS = unmodifiableSet(new HashSet<>(asList(Object.class.getMethods())));
+	static private final Set<Method> O_METHODS = unmodifiableSet( new HashSet<>( asList( Object.class.getMethods() ) ) );
 	static private final Constructor<MethodHandles.Lookup> LOOKUP;
 
 	static {
 		try {
-			LOOKUP = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
+			LOOKUP = MethodHandles.Lookup.class.getDeclaredConstructor( Class.class, int.class );
 
-			LOOKUP.setAccessible(true);
-		} catch (NoSuchMethodException | SecurityException e) {
-			throw new ExceptionInInitializerError(e);
+			LOOKUP.setAccessible( true );
+		}
+		catch( NoSuchMethodException | SecurityException e ) {
+			throw new ExceptionInInitializerError( e );
 		}
 	}
 
@@ -45,54 +47,59 @@ final class InterfaceValue implements InvocationHandler {
 	private final ConfigNode node;
 	private final ConverterFactory converters;
 
-	InterfaceValue(Class<?> type, ConfigNode node, ConverterFactory converters) {
+	InterfaceValue( Class<?> type, ConfigNode node, ConverterFactory converters )
+	{
 		this.type = type;
 		this.node = node;
 		this.converters = converters;
 
-		Stream.of(type.getMethods())
-				.filter(m -> !m.isDefault())
-				.filter(m -> m.getParameterTypes().length == 0)
-				.filter(m -> m.getReturnType() != void.class)
-				.forEach(this::addName);
+		Stream.of( type.getMethods() )
+			.filter( m -> !m.isDefault() )
+			.filter( m -> m.getParameterTypes().length == 0 )
+			.filter( m -> m.getReturnType() != void.class )
+			.forEach( this::addName );
 		;
 	}
 
 	@Override
-	public String toString() {
-		return format("%s[%s]", this.type.getSimpleName(), this.node.getPath());
+	public String toString()
+	{
+		return format( "%s[%s]", this.type.getSimpleName(), this.node.getPath() );
 	}
 
 	@Override
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		if (O_METHODS.contains(method)) {
-			return method.invoke(this, args);
+	public Object invoke( Object proxy, Method method, Object[] args ) throws Throwable
+	{
+		if( O_METHODS.contains( method ) ) {
+			return method.invoke( this, args );
 		}
 
-		if (this.names.containsKey(method)) {
-			final ConfigValue a = this.names.get(method);
-			final Type t = getExactReturnType(method, this.type);
+		if( this.names.containsKey( method ) ) {
+			final ConfigValue a = this.names.get( method );
+			final Type t = getExactReturnType( method, this.type );
 			return this.node
-					.getNode(a.value())
-					.flatMap(this.converters.get(t)::convert)
-					.orElse(null);
-		} else if (method.isDefault()) {
+				.getNode( a.value() )
+				.flatMap( this.converters.get( t )::convert )
+				.orElse( null );
+		}
+		else if( method.isDefault() ) {
 			final Class<?> cls = method.getDeclaringClass();
-			final MethodHandle han = LOOKUP.newInstance(cls, -1)
-					.unreflectSpecial(method, cls)
-					.bindTo(proxy);
+			final MethodHandle han = LOOKUP.newInstance( cls, -1 )
+				.unreflectSpecial( method, cls )
+				.bindTo( proxy );
 
-			return han.invokeWithArguments(args);
+			return han.invokeWithArguments( args );
 		}
 
-		throw new RuntimeException(format("Cannot handle method %s#%s", this.type.getName(), method.getName()));
+		throw new RuntimeException( format( "Cannot handle method %s#%s", this.type.getName(), method.getName() ) );
 	}
 
-	private void addName(Method m) {
-		final String name = Introspector.decapitalize(m.getName().replaceAll("^(is|get)", ""));
+	private void addName( Method m )
+	{
+		final String name = Introspector.decapitalize( m.getName().replaceAll( "^(is|get)", "" ) );
 		final Class<? extends ConfigConverter> conv = ConfigConverter.class;
-		final ConfigValue anno = m.getAnnotation(ConfigValue.class);
+		final ConfigValue anno = m.getAnnotation( ConfigValue.class );
 
-		this.names.put(m, anno);
+		this.names.put( m, anno );
 	}
 }

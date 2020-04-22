@@ -1,25 +1,32 @@
+
 package ascelion.config.microprofile;
 
-final class Mediator {
+final class Mediator
+{
 
-	private final ThreadLocal<Boolean> acquired = new ThreadLocal<Boolean>() {
+	private final ThreadLocal<Boolean> acquired = new ThreadLocal<Boolean>()
+	{
+
 		@Override
-		protected Boolean initialValue() {
+		protected Boolean initialValue()
+		{
 			return false;
 		};
 	};
 
-	boolean acquire() {
-		if (this.acquired.get()) {
+	boolean acquire()
+	{
+		if( this.acquired.get() ) {
 			return false;
 		}
 
-		this.acquired.set(true);
+		this.acquired.set( true );
 
 		return true;
 	}
 
-	void release() {
+	void release()
+	{
 		this.acquired.remove();
 	}
 }

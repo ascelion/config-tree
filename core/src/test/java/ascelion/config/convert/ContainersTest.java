@@ -1,3 +1,4 @@
+
 package ascelion.config.convert;
 
 import static io.leangen.geantyref.TypeFactory.parameterizedClass;
@@ -35,71 +36,80 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class ContainersTest extends AbstractTest {
+public class ContainersTest extends AbstractTest
+{
+
 	private final ConverterFactory converters = new Converters();
 
-	static public Stream<Arguments> maps() {
-		return Stream.<Arguments>of(
-				types(Map.class, HashMap.class),
-				types(SortedMap.class, TreeMap.class),
-				types(LinkedHashMap.class, LinkedHashMap.class),
-				types(IdentityHashMap.class, IdentityHashMap.class));
+	static public Stream<Arguments> maps()
+	{
+		return Stream.<Arguments> of(
+			types( Map.class, HashMap.class ),
+			types( SortedMap.class, TreeMap.class ),
+			types( LinkedHashMap.class, LinkedHashMap.class ),
+			types( IdentityHashMap.class, IdentityHashMap.class ) );
 	}
 
-	static public Stream<Arguments> cols() {
-		return Stream.<Arguments>of(
-				types(Collection.class, ArrayList.class),
-				types(List.class, ArrayList.class),
-				types(LinkedList.class, LinkedList.class),
-				types(Set.class, HashSet.class),
-				types(SortedSet.class, TreeSet.class),
-				types(LinkedHashSet.class, LinkedHashSet.class),
-				types(Queue.class, null));
+	static public Stream<Arguments> cols()
+	{
+		return Stream.<Arguments> of(
+			types( Collection.class, ArrayList.class ),
+			types( List.class, ArrayList.class ),
+			types( LinkedList.class, LinkedList.class ),
+			types( Set.class, HashSet.class ),
+			types( SortedSet.class, TreeSet.class ),
+			types( LinkedHashSet.class, LinkedHashSet.class ),
+			types( Queue.class, null ) );
 	}
 
-	private static <T> Arguments types(Class<T> type, Class<? extends T> expType) {
-		return Arguments.of(type.getSimpleName(), type, expType);
+	private static <T> Arguments types( Class<T> type, Class<? extends T> expType )
+	{
+		return Arguments.of( type.getSimpleName(), type, expType );
 	}
 
-	@ParameterizedTest(name = "{0}")
-	@MethodSource("maps")
-	public void map(String unused, Class<? extends Map> mapType, Class<? extends Map> expType) {
-		final Type type = parameterizedClass(mapType, String.class, Integer.class);
+	@ParameterizedTest( name = "{0}" )
+	@MethodSource( "maps" )
+	public void map( String unused, Class<? extends Map> mapType, Class<? extends Map> expType )
+	{
+		final Type type = parameterizedClass( mapType, String.class, Integer.class );
 
-		if (expType == null) {
-			assertThrows(ConfigException.class, () -> {
-				this.converters.get(type);
-			});
-		} else {
-			final ConfigConverter<Object> conv = this.converters.get(type);
+		if( expType == null ) {
+			assertThrows( ConfigException.class, () -> {
+				this.converters.get( type );
+			} );
+		}
+		else {
+			final ConfigConverter<Object> conv = this.converters.get( type );
 
-			assertThat(conv, is(notNullValue()));
+			assertThat( conv, is( notNullValue() ) );
 
-			final Object cont = this.root.getValue("map", type).get();
+			final Object cont = this.root.getValue( "map", type ).get();
 
-			assertThat(cont, is(notNullValue()));
-			assertThat(cont.getClass(), equalTo(expType));
+			assertThat( cont, is( notNullValue() ) );
+			assertThat( cont.getClass(), equalTo( expType ) );
 		}
 	}
 
-	@ParameterizedTest(name = "{0}")
-	@MethodSource("cols")
-	public void col(String unused, Class<? extends Collection> colType, Class<? extends Collection> expType) {
-		final Type type = parameterizedClass(colType, Integer.class);
+	@ParameterizedTest( name = "{0}" )
+	@MethodSource( "cols" )
+	public void col( String unused, Class<? extends Collection> colType, Class<? extends Collection> expType )
+	{
+		final Type type = parameterizedClass( colType, Integer.class );
 
-		if (expType == null) {
-			assertThrows(ConfigException.class, () -> {
-				this.converters.get(type);
-			});
-		} else {
-			final ConfigConverter<Object> conv = this.converters.get(type);
+		if( expType == null ) {
+			assertThrows( ConfigException.class, () -> {
+				this.converters.get( type );
+			} );
+		}
+		else {
+			final ConfigConverter<Object> conv = this.converters.get( type );
 
-			assertThat(conv, is(notNullValue()));
+			assertThat( conv, is( notNullValue() ) );
 
-			final Object cont = this.root.getValue("col", type).get();
+			final Object cont = this.root.getValue( "col", type ).get();
 
-			assertThat(cont, is(notNullValue()));
-			assertThat(cont.getClass(), equalTo(expType));
+			assertThat( cont, is( notNullValue() ) );
+			assertThat( cont.getClass(), equalTo( expType ) );
 		}
 	}
 }

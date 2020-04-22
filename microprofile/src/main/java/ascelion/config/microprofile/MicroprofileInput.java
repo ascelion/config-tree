@@ -1,3 +1,4 @@
+
 package ascelion.config.microprofile;
 
 import ascelion.config.api.ConfigProvider.Builder;
@@ -7,22 +8,27 @@ import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 @RequiredArgsConstructor
-final class MicroprofileInput extends ConfigInput {
+final class MicroprofileInput extends ConfigInput
+{
+
 	private final ConfigSource source;
 
 	@Override
-	public String name() {
+	public String name()
+	{
 		return "[MP] " + this.source.getName();
 	}
 
 	@Override
-	public int priority() {
+	public int priority()
+	{
 		return this.source.getOrdinal();
 	}
 
 	@Override
-	public void update(Builder bld) {
-		bld.set(this.source.getProperties());
+	public void update( Builder bld )
+	{
+		bld.set( this.source.getProperties() );
 	}
 
 }
