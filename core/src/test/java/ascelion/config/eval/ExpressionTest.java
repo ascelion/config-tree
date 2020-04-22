@@ -1,15 +1,15 @@
 
 package ascelion.config.eval;
 
-import java.util.Optional;
-import java.util.function.Function;
-
-import ascelion.config.eval.Expression.Lookup;
-
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import ascelion.config.eval.Expression.Lookup;
+
+import java.util.Optional;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 

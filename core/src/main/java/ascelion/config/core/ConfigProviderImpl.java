@@ -1,16 +1,16 @@
 package ascelion.config.core;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.ServiceLoader;
-import java.util.Set;
-
 import ascelion.config.api.ConfigProvider;
 import ascelion.config.api.ConfigRoot;
 import ascelion.config.convert.Converters;
 import ascelion.config.spi.ConfigConverter;
 import ascelion.config.spi.ConfigInputReader;
 import ascelion.config.spi.ConverterFactory;
+
+import java.io.File;
+import java.util.HashSet;
+import java.util.ServiceLoader;
+import java.util.Set;
 
 public class ConfigProviderImpl extends ConfigProvider {
 	static private volatile ConfigRootImpl INSTANCE;

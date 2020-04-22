@@ -1,11 +1,11 @@
 package ascelion.config.api;
 
+import static java.util.Collections.emptyList;
+
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.Collections.emptyList;
 
 public interface ConfigRoot extends ConfigNode {
 

@@ -1,22 +1,21 @@
 package ascelion.config.eval;
 
+import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
+
+import ascelion.config.eval.Expression.Lookup;
+
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
-import ascelion.config.eval.Expression.Lookup;
-
-import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
+@Slf4j
 final class Replacer {
-	static private final Logger LOG = LoggerFactory.getLogger(Replacer.class);
 	static private final ThreadLocal<Deque<Buffer>> DUMP = new ThreadLocal<Deque<Buffer>>() {
 		@Override
 		protected Deque<Buffer> initialValue() {
@@ -142,22 +141,21 @@ final class Replacer {
 		}
 
 		final Lookup res = this.exp.lookup.apply(var.toString());
+		String val = res.getValue(def);
 
-		if (res.isUndefined()) {
+		if (val == null) {
 			final String text = format("Reference to undefined variable %s%s%s", new String(this.exp.varPrefix), var, new String(this.exp.varSuffix));
 
-			if (LOG.isErrorEnabled()) {
+			if (log.isErrorEnabled()) {
 				final String dump = DUMP.get().stream()
 						.map(Buffer::toString)
 						.collect(joining("\n\t -> ", text + "\n\t -> ", "\n"));
 
-				LOG.error(dump);
+				log.error(dump);
 			}
 
 			throw new NoSuchElementException(text);
 		}
-
-		String val = res.getValue().orElse(def);
 
 		pushName(var);
 

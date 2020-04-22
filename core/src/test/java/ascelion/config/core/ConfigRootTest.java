@@ -1,11 +1,11 @@
 package ascelion.config.core;
 
-import java.util.Optional;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 import ascelion.config.read.PropertiesInputReader;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,20 +1,23 @@
 package ascelion.config.microprofile;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 
 import ascelion.config.spi.ConfigInput;
 import ascelion.config.spi.ConfigInputReader;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 
-public class MicroprofileInputReader implements ConfigInputReader {
+public final class MicroprofileInputReader implements ConfigInputReader {
+	static private final Logger LOG = Logger.getLogger(MicroprofileInputReader.class.getName());
 	static private final Mediator MEDIATOR = new Mediator();
 
 	@Override
@@ -39,6 +42,8 @@ public class MicroprofileInputReader implements ConfigInputReader {
 				config.getConfigSources()
 						.forEach(src -> {
 							if (!(src instanceof ExpressionConfigSource)) {
+								LOG.finest(format("Considering config source %s", src.getName()));
+
 								inputs.add(new MicroprofileInput(src));
 							}
 						});

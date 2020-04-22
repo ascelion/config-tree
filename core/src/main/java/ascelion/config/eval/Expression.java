@@ -1,6 +1,8 @@
 package ascelion.config.eval;
 
-import java.util.NoSuchElementException;
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
+
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -37,21 +39,29 @@ public final class Expression {
 			this(value, false);
 		}
 
-		public Optional<String> getValue() {
+		public String getValue(String def) {
 			if (this.undefined) {
-				throw new NoSuchElementException();
+				return trimToNull(def);
 			}
 
-			return this.value;
+			return trimToEmpty(this.value.orElse(def));
 		}
 	}
 
 	@RequiredArgsConstructor
 	@Getter
-	static public class Result {
+	static public final class Result {
 		private final String expression;
 		private final String value;
 		private final String lastVariable;
+
+		public boolean isResolved() {
+			return !this.expression.equals(this.value);
+		}
+
+		public boolean isEmpty() {
+			return this.value == null;
+		}
 	}
 
 	public Result eval(String expression) {

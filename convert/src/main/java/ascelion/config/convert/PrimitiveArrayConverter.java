@@ -1,12 +1,12 @@
 package ascelion.config.convert;
 
+import ascelion.config.api.ConfigNode;
+import ascelion.config.spi.ConfigConverter;
+
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import ascelion.config.api.ConfigNode;
-import ascelion.config.spi.ConfigConverter;
 
 final class PrimitiveArrayConverter<A, T> extends WrappedConverter<A, T> {
 

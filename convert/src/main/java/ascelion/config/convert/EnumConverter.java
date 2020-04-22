@@ -1,10 +1,10 @@
 
 package ascelion.config.convert;
 
-import java.util.Optional;
-
 import ascelion.config.api.ConfigNode;
 import ascelion.config.spi.ConfigConverter;
+
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 

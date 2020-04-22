@@ -1,16 +1,16 @@
 
 package ascelion.config.spi;
 
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.util.stream.Collectors.toSet;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static java.util.stream.Collectors.toSet;
 
 public interface ConfigInputReader {
 	String RESOURCE_PROP = "ascelion.config.resources";

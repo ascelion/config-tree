@@ -1,8 +1,5 @@
 package ascelion.config.core;
 
-import ascelion.config.api.ConfigProvider;
-import ascelion.config.api.ConfigRoot;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -10,6 +7,9 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+
+import ascelion.config.api.ConfigProvider;
+import ascelion.config.api.ConfigRoot;
 
 import org.junit.jupiter.api.Test;
 

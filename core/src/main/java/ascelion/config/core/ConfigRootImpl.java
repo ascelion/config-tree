@@ -1,11 +1,6 @@
 package ascelion.config.core;
 
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
+import static java.lang.String.format;
 
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigRoot;
@@ -14,16 +9,19 @@ import ascelion.config.spi.ConfigConverter;
 import ascelion.config.spi.ConfigInput;
 import ascelion.config.spi.ConverterFactory;
 
-import static java.lang.String.format;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicReference;
+import lombok.extern.slf4j.Slf4j;
 
 @SuppressWarnings("unchecked")
+@Slf4j
 final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
-	static private final Logger LOG = LoggerFactory.getLogger(ConfigRoot.class);
-
-	private final Collection<ConfigInput> inputs = new CopyOnWriteArrayList<>();
+	private final Set<ConfigInput> inputs = new CopyOnWriteArraySet<>();
 
 	enum State {
 		DIRTY, LOADING, LOADED
@@ -32,40 +30,44 @@ final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 	private final AtomicReference<State> state = new AtomicReference<>(State.LOADED);
 	private final ConverterFactory converters;
 
-	final Expression expression = new Expression();
-
 	ConfigRootImpl() {
 		this(new ConverterFactory() {
 			@Override
 			public <T> ConfigConverter<T> get(Type type) {
-				return node -> (Optional<T>) node.getValue();
+				return (node) -> (Optional<T>) node.getValue();
 			}
 		});
 	}
 
 	public ConfigRootImpl(ConverterFactory converters) {
 		this.converters = converters;
-
-		this.expression.withLookup(x -> {
-			final Optional<ConfigNodeImpl> node = findNode(x);
-
-			if (node.isPresent()) {
-				return new Expression.Lookup(node.get().getValue());
-			} else {
-				return new Expression.Lookup();
-			}
-		});
 	}
 
 	@Override
 	public <T> Optional<T> getValue(String path, Type type) {
-		final Optional<ConfigNodeImpl> find = findNode(path);
+		final Optional<ConfigNodeImpl> node = findNode(path);
 
 		if (type == ConfigNode.class) {
-			return (Optional<T>) find;
+			return (Optional<T>) node;
+		}
+		if (node.isPresent()) {
+			return convert(node.get(), type);
 		}
 
-		return find.flatMap(n -> convert(n, type));
+		final Expression.Result eval = eval(path);
+
+		if (eval.isEmpty()) {
+			return Optional.empty();
+		}
+		if (eval.isResolved()) {
+			final ConfigRootImpl temp = new ConfigRootBuilder(this.converters)
+					.set(eval.getLastVariable(), eval.getValue())
+					.get();
+
+			return temp.getValue(eval.getLastVariable(), type);
+		}
+
+		return Optional.empty();
 	}
 
 	void addConfigInputs(Collection<ConfigInput> inputs) {
@@ -89,10 +91,6 @@ final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 		return super.children();
 	}
 
-	String eval(String expression) {
-		return this.expression.eval(expression).getValue();
-	}
-
 	@Override
 	ConfigNodeImpl value(String value) {
 		throw new UnsupportedOperationException();
@@ -106,8 +104,7 @@ final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 					.sorted()
 					.forEach(i -> update(bld, i));
 
-			super.children().clear();
-			super.children().putAll(bld.get().children());
+			merge(bld.get(), true);
 
 			this.state.set(State.LOADED);
 		} catch (final Throwable t) {
@@ -121,7 +118,7 @@ final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 		try {
 			inp.update(bld);
 		} catch (final Exception e) {
-			LOG.error(format("Error reading %s", inp.name()), e);
+			log.error(format("Error reading %s", inp.name()), e);
 		}
 	}
 

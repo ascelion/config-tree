@@ -1,16 +1,16 @@
 package ascelion.config.cdi;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-
 import ascelion.config.api.ConfigRoot;
 import ascelion.config.core.ConfigProviderImpl;
 import ascelion.config.spi.ConfigConverter;
 import ascelion.config.spi.ConfigInputReader;
 import ascelion.config.spi.ConverterFactory;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 
 @ApplicationScoped
 class CDIConfigProvider extends ConfigProviderImpl {

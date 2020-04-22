@@ -1,14 +1,50 @@
 package ascelion.config.core;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 import ascelion.config.api.ConfigRoot;
 import ascelion.config.convert.Converters;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
 public class ConfigEvalTest {
+
+	@Test
+	public void undefined() {
+		final ConfigRootImpl root = new ConfigRootBuilder(new Converters()).get();
+		final Optional<Boolean> value = root.getValue("undefined", boolean.class);
+
+		assertThat(value.isPresent(), is(false));
+	}
+
+	@Test
+	public void undefinedWithDefault() {
+		final ConfigRootImpl root = new ConfigRootBuilder(new Converters()).get();
+		final Optional<Boolean> value = root.getValue("${undefined:-true}", boolean.class);
+
+		assertThat(value.isPresent(), is(true));
+		assertThat(value.get(), is(true));
+	}
+
+	@Test
+	public void undefinedPath() {
+		final ConfigRootImpl root = new ConfigRootBuilder(new Converters()).get();
+		final Optional<Boolean> value = root.getValue("un.defined", boolean.class);
+
+		assertThat(value.isPresent(), is(false));
+	}
+
+	@Test
+	public void undefinedPathWithDefault() {
+		final ConfigRootImpl root = new ConfigRootBuilder(new Converters()).get();
+		final Optional<Boolean> value = root.getValue("${un.defined:-true}", boolean.class);
+
+		assertThat(value.isPresent(), is(true));
+		assertThat(value.get(), is(true));
+	}
 
 	@Test
 	public void boolean_ref() {

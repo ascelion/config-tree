@@ -1,18 +1,18 @@
 package ascelion.config.cdi;
 
-import java.lang.reflect.Type;
-import java.util.Optional;
-
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Unmanaged;
-import javax.inject.Inject;
-
 import ascelion.cdi.metadata.AnnotatedTypeModifier;
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigRoot;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.spi.ConfigConverter;
 import ascelion.config.spi.ConverterFactory;
+
+import java.lang.reflect.Type;
+import java.util.Optional;
+
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.Unmanaged;
+import javax.inject.Inject;
 
 class BeanConverterFactory implements ConverterFactory {
 

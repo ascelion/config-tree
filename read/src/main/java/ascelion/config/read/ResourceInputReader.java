@@ -1,6 +1,11 @@
 
 package ascelion.config.read;
 
+import static java.lang.Thread.currentThread;
+
+import ascelion.config.spi.ConfigInput;
+import ascelion.config.spi.ConfigInputReader;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -8,18 +13,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 
-import ascelion.config.spi.ConfigInput;
-import ascelion.config.spi.ConfigInputReader;
+import lombok.extern.slf4j.Slf4j;
 
-import static java.lang.Thread.currentThread;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Slf4j
 public abstract class ResourceInputReader implements ConfigInputReader {
-
-	static private final Logger LOG = LoggerFactory.getLogger(ResourceInputReader.class);
-
 	@Override
 	public final Collection<ConfigInput> read(String source) {
 		final Collection<ConfigInput> inputs = new ArrayList<>();
@@ -48,11 +45,11 @@ public abstract class ResourceInputReader implements ConfigInputReader {
 
 		if (file.exists()) {
 			try {
-				LOG.debug("Reading {}", file.getAbsolutePath());
+				log.debug("Reading {}", file.getAbsolutePath());
 
 				inputs.add(read(file.toURI().toURL()));
 			} catch (final IOException e) {
-				LOG.warn(file.getAbsolutePath(), e);
+				log.warn(file.getAbsolutePath(), e);
 			}
 		}
 
@@ -61,7 +58,7 @@ public abstract class ResourceInputReader implements ConfigInputReader {
 		try {
 			resources = getClassLoader().getResources(source);
 		} catch (final IOException e) {
-			LOG.warn(source, e);
+			log.warn(source, e);
 
 			return;
 		}
@@ -70,11 +67,11 @@ public abstract class ResourceInputReader implements ConfigInputReader {
 			final URL resource = resources.nextElement();
 
 			try {
-				LOG.debug("Reading {}", resource);
+				log.debug("Reading {}", resource);
 
 				inputs.add(read(resource));
 			} catch (final IOException e) {
-				LOG.warn(resource.toExternalForm(), e);
+				log.warn(resource.toExternalForm(), e);
 			}
 		}
 	}

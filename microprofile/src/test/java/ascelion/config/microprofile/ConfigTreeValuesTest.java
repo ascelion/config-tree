@@ -1,9 +1,9 @@
 package ascelion.config.microprofile;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import ascelion.config.api.ConfigProvider;
 import ascelion.config.api.ConfigRoot;
-
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.hamcrest.Matcher;

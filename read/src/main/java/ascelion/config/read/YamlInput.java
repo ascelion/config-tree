@@ -1,5 +1,9 @@
 package ascelion.config.read;
 
+import static java.lang.String.format;
+
+import ascelion.config.api.ConfigProvider.Builder;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -9,10 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import ascelion.config.api.ConfigProvider.Builder;
-
+import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
 
+@Slf4j
 public class YamlInput extends ResourceInput {
 	private final List<Object> documents = new ArrayList<>();
 	private final int priority;
@@ -44,6 +48,8 @@ public class YamlInput extends ResourceInput {
 
 	@Override
 	public void update(Builder bld) {
+		log.trace(format("Updating builder from %s", name()));
+
 		this.documents.forEach(o -> update(bld, o));
 	}
 

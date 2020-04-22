@@ -1,12 +1,12 @@
 package ascelion.config.spi;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.regex.Pattern;
+import static java.lang.String.format;
 
 import ascelion.config.api.ConfigNode;
 
-import static java.lang.String.format;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -124,16 +124,12 @@ public final class Utils {
 		return gchildren == 0;
 	}
 
-	static public boolean isMapNode(ConfigNode node) {
-		final Collection<ConfigNode> children = node.getChildren();
-
-		return children.size() > 0 && !isArrayName(children.iterator().next().getName());
+	static public boolean isMapNode(Collection<? extends ConfigNode> nodes) {
+		return nodes.size() > 0 && !isArrayName(nodes.iterator().next().getName());
 	}
 
-	static public boolean isArrayNode(ConfigNode node) {
-		final Collection<ConfigNode> children = node.getChildren();
-
-		return children.size() > 0 && isArrayName(children.iterator().next().getName());
+	static public boolean isArrayNode(Collection<? extends ConfigNode> nodes) {
+		return nodes.size() > 0 && isArrayName(nodes.iterator().next().getName());
 	}
 
 	static public boolean isArrayName(String name) {

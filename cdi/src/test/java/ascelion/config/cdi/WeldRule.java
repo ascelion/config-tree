@@ -1,12 +1,12 @@
 package ascelion.config.cdi;
 
-import java.util.ArrayList;
-import java.util.List;
+import static java.util.Arrays.asList;
 
 import ascelion.config.core.ConfigProviderImpl;
 import ascelion.config.spi.ConfigInputReader;
 
-import static java.util.Arrays.asList;
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

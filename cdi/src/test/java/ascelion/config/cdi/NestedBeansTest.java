@@ -1,18 +1,18 @@
 package ascelion.config.cdi;
 
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
-
-import ascelion.config.api.ConfigPrefix;
-import ascelion.config.api.ConfigValue;
-import ascelion.config.core.AbstractTest;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+
+import ascelion.config.api.ConfigPrefix;
+import ascelion.config.api.ConfigValue;
+import ascelion.config.core.AbstractTest;
+
+import javax.enterprise.inject.se.SeContainer;
+import javax.enterprise.inject.se.SeContainerInitializer;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

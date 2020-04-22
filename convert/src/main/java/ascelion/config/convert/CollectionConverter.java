@@ -1,15 +1,15 @@
 package ascelion.config.convert;
 
+import static ascelion.config.spi.Utils.isArrayNode;
+
+import ascelion.config.api.ConfigNode;
+import ascelion.config.spi.ConfigConverter;
+
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import ascelion.config.api.ConfigNode;
-import ascelion.config.spi.ConfigConverter;
-
-import static ascelion.config.spi.Utils.isArrayNode;
 
 final class CollectionConverter<C extends Collection<T>, T> extends WrappedConverter<C, T> {
 	private final Supplier<C> sup;
@@ -25,7 +25,7 @@ final class CollectionConverter<C extends Collection<T>, T> extends WrappedConve
 		final Collection<ConfigNode> children = node.getChildren();
 		final Stream<Optional<T>> stream;
 
-		if (isArrayNode(node)) {
+		if (isArrayNode(node.getChildren())) {
 			stream = children.stream().map(this.conv::convert);
 		} else if (node.getValue().isPresent()) {
 			stream = Stream.of(this.conv.convert(node));

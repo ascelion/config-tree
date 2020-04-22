@@ -1,19 +1,19 @@
 package ascelion.config.cdi;
 
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
-
-import ascelion.config.api.ConfigValue;
-import ascelion.config.core.AbstractTest;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import ascelion.config.api.ConfigValue;
+import ascelion.config.core.AbstractTest;
+
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import javax.enterprise.inject.se.SeContainer;
+import javax.enterprise.inject.se.SeContainerInitializer;
 
 import org.junit.jupiter.api.Test;
 

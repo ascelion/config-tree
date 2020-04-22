@@ -1,14 +1,14 @@
 package ascelion.config.cdi;
 
-import javax.inject.Inject;
+import static ascelion.config.cdi.WeldRule.createWeldRule;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 import ascelion.config.api.ConfigPrefix;
 import ascelion.config.api.ConfigValue;
 import ascelion.config.core.AbstractTest;
 
-import static ascelion.config.cdi.WeldRule.createWeldRule;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import javax.inject.Inject;
 
 import org.jboss.weld.junit5.EnableWeld;
 import org.jboss.weld.junit5.WeldInitiator;

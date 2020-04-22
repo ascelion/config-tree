@@ -1,12 +1,12 @@
 
 package ascelion.config.convert;
 
-import java.lang.reflect.Proxy;
-import java.util.Optional;
-
 import ascelion.config.api.ConfigNode;
 import ascelion.config.spi.ConfigConverter;
 import ascelion.config.spi.ConverterFactory;
+
+import java.lang.reflect.Proxy;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,6 +1,16 @@
 
 package ascelion.config.convert;
 
+import static io.leangen.geantyref.GenericTypeReflector.getExactReturnType;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
+
+import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigValue;
+import ascelion.config.spi.ConfigConverter;
+import ascelion.config.spi.ConverterFactory;
+
 import java.beans.Introspector;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -13,16 +23,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import ascelion.config.api.ConfigNode;
-import ascelion.config.api.ConfigValue;
-import ascelion.config.spi.ConfigConverter;
-import ascelion.config.spi.ConverterFactory;
-
-import static io.leangen.geantyref.GenericTypeReflector.getExactReturnType;
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableSet;
 
 final class InterfaceValue implements InvocationHandler {
 

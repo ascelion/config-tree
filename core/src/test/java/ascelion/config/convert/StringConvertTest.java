@@ -1,35 +1,22 @@
 package ascelion.config.convert;
 
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
-import ascelion.config.api.ConfigProvider;
-import ascelion.config.api.ConfigRoot;
-import ascelion.config.core.AbstractTest;
-import ascelion.config.spi.ConfigInputReader;
-
+import static io.leangen.geantyref.TypeFactory.parameterizedClass;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-import io.leangen.geantyref.TypeFactory;
-import org.junit.jupiter.api.BeforeEach;
+import ascelion.config.core.AbstractTest;
+
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 
 public class StringConvertTest extends AbstractTest {
-	static private final Type STRING_COL = TypeFactory.parameterizedClass(Collection.class, String.class);
-
-	private ConfigRoot root;
-
-	@BeforeEach
-	public void setUp() {
-		System.setProperty(ConfigInputReader.RESOURCE_PROP, getClass().getSimpleName());
-
-		this.root = ConfigProvider.root();
-	}
+	static private final Type STRING_COL = parameterizedClass(Collection.class, String.class);
 
 	@Test
 	public void fromPropertiesWithComma() {

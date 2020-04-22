@@ -1,14 +1,14 @@
 package ascelion.config.core;
 
-import java.util.Collection;
-import java.util.Iterator;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.sameInstance;
 
 import ascelion.config.api.ConfigNode;
 import ascelion.config.api.ConfigRoot;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.sameInstance;
+import java.util.Collection;
+import java.util.Iterator;
 
 import org.junit.jupiter.api.Test;
 
@@ -66,7 +66,7 @@ public class ConfigLinksTest {
 		checkNodes(root);
 	}
 
-	private void checkNodes(final ConfigRoot root) {
+	private void checkNodes(ConfigRoot root) {
 		final ConfigNode a = root.getValue("X.a", ConfigNode.class).get();
 		final ConfigNode b = root.getValue("X.b", ConfigNode.class).get();
 		final ConfigNode c = root.getValue("X.c", ConfigNode.class).get();

@@ -1,5 +1,16 @@
 package ascelion.config.cdi;
 
+import static ascelion.config.spi.Utils.isArrayName;
+import static java.lang.String.format;
+import static java.util.Collections.newSetFromMap;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.Optional.ofNullable;
+
+import ascelion.cdi.metadata.AnnotatedTypeModifier;
+import ascelion.cdi.metadata.AnnotatedTypeModifier.Annotations;
+import ascelion.config.api.ConfigPrefix;
+import ascelion.config.api.ConfigValue;
+
 import java.beans.Introspector;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
@@ -18,23 +29,10 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.DeploymentException;
 import javax.inject.Inject;
 
-import ascelion.cdi.metadata.AnnotatedTypeModifier;
-import ascelion.cdi.metadata.AnnotatedTypeModifier.Annotations;
-import ascelion.config.api.ConfigPrefix;
-import ascelion.config.api.ConfigValue;
+import lombok.extern.slf4j.Slf4j;
 
-import static ascelion.config.spi.Utils.isArrayName;
-import static java.lang.String.format;
-import static java.util.Collections.newSetFromMap;
-import static java.util.Collections.unmodifiableSet;
-import static java.util.Optional.ofNullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Slf4j
 final class ConfigProcessor<T> {
-	static private final Logger LOG = LoggerFactory.getLogger(ConfigProcessor.class);
-
 	private final AnnotatedTypeModifier<T> tmod;
 	private final String prefix;
 	private final String typeName;
@@ -105,7 +103,7 @@ final class ConfigProcessor<T> {
 					this.tmod.executable(executable)
 							.remove(Inject.class);
 
-					LOG.debug("Removing injection from setter in {}", executable);
+					log.debug("Removing injection from setter in {}", executable);
 				}
 
 				this.methods.add((AnnotatedMethod<T>) callable);
@@ -184,15 +182,14 @@ final class ConfigProcessor<T> {
 			expr.append(prop);
 		}
 
-		cval = ConfigValue.Literal.from(cval)
-				.value(expr.toString())
+		cval = ConfigValue.Literal.from(cval, expr.toString())
 				.build();
 
 		this.values.add(cval);
 
 		amod.add(cval);
 
-		LOG.debug("Set {} to {}", expr, amod.get());
+		log.debug("Set {} to {}", expr, amod.get());
 
 		return cval;
 	}

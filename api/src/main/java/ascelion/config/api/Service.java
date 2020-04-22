@@ -1,10 +1,10 @@
 package ascelion.config.api;
 
-import java.security.PrivilegedAction;
-import java.util.ServiceLoader;
-
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
+
+import java.security.PrivilegedAction;
+import java.util.ServiceLoader;
 
 import lombok.RequiredArgsConstructor;
 

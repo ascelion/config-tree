@@ -1,12 +1,12 @@
 package ascelion.config.read;
 
-import java.util.Collection;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 import ascelion.config.spi.ConfigInput;
 import ascelion.config.spi.ConfigInputReader;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import java.util.Collection;
 
 public class SystemInputReader implements ConfigInputReader {
 

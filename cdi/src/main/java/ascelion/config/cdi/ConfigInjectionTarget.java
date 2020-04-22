@@ -1,5 +1,8 @@
 package ascelion.config.cdi;
 
+import ascelion.config.api.ConfigRoot;
+import ascelion.config.api.ConfigValue;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -16,18 +19,13 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.inject.Inject;
 
-import ascelion.config.api.ConfigRoot;
-import ascelion.config.api.ConfigValue;
-
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
+@Slf4j
 class ConfigInjectionTarget<T> implements InjectionTarget<T> {
-	static private final Logger LOG = LoggerFactory.getLogger(ConfigInjectionTarget.class);
-
 	private final BeanManager bm;
 	private final InjectionTarget<T> delegate;
 	private final ConfigProcessor<T> processor;
@@ -83,7 +81,7 @@ class ConfigInjectionTarget<T> implements InjectionTarget<T> {
 		if (value.isPresent()) {
 			final Field field = annotated.getJavaMember();
 
-			LOG.debug("Invoking setter {}", field);
+			log.debug("Invoking setter {}", field);
 
 			field.setAccessible(true);
 			field.set(instance, value.get());
@@ -101,7 +99,7 @@ class ConfigInjectionTarget<T> implements InjectionTarget<T> {
 		if (value.isPresent()) {
 			final Method method = annotated.getJavaMember();
 
-			LOG.debug("Invoking setter {}", annotated);
+			log.debug("Invoking setter {}", annotated);
 
 			method.setAccessible(true);
 			method.invoke(instance, value.get());

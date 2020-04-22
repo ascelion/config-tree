@@ -1,9 +1,9 @@
 package ascelion.config.microprofile;
 
+import static java.util.Collections.singletonList;
+
 import java.util.List;
 import java.util.stream.Stream;
-
-import static java.util.Collections.singletonList;
 
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.junit.jupiter.api.extension.Extension;

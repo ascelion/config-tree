@@ -1,5 +1,10 @@
 package ascelion.config.read;
 
+import static java.lang.String.format;
+
+import ascelion.config.api.ConfigProvider.Builder;
+import ascelion.config.spi.ConfigInput;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -7,9 +12,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import ascelion.config.api.ConfigProvider.Builder;
-import ascelion.config.spi.ConfigInput;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 class PropertiesInput extends ResourceInput {
 	private final Map<String, String> properties = new TreeMap<>();
 
@@ -31,6 +36,8 @@ class PropertiesInput extends ResourceInput {
 
 	@Override
 	public void update(Builder bld) {
+		log.trace(format("Updating builder from %s", name()));
+
 		bld.set(this.properties);
 	}
 

@@ -1,14 +1,14 @@
 package ascelion.config.api;
 
-import java.lang.annotation.Annotation;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,15 +23,18 @@ public @interface ConfigValue {
 	@ToString
 	class Literal implements ConfigValue {
 
-		private final String value;
-		private final boolean usePrefix;
-		private final boolean required;
-
-		public static Builder from(ConfigValue annotation) {
+		public static Builder from(ConfigValue cval, String value) {
 			return new Builder()
-					.required(annotation.required())
-					.usePrefix(annotation.usePrefix());
+					.value(value)
+					.required(cval.required())
+					.usePrefix(cval.usePrefix())
+					.keyUnwrap(cval.keyUnwrap());
 		}
+
+		private final String value;
+		private final boolean required;
+		private final boolean usePrefix;
+		private final boolean keyUnwrap;
 
 		@Override
 		public Class<? extends Annotation> annotationType() {
@@ -44,19 +47,26 @@ public @interface ConfigValue {
 		}
 
 		@Override
+		public boolean required() {
+			return this.required;
+		}
+
+		@Override
 		public boolean usePrefix() {
 			return this.usePrefix;
 		}
 
 		@Override
-		public boolean required() {
-			return this.required;
+		public boolean keyUnwrap() {
+			return this.keyUnwrap;
 		}
 	}
 
 	String value() default "";
 
 	boolean usePrefix() default true;
+
+	boolean keyUnwrap() default false;
 
 	boolean required() default true;
 }

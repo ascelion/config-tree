@@ -1,5 +1,13 @@
 package ascelion.config.convert;
 
+import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
+import static java.lang.String.format;
+
+import ascelion.config.api.ConfigException;
+import ascelion.config.api.ConfigNode;
+import ascelion.config.spi.ConfigConverter;
+import ascelion.config.spi.ConverterFactory;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
@@ -22,21 +30,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import ascelion.config.api.ConfigException;
-import ascelion.config.api.ConfigNode;
-import ascelion.config.spi.ConfigConverter;
-import ascelion.config.spi.ConverterFactory;
-
-import static io.leangen.geantyref.GenericTypeReflector.getTypeParameter;
-import static java.lang.String.format;
-
 import lombok.SneakyThrows;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
+@Slf4j
 public final class Converters implements ConverterFactory {
-	static private final Logger LOG = LoggerFactory.getLogger(Converters.class);
 	static final TypeVariable<? extends Class<?>> CV_TYPE = ConfigConverter.class.getTypeParameters()[0];
 	static private final String[] CREATE_METHODS = { "valueOf", "parse", "create", "from", "fromValue", "of" };
 
@@ -61,6 +60,8 @@ public final class Converters implements ConverterFactory {
 		addFunction(Long.class, Long::parseLong);
 		addFunction(Float.class, Float::parseFloat);
 		addFunction(Double.class, Double::parseDouble);
+
+		register(new PropertiesConverter(this));
 	}
 
 	public void register(ConfigConverter<?> converter) {
@@ -70,7 +71,7 @@ public final class Converters implements ConverterFactory {
 	}
 
 	public void register(ConverterFactory factory) {
-		LOG.debug("Registering {}", factory.getClass().getName());
+		log.debug("Registering {}", factory.getClass().getName());
 
 		this.factories.add(factory);
 	}
@@ -83,7 +84,7 @@ public final class Converters implements ConverterFactory {
 	}
 
 	private <T> void addFunction(Type type, Function<String, T> func) {
-		final ConfigConverter<T> conv = node -> node.getValue().map(func);
+		final ConfigConverter<T> conv = (node) -> node.getValue().map(func);
 
 		this.cached.compute(type, (t, s) -> addConverter(t, s, conv, Integer.MAX_VALUE));
 	}
@@ -93,7 +94,7 @@ public final class Converters implements ConverterFactory {
 			col = new PrioritizedCollection<>();
 		}
 
-		LOG.debug("Registering {} for {}", cvt.getClass().getName(), type.getTypeName());
+		log.debug("Registering {} for {}", cvt.getClass().getName(), type.getTypeName());
 
 		col.add(cvt);
 
@@ -105,7 +106,7 @@ public final class Converters implements ConverterFactory {
 			col = new PrioritizedCollection<>();
 		}
 
-		LOG.debug("Registering {} for {}", cvt.getClass().getName(), type.getTypeName());
+		log.debug("Registering {} for {}", cvt.getClass().getName(), type.getTypeName());
 
 		col.add(cvt, pri);
 

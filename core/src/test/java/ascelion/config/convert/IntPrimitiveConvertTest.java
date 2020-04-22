@@ -1,27 +1,18 @@
 package ascelion.config.convert;
 
-import java.util.Optional;
-
-import ascelion.config.api.ConfigProvider;
-import ascelion.config.api.ConfigRoot;
-import ascelion.config.core.AbstractTest;
-import ascelion.config.spi.ConfigInputReader;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-import org.junit.jupiter.api.BeforeEach;
+import ascelion.config.core.AbstractTest;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 
 public class IntPrimitiveConvertTest extends AbstractTest {
-	private ConfigRoot root;
-
-	@BeforeEach
-	public void setUp() {
-		System.setProperty(ConfigInputReader.RESOURCE_PROP, IntConvertTest.class.getSimpleName());
-
-		this.root = ConfigProvider.root();
+	public IntPrimitiveConvertTest() {
+		super(IntConvertTest.class.getSimpleName());
 	}
 
 	@Test

@@ -1,5 +1,17 @@
 package ascelion.config.convert;
 
+import static io.leangen.geantyref.TypeFactory.parameterizedClass;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import ascelion.config.api.ConfigException;
+import ascelion.config.core.AbstractTest;
+import ascelion.config.spi.ConfigConverter;
+import ascelion.config.spi.ConverterFactory;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,37 +31,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
-import ascelion.config.api.ConfigException;
-import ascelion.config.api.ConfigProvider;
-import ascelion.config.api.ConfigRoot;
-import ascelion.config.core.AbstractTest;
-import ascelion.config.spi.ConfigConverter;
-import ascelion.config.spi.ConfigInputReader;
-import ascelion.config.spi.ConverterFactory;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import io.leangen.geantyref.TypeFactory;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class ContainersTest extends AbstractTest {
 	private final ConverterFactory converters = new Converters();
-	private ConfigRoot root;
-
-	@BeforeEach
-	public void setUp() {
-
-		System.setProperty(ConfigInputReader.RESOURCE_PROP, getClass().getSimpleName());
-
-		this.root = ConfigProvider.root();
-	}
 
 	static public Stream<Arguments> maps() {
 		return Stream.<Arguments>of(
@@ -70,14 +57,14 @@ public class ContainersTest extends AbstractTest {
 				types(Queue.class, null));
 	}
 
-	private static Arguments types(Class<?> type, Class<?> expType) {
+	private static <T> Arguments types(Class<T> type, Class<? extends T> expType) {
 		return Arguments.of(type.getSimpleName(), type, expType);
 	}
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("maps")
 	public void map(String unused, Class<? extends Map> mapType, Class<? extends Map> expType) {
-		final Type type = TypeFactory.parameterizedClass(mapType, String.class, Integer.class);
+		final Type type = parameterizedClass(mapType, String.class, Integer.class);
 
 		if (expType == null) {
 			assertThrows(ConfigException.class, () -> {
@@ -98,7 +85,7 @@ public class ContainersTest extends AbstractTest {
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("cols")
 	public void col(String unused, Class<? extends Collection> colType, Class<? extends Collection> expType) {
-		final Type type = TypeFactory.parameterizedClass(colType, Integer.class);
+		final Type type = parameterizedClass(colType, Integer.class);
 
 		if (expType == null) {
 			assertThrows(ConfigException.class, () -> {

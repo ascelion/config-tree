@@ -1,22 +1,22 @@
 package ascelion.config.core;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
-
-import ascelion.config.api.ConfigNode;
-import ascelion.config.api.ConfigRoot;
-import ascelion.config.eval.Expression;
-
 import static ascelion.config.spi.Utils.isArrayName;
 import static ascelion.config.spi.Utils.isArrayNode;
 import static ascelion.config.spi.Utils.isMapNode;
 import static ascelion.config.spi.Utils.pathElements;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Optional.ofNullable;
 
+import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigRoot;
+import ascelion.config.eval.Expression;
+
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 import lombok.Getter;
 
 public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
@@ -31,18 +31,31 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 	final String path;
 
 	private String value;
-	private final Map<String, ConfigNodeImpl> children = new TreeMap<>();
+	private final Map<String, ConfigNodeImpl> children = new LinkedHashMap<>();
+	private final Expression expression;
 
 	ConfigNodeImpl() {
 		this.root = (ConfigRootImpl) this;
 		this.name = "";
 		this.path = "";
+		this.expression = new Expression();
+
+		this.expression.withLookup(x -> {
+			final Optional<ConfigNodeImpl> node = findNode(x);
+
+			if (node.isPresent()) {
+				return new Expression.Lookup(node.get().getValue());
+			} else {
+				return new Expression.Lookup();
+			}
+		});
 	}
 
-	private ConfigNodeImpl(ConfigNodeImpl parent, String name) {
+	ConfigNodeImpl(ConfigNodeImpl parent, String name) {
 		this.root = parent.root;
 		this.name = name;
 		this.path = parent.newPath(name);
+		this.expression = parent.expression;
 	}
 
 	@Override
@@ -58,7 +71,8 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 	@Override
 	public final Optional<String> getValue() {
 		return ofNullable(this.value)
-				.map(this.root::eval);
+				.map(this::eval)
+				.map(Expression.Result::getValue);
 	}
 
 	@Override
@@ -78,7 +92,7 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 			return emptyList();
 		}
 
-		final Expression.Result eval = this.root.expression.eval(this.value);
+		final Expression.Result eval = eval(this.value);
 		final String newPath;
 
 		if (eval.getValue() != null) {
@@ -115,6 +129,10 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 		return (Optional<N>) ofNullable(node);
 	}
 
+	final Expression.Result eval(String expression) {
+		return this.expression.eval(expression);
+	}
+
 	private ConfigNodeImpl child(String name) {
 		if (name.isEmpty()) {
 			throw new IllegalArgumentException("The node name cannot be empty");
@@ -126,32 +144,44 @@ public class ConfigNodeImpl implements ascelion.config.api.ConfigNode {
 	final ConfigNodeImpl create(String name) {
 		final boolean isArray = isArrayName(name);
 
-		if (isArray && isMapNode(this)) {
+		if (isArray && isMapNode(this.children.values())) {
 			throw new IllegalStateException(format("The node %s already contains a map", this.path));
 		}
-		if (!isArray && isArrayNode(this)) {
+		if (!isArray && isArrayNode(this.children.values())) {
 			throw new IllegalStateException(format("The node %s already contains an array", this.path));
 		}
 
-		return children().computeIfAbsent(name, n -> new ConfigNodeImpl(this, name));
+		return this.children.computeIfAbsent(name, n -> new ConfigNodeImpl(this, name));
 	}
 
 	Map<String, ConfigNodeImpl> children() {
-		return this.children;
+		return unmodifiableMap(this.children);
+	}
+
+	void merge(ConfigNodeImpl node, boolean clear) {
+		if (clear) {
+			this.children.clear();
+		}
+
+		this.value = node.value;
+
+		node.children.values().forEach(c -> {
+			create(c.name).merge(c, false);
+		});
 	}
 
 	ConfigNodeImpl value(String value) {
 		switch (this.path) {
 			case VAR_PREFIX_PROP:
-				this.root.expression.withPrefix(value);
+				this.expression.withPrefix(value);
 			break;
 
 			case VAR_SEPARATOR_PROP:
-				this.root.expression.withValueSep(value);
+				this.expression.withValueSep(value);
 			break;
 
 			case VAR_SUFFIX_PROP:
-				this.root.expression.withSuffix(value);
+				this.expression.withSuffix(value);
 			break;
 		}
 

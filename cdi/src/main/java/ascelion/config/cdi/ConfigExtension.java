@@ -1,5 +1,12 @@
 package ascelion.config.cdi;
 
+import static ascelion.cdi.metadata.AnnotatedTypeModifier.makeQualifier;
+import static java.util.stream.Collectors.joining;
+
+import ascelion.cdi.bean.BeanAttributesModifier;
+import ascelion.cdi.metadata.AnnotatedTypeModifier;
+import ascelion.config.api.ConfigValue;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashSet;
@@ -27,19 +34,11 @@ import javax.enterprise.inject.spi.ProcessProducer;
 import javax.enterprise.inject.spi.ProducerFactory;
 import javax.enterprise.inject.spi.WithAnnotations;
 
-import ascelion.cdi.bean.BeanAttributesModifier;
-import ascelion.config.api.ConfigValue;
-
-import static ascelion.cdi.metadata.AnnotatedTypeModifier.makeQualifier;
-import static java.util.stream.Collectors.joining;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 @SuppressWarnings("unchecked")
+@Slf4j
 public class ConfigExtension implements Extension {
-	static private final Logger LOG = LoggerFactory.getLogger(ConfigExtension.class);
-
 	private AnnotatedType<ConfigValueProducer> prodType;
 	private Bean<ConfigValueProducer> prodBean;
 
@@ -50,7 +49,7 @@ public class ConfigExtension implements Extension {
 	void beforeBeanDiscovery(BeanManager bm, @Observes BeforeBeanDiscovery event) {
 		event.addQualifier(makeQualifier(bm.createAnnotatedType(ConfigValue.class)));
 
-		LOG.info("Created qualifier @ConfigValue");
+		log.info("Created qualifier @ConfigValue");
 
 		this.prodType = bm.createAnnotatedType(ConfigValueProducer.class);
 
@@ -68,14 +67,14 @@ public class ConfigExtension implements Extension {
 
 		AnnotatedType<X> type = event.getAnnotatedType();
 
-		LOG.info("Processing type {}", type);
+		log.info("Processing type {}", type);
 
 		final ConfigProcessor<X> processor = new ConfigProcessor<>(type);
 
 		if (processor.values().size() > 0) {
 			type = processor.type();
 
-			LOG.info("Updated type {}", type);
+			log.info("Updated type {}", type);
 
 			event.setAnnotatedType(type);
 
@@ -91,7 +90,7 @@ public class ConfigExtension implements Extension {
 			final Type type = ijp.getType();
 
 			if (this.types.add(type)) {
-				LOG.debug("May need to create @ConfigValue producer for {}", type);
+				log.debug("May need to create @ConfigValue producer for {}", type);
 			}
 		}
 	}
@@ -103,7 +102,7 @@ public class ConfigExtension implements Extension {
 		if (processor != null) {
 			final InjectionTarget<X> it = event.getInjectionTarget();
 
-			LOG.info("Overring injection of {}", it);
+			log.info("Overring injection of {}", it);
 
 			event.setInjectionTarget(new ConfigInjectionTarget<>(bm, it, processor));
 		}
@@ -116,7 +115,7 @@ public class ConfigExtension implements Extension {
 			final Type type = event.getAnnotatedMember().getBaseType();
 
 			if (this.skippedTypes.add(type)) {
-				LOG.debug("Will not create @ConfigValue producer for {} -- ", type, annotated);
+				log.debug("Will not create @ConfigValue producer for {} -- ", type, annotated);
 
 				if (type instanceof ParameterizedType) {
 					this.skippedTypes.add(((ParameterizedType) type).getRawType());
@@ -132,15 +131,12 @@ public class ConfigExtension implements Extension {
 			return;
 		}
 
-		if (LOG.isInfoEnabled()) {
-			LOG.info("Adding @ConfigValue producer(s) for {}", this.types.stream().map(Type::getTypeName).collect(joining(", ")));
+		if (log.isInfoEnabled()) {
+			log.info("Adding @ConfigValue producer(s) for {}", this.types.stream().map(Type::getTypeName).collect(joining(", ")));
 		}
 
-		final AnnotatedMethod<? super ConfigValueProducer> method = this.prodType.getMethods().stream()
-				.filter(m -> m.getJavaMember().getName().equals("produceValue"))
-				.findFirst()
-				.get();
-
+		final AnnotatedMethod<? super ConfigValueProducer> method = AnnotatedTypeModifier.create(this.prodType)
+				.method("produceValue", InjectionPoint.class).get();
 		final ProducerFactory<ConfigValueProducer> prodFactory = bm.getProducerFactory(method, this.prodBean);
 		final BeanAttributesModifier<?> prodAttributes = BeanAttributesModifier.create(bm.createBeanAttributes(method));
 

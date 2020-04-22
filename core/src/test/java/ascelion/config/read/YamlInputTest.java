@@ -1,12 +1,10 @@
 package ascelion.config.read;
 
-import ascelion.config.api.ConfigProvider;
-import ascelion.config.api.ConfigRoot;
-import ascelion.config.core.AbstractTest;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+
+import ascelion.config.core.AbstractTest;
 
 import org.junit.jupiter.api.Test;
 
@@ -14,8 +12,6 @@ public class YamlInputTest extends AbstractTest {
 
 	@Test
 	public void run() {
-		final ConfigRoot root = ConfigProvider.root();
-
 		assertThat(root.getValues("prop1"), equalTo(asList("value11", "value12")));
 		assertThat(root.getValue("prop2"), equalTo("value2"));
 

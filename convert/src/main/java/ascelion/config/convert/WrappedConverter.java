@@ -1,9 +1,9 @@
 
 package ascelion.config.convert;
 
-import java.lang.reflect.Type;
-
 import ascelion.config.spi.ConfigConverter;
+
+import java.lang.reflect.Type;
 
 import lombok.RequiredArgsConstructor;
 

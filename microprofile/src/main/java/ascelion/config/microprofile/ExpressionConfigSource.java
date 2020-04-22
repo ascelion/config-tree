@@ -1,22 +1,22 @@
 package ascelion.config.microprofile;
 
+import static ascelion.config.spi.Utils.isSimpleArray;
+import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.joining;
+
+import ascelion.config.api.ConfigNode;
+import ascelion.config.api.ConfigProvider;
+import ascelion.config.api.ConfigRoot;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import ascelion.config.api.ConfigNode;
-import ascelion.config.api.ConfigProvider;
-import ascelion.config.api.ConfigRoot;
-
-import static ascelion.config.spi.Utils.isSimpleArray;
-import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.joining;
-
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
-public class ExpressionConfigSource implements ConfigSource {
+public final class ExpressionConfigSource implements ConfigSource {
 	static private final Mediator MEDIATOR = new Mediator();
 
 	@Override

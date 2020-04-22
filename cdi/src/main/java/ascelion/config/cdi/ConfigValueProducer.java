@@ -1,5 +1,10 @@
 package ascelion.config.cdi;
 
+import static java.lang.String.format;
+
+import ascelion.config.api.ConfigRoot;
+import ascelion.config.api.ConfigValue;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.NoSuchElementException;
@@ -7,11 +12,6 @@ import java.util.Optional;
 
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
-
-import ascelion.config.api.ConfigRoot;
-import ascelion.config.api.ConfigValue;
-
-import static java.lang.String.format;
 
 class ConfigValueProducer {
 	@Inject
