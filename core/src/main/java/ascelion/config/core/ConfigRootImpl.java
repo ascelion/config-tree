@@ -11,17 +11,18 @@ import ascelion.config.spi.ConverterFactory;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+
 import lombok.extern.slf4j.Slf4j;
 
 @SuppressWarnings("unchecked")
 @Slf4j
 final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
-	private final Set<ConfigInput> inputs = new CopyOnWriteArraySet<>();
+	private final CopyOnWriteArrayList<ConfigInput> inputs = new CopyOnWriteArrayList<>();
 
 	enum State {
 		DIRTY, LOADING, LOADED
@@ -72,7 +73,9 @@ final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 
 	void addConfigInputs(Collection<ConfigInput> inputs) {
 		try {
-			this.inputs.addAll(inputs);
+			this.inputs.addAllAbsent(inputs);
+
+			Collections.sort(this.inputs);
 		} finally {
 			this.state.set(State.DIRTY);
 		}
@@ -100,9 +103,9 @@ final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 		try {
 			final ConfigRootBuilder bld = new ConfigRootBuilder();
 
-			this.inputs.stream()
-					.sorted()
-					.forEach(i -> update(bld, i));
+			log.debug(format("Reading %d inputs", this.inputs.size()));
+
+			this.inputs.forEach(i -> update(bld, i));
 
 			merge(bld.get(), true);
 
@@ -116,6 +119,7 @@ final class ConfigRootImpl extends ConfigNodeImpl implements ConfigRoot {
 
 	private void update(ConfigRootBuilder bld, ConfigInput inp) {
 		try {
+			log.debug(format("Reading %s", inp.name()));
 			inp.update(bld);
 		} catch (final Exception e) {
 			log.error(format("Error reading %s", inp.name()), e);

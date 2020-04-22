@@ -3,42 +3,27 @@ package ascelion.config.read;
 import static java.lang.String.format;
 
 import ascelion.config.api.ConfigProvider.Builder;
+import ascelion.config.spi.ConfigInput;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import lombok.extern.slf4j.Slf4j;
-import org.yaml.snakeyaml.Yaml;
-
-@Slf4j
-public class YamlInput extends ResourceInput {
-	private final List<Object> documents = new ArrayList<>();
+class YamlInput extends ConfigInput {
+	private final String name;
+	private final Map<String, Object> properties;
 	private final int priority;
 
-	public YamlInput(URL source) throws IOException {
-		super(source);
+	public YamlInput(Map<String, Object> properties, URL source, int index) {
+		this.name = format("%s[%s]", source.toExternalForm(), index);
+		this.properties = properties;
+		this.priority = Integer.parseInt(Objects.toString(properties.getOrDefault(CONFIG_PRIORITY, DEFAULT_PRIORITY)));
+	}
 
-		final Yaml yaml = new Yaml();
-
-		try (InputStream is = source.openStream()) {
-			yaml.loadAll(is).forEach(this.documents::add);
-		}
-
-		this.priority = this.documents.stream()
-				.filter(Map.class::isInstance)
-				.map(Map.class::cast)
-				.map(m -> m.get(CONFIG_PRIORITY))
-				.filter(Objects::nonNull)
-				.map(Number.class::cast)
-				.map(Number::intValue)
-				.findAny()
-				.orElse(DEFAULT_PRIORITY);
+	@Override
+	public String name() {
+		return this.name;
 	}
 
 	@Override
@@ -48,9 +33,7 @@ public class YamlInput extends ResourceInput {
 
 	@Override
 	public void update(Builder bld) {
-		log.trace(format("Updating builder from %s", name()));
-
-		this.documents.forEach(o -> update(bld, o));
+		update(bld, this.properties);
 	}
 
 	private boolean update(Builder bld, Object value) {

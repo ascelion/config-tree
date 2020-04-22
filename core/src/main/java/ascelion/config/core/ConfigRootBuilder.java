@@ -10,10 +10,11 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Map;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 final class ConfigRootBuilder implements ConfigProvider.Builder {
+	static private final Logger LOG = LoggerFactory.getLogger(ConfigProvider.Builder.class);
 
 	private final Deque<ConfigNodeImpl> stack = new LinkedList<>();
 
@@ -86,7 +87,7 @@ final class ConfigRootBuilder implements ConfigProvider.Builder {
 				child(path).value(value);
 			}
 		} catch (final Throwable t) {
-			log.error(format("At %s, setting %s to %s", this.stack.peek().path, path, value), t);
+			LOG.error(format("At %s, setting %s to %s", this.stack.peek().path, path, value), t);
 
 			reset();
 
@@ -110,7 +111,7 @@ final class ConfigRootBuilder implements ConfigProvider.Builder {
 	}
 
 	private void push(ConfigNodeImpl node) {
-		log.trace("PUSH {}", node);
+		LOG.trace("PUSH {}", node);
 
 		this.stack.push(node);
 	}
@@ -118,7 +119,7 @@ final class ConfigRootBuilder implements ConfigProvider.Builder {
 	private ConfigNodeImpl pull() {
 		final ConfigNodeImpl node = this.stack.pop();
 
-		log.trace("PULL {}", node);
+		LOG.trace("PULL {}", node);
 
 		return node;
 	}

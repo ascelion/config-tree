@@ -47,7 +47,7 @@ public abstract class ResourceInputReader implements ConfigInputReader {
 			try {
 				log.debug("Reading {}", file.getAbsolutePath());
 
-				inputs.add(read(file.toURI().toURL()));
+				inputs.addAll(readFrom(file.toURI().toURL()));
 			} catch (final IOException e) {
 				log.warn(file.getAbsolutePath(), e);
 			}
@@ -69,14 +69,14 @@ public abstract class ResourceInputReader implements ConfigInputReader {
 			try {
 				log.debug("Reading {}", resource);
 
-				inputs.add(read(resource));
+				inputs.addAll(readFrom(resource));
 			} catch (final IOException e) {
 				log.warn(resource.toExternalForm(), e);
 			}
 		}
 	}
 
-	protected abstract ConfigInput read(URL source) throws IOException;
+	protected abstract Collection<ConfigInput> readFrom(URL source) throws IOException;
 
 	private ClassLoader getClassLoader() {
 		final ClassLoader cld = currentThread().getContextClassLoader();

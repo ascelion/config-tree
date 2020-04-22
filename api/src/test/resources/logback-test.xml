@@ -18,8 +18,8 @@
 	</appender>
 
 	<logger name="org.jboss.weld" level="INFO" />
-	<logger name="ascelion" level="ALL" />
-	<logger name="ascelion.config.api.ConfigProvider$Builder" level="OFF" />
+	<logger name="ascelion" level="INFO" />
+	<logger name="ascelion.config.api.ConfigProvider$Builder" level="DEBUG" />
 
 	<root level="INFO">
 		<appender-ref ref="FILE" />

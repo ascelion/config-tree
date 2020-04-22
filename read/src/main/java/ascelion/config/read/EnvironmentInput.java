@@ -1,6 +1,5 @@
 package ascelion.config.read;
 
-import static java.lang.String.format;
 import static java.security.AccessController.doPrivileged;
 
 import ascelion.config.api.ConfigProvider.Builder;
@@ -9,9 +8,6 @@ import ascelion.config.spi.ConfigInput;
 import java.security.PrivilegedAction;
 import java.util.Map;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 final class EnvironmentInput extends ConfigInput {
 	@Override
 	public int priority() {
@@ -20,8 +16,6 @@ final class EnvironmentInput extends ConfigInput {
 
 	@Override
 	public void update(Builder bld) {
-		log.trace(format("Updating builder from %s", name()));
-
 		environment().forEach((k, v) -> {
 			bld.set(k, v);
 
