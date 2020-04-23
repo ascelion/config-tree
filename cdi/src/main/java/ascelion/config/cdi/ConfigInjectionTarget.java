@@ -6,6 +6,7 @@ import ascelion.config.api.ConfigValue;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.Set;
@@ -83,18 +84,23 @@ class ConfigInjectionTarget<T> implements InjectionTarget<T>
 	@SneakyThrows
 	static <T> void inject( ConfigRoot root, T instance, AnnotatedField<T> annotated )
 	{
-		final ConfigValue cval = annotated.getAnnotation( ConfigValue.class );
-		final String prop = cval.value();
+		final ConfigValue annotation = annotated.getAnnotation( ConfigValue.class );
+		final String property = annotation.value();
 		final Type type = annotated.getBaseType();
-		final Optional<?> value = root.getValue( prop, type );
+		final Optional<?> opt = root.getValue( property, type );
+		final Field field = annotated.getJavaMember();
 
-		if( value.isPresent() ) {
-			final Field field = annotated.getJavaMember();
-
+		if( type instanceof ParameterizedType && ( (ParameterizedType) type ).getRawType() == Optional.class ) {
 			log.debug( "Invoking setter {}", field );
 
 			field.setAccessible( true );
-			field.set( instance, value.get() );
+			field.set( instance, opt );
+		}
+		else if( opt.isPresent() ) {
+			log.debug( "Invoking setter {}", field );
+
+			field.setAccessible( true );
+			field.set( instance, opt.get() );
 		}
 	}
 
